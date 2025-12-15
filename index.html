@@ -6,10 +6,8 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title>Biome — No‑Build Pet Simulator (ImportMap + Babel)</title>
-
+    <title>Space Pets (Lite)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
     <style>
       * {
         box-sizing: border-box;
@@ -22,30 +20,78 @@
         overflow: hidden;
       }
       body {
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        font-family: system-ui, -apple-system, sans-serif;
         background: radial-gradient(
           ellipse at 50% 20%,
-          #0f1631 0%,
-          #070914 55%,
-          #04040b 100%
+          #1a1a4a 0%,
+          #0a0a1a 50%,
+          #050510 100%
         );
-        color: white;
       }
-      #root {
+      #app {
         width: 100%;
         height: 100%;
+        position: relative;
       }
       canvas {
         display: block;
-        width: 100% !important;
-        height: 100% !important;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+
+      /* Critical layering: don’t rely on Tailwind utilities in embedded previews */
+      #hud {
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 1000;
+        pointer-events: auto;
+        max-width: min(92vw, 420px);
       }
 
       .glass {
-        background: rgba(12, 16, 30, 0.62);
+        background: rgba(15, 20, 40, 0.68);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 16px;
+      }
+      .btn {
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 10px;
+        color: #fff;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+
+      #toast {
+        position: fixed;
+        left: 50%;
+        bottom: 14px;
+        transform: translateX(-50%);
+        z-index: 1001;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.45);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+      }
+      #toast.show {
+        opacity: 1;
       }
 
       #boot {
@@ -57,11 +103,11 @@
         z-index: 2000;
         background: radial-gradient(
           ellipse at 50% 20%,
-          rgba(15, 22, 49, 0.95) 0%,
-          rgba(7, 9, 20, 0.96) 55%,
-          rgba(4, 4, 11, 0.98) 100%
+          rgba(26, 26, 74, 0.95) 0%,
+          rgba(10, 10, 26, 0.95) 50%,
+          rgba(5, 5, 16, 0.98) 100%
         );
-        color: rgba(255, 255, 255, 0.92);
+        color: rgba(255, 255, 255, 0.9);
         letter-spacing: 0.02em;
       }
 
@@ -73,7 +119,7 @@
         z-index: 3000;
         padding: 12px 14px;
         border-radius: 14px;
-        background: rgba(0, 0, 0, 0.78);
+        background: rgba(0, 0, 0, 0.75);
         border: 1px solid rgba(255, 255, 255, 0.14);
         color: rgba(255, 255, 255, 0.92);
         font-size: 12px;
@@ -84,87 +130,263 @@
         overflow: auto;
       }
 
-      /* Crosshair */
-      #crosshair {
-        position: fixed;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 14px;
-        height: 14px;
-        z-index: 1200;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.15s ease;
+      /* Color picker buttons */
+      .color-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.2s;
       }
-      #crosshair.show {
-        opacity: 0.92;
+      .color-btn:hover {
+        transform: scale(1.15);
+        border-color: rgba(255, 255, 255, 0.7);
       }
-      #crosshair::before,
-      #crosshair::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        background: rgba(255, 255, 255, 0.92);
-        border-radius: 999px;
-        transform: translate(-50%, -50%);
+      .color-btn.selected {
+        border-color: #fff;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        transform: scale(1.1);
       }
-      #crosshair::before {
-        width: 2px;
-        height: 14px;
-      }
-      #crosshair::after {
-        width: 14px;
-        height: 2px;
-      }
-    </style>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@18.2.0",
-          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-          "three": "https://esm.sh/three@0.164.1",
-          "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.16.1?external=react,react-dom,three",
-          "@react-three/drei": "https://esm.sh/@react-three/drei@9.105.4?external=react,react-dom,three,@react-three/fiber",
-          "uuid": "https://esm.sh/uuid@9.0.1"
+      /* Gacha modal */
+      #gachaModal {
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      #gachaModal.show {
+        opacity: 1;
+      }
+      #gachaCard {
+        min-width: 280px;
+      }
+      .rarity-common {
+        color: #9ca3af;
+      }
+      .rarity-rare {
+        color: #60a5fa;
+      }
+      .rarity-legendary {
+        color: #fbbf24;
+        text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+      }
+
+      @keyframes starPop {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.3);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
         }
       }
-    </script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+      .star-animate {
+        display: inline-block;
+        animation: starPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        opacity: 0;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <div id="crosshair"></div>
+    <div id="app"></div>
 
     <div id="boot">
-      <div class="glass px-5 py-4 text-center max-w-[92vw]">
-        <div class="text-lg font-bold">Biome</div>
-        <div class="text-xs text-white/70 mt-1">
-          Loading (ImportMap + Babel)…
-        </div>
+      <div class="glass px-5 py-4 text-center">
+        <div class="text-lg font-bold">Space Pets</div>
+        <div class="text-xs text-white/70 mt-1">Loading 3D scene…</div>
         <div class="text-[11px] text-white/50 mt-3">
-          If this hangs, your environment may block ESM/CDN modules.
+          If this hangs, your preview may be blocking CDN scripts.
         </div>
       </div>
     </div>
+
     <div id="errorOverlay"></div>
 
+    <!-- HUD Overlay -->
+    <div id="hud" class="glass p-4 text-white">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h1 class="text-lg font-bold leading-tight">Space Pets</h1>
+          <p class="text-xs text-white/70">
+            Lite roaming pets (mobile-friendly)
+          </p>
+        </div>
+        <div
+          id="perfBadge"
+          class="text-[11px] px-2 py-1 rounded-full bg-white/10 border border-white/10 text-white/80"
+        ></div>
+      </div>
+
+      <div class="flex gap-2 mt-3 flex-wrap">
+        <button id="addBtn" class="btn">+ Add Pet</button>
+        <button
+          id="gachaBtn"
+          class="btn"
+          style="
+            background: linear-gradient(
+              135deg,
+              rgba(251, 191, 36, 0.3),
+              rgba(59, 130, 246, 0.3)
+            );
+            border-color: rgba(251, 191, 36, 0.4);
+          "
+        >
+          ✨ Summon
+        </button>
+        <button id="resetBtn" class="btn">Reset</button>
+      </div>
+
+      <!-- Color Palette Picker -->
+      <div class="mt-3">
+        <div class="text-[11px] text-white/60 mb-1">Next pet color:</div>
+        <div id="colorPalette" class="flex gap-1 flex-wrap">
+          <button
+            class="color-btn"
+            data-color="0xffc8dd"
+            style="background: #ffc8dd"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0xffafcc"
+            style="background: #ffafcc"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0xbde0fe"
+            style="background: #bde0fe"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0xa2d2ff"
+            style="background: #a2d2ff"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0xcdb4db"
+            style="background: #cdb4db"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0xffd6a5"
+            style="background: #ffd6a5"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0xd0f4de"
+            style="background: #d0f4de"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0xff6b6b"
+            style="background: #ff6b6b"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0x7b2cbf"
+            style="background: #7b2cbf"
+          ></button>
+          <button
+            class="color-btn"
+            data-color="0xfbbf24"
+            style="background: #fbbf24"
+          ></button>
+        </div>
+      </div>
+
+      <div class="mt-3 text-[11px] text-white/70 space-y-1">
+        <div><strong>Tap</strong> pet for hearts</div>
+        <div><strong>Drag</strong> to pick up & move</div>
+        <div>
+          <strong>Summon</strong> for rare species! (70% Common, 25% Rare, 5%
+          Legendary)
+        </div>
+      </div>
+
+      <div class="mt-3 flex items-center gap-2">
+        <span class="text-[11px] text-white/60">Hold height</span>
+        <input
+          type="range"
+          id="heightSlider"
+          min="0.6"
+          max="4"
+          step="0.1"
+          value="1.5"
+          class="flex-1"
+        />
+        <span id="heightVal" class="text-[11px] w-9 text-right">1.5</span>
+      </div>
+
+      <div id="petName" class="mt-2 text-sm text-cyan-200"></div>
+    </div>
+
+    <!-- Gacha Reveal Modal -->
+    <div
+      id="gachaModal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 4000;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div
+        id="gachaCard"
+        class="glass"
+        style="
+          padding: 32px 48px;
+          text-align: center;
+          transform: scale(0);
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        "
+      >
+        <div id="gachaStars" style="font-size: 32px; margin-bottom: 12px"></div>
+        <div id="gachaEmoji" style="font-size: 72px; margin-bottom: 12px"></div>
+        <div
+          id="gachaRarity"
+          style="
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+          "
+        ></div>
+        <div
+          id="gachaSpecies"
+          style="font-size: 24px; font-weight: bold; margin-top: 8px"
+        ></div>
+        <button id="gachaClose" class="btn" style="margin-top: 20px">
+          Add to Collection!
+        </button>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+
     <script>
+      // ======== Robust boot + error overlay (so "blank" never happens silently) ========
       const bootEl = document.getElementById("boot");
       const errorEl = document.getElementById("errorOverlay");
 
       function showError(err) {
         const msg = err && err.stack ? err.stack : String(err);
         errorEl.style.display = "block";
-        errorEl.textContent = "Biome failed to start:\n\n" + msg;
+        errorEl.textContent = "Space Pets failed to start:\n\n" + msg;
         bootEl.style.display = "none";
       }
 
       window.addEventListener(
         "error",
         (e) => {
+          // Capture resource load failures too
           if (e?.error) showError(e.error);
           else if (
             e?.target &&
@@ -183,6 +405,30 @@
         showError(e.reason || e)
       );
 
+      function loadScript(src) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = src;
+          s.async = true;
+          s.onload = () => resolve(src);
+          s.onerror = () => reject(new Error("Failed to load script: " + src));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function loadAny(sources) {
+        let lastErr = null;
+        for (const src of sources) {
+          try {
+            await loadScript(src);
+            return src;
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+        throw lastErr || new Error("Failed to load scripts");
+      }
+
       function hasWebGL() {
         try {
           const c = document.createElement("canvas");
@@ -194,2052 +440,1373 @@
         }
       }
 
-      if (!hasWebGL()) {
-        showError("WebGL is not available in this browser/context.");
-      }
-    </script>
-
-    <script type="text/babel" data-type="module" data-presets="react">
-      import React, {
-        useCallback,
-        useEffect,
-        useMemo,
-        useRef,
-        useState,
-      } from "react";
-      import { createRoot } from "react-dom/client";
-      import * as THREE from "three";
-      import { Canvas, useFrame, useThree } from "@react-three/fiber";
-      import {
-        KeyboardControls,
-        PointerLockControls,
-        Sky,
-        Stars,
-        Sparkles,
-        useKeyboardControls,
-        Html,
-      } from "@react-three/drei";
-      import { v4 as uuidv4 } from "uuid";
-
-      const MU = THREE.MathUtils;
-      const crosshairEl = document.getElementById("crosshair");
-      const bootEl2 = document.getElementById("boot");
-
-      // -----------------------------
-      // Config
-      // -----------------------------
-
-      const WORLD = {
-        radius: 14.5,
-      };
-
-      const AI = {
-        IDLE: "IDLE",
-        ROAM: "ROAM",
-        FLEE: "FLEE",
-        SOCIAL: "SOCIAL",
-        SLEEP: "SLEEP",
-        HELD: "HELD",
-      };
-
-      const SPECIES_CONFIG = {
-        cat: {
-          key: "cat",
-          label: "Cat",
-          icon: "🐱",
-          scale: 0.95,
-          baseY: 0.36,
-          body: { w: 0.85, h: 0.5, l: 1.15 },
-          head: { r: 0.34, z: 0.68, y: 0.28 },
-          ears: { type: "pointy", size: 0.16 },
-          tail: { type: "long", len: 0.85 },
-          gait: {
-            speed: 1.25,
-            stepFreq: 7.0,
-            amp: 0.55,
-            bob: 0.05,
-            lean: 0.12,
-            bank: 0.1,
-          },
-          traits: {
-            aloof: true,
-            climbsRugs: true,
-            slowBlink: true,
-            timid: true,
-          },
-        },
-        rabbit: {
-          key: "rabbit",
-          label: "Rabbit",
-          icon: "🐰",
-          scale: 0.88,
-          baseY: 0.32,
-          body: { w: 0.75, h: 0.55, l: 0.95 },
-          head: { r: 0.32, z: 0.58, y: 0.24 },
-          ears: { type: "long", size: 0.35 },
-          tail: { type: "pom", len: 0.22 },
-          gait: {
-            speed: 1.55,
-            stepFreq: 9.5,
-            amp: 0.75,
-            bob: 0.075,
-            lean: 0.14,
-            bank: 0.12,
-          },
-          traits: { burstHop: true, timid: true },
-        },
-      };
-
-      const SPECIES_KEYS = ["cat", "rabbit"];
-
-      // -----------------------------
-      // Helpers
-      // -----------------------------
-
-      function pick(arr) {
-        return arr[(Math.random() * arr.length) | 0];
-      }
-
-      function randRange(a, b) {
-        return MU.lerp(a, b, Math.random());
-      }
-
-      function clamp01(v) {
-        return MU.clamp(v, 0, 1);
-      }
-
-      function smoothstep01(t) {
-        t = MU.clamp(t, 0, 1);
-        return t * t * (3 - 2 * t);
-      }
-
-      function dampAngle(a, b, t) {
-        let d = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI;
-        return a + d * t;
-      }
-
-      // -----------------------------
-      // Toon ramp texture
-      // -----------------------------
-
-      function useToonRampTexture() {
-        return useMemo(() => {
-          const c = document.createElement("canvas");
-          c.width = 4;
-          c.height = 1;
-          const ctx = c.getContext("2d");
-          const img = ctx.createImageData(4, 1);
-          const vals = [40, 120, 200, 255];
-          for (let i = 0; i < 4; i++) {
-            const v = vals[i];
-            img.data[i * 4 + 0] = v;
-            img.data[i * 4 + 1] = v;
-            img.data[i * 4 + 2] = v;
-            img.data[i * 4 + 3] = 255;
-          }
-          ctx.putImageData(img, 0, 0);
-          const tex = new THREE.CanvasTexture(c);
-          tex.minFilter = THREE.NearestFilter;
-          tex.magFilter = THREE.NearestFilter;
-          tex.generateMipmaps = false;
-          tex.needsUpdate = true;
-          return tex;
-        }, []);
-      }
-
-      // -----------------------------
-      // Environment (Floor + Rugs)
-      // -----------------------------
-
-      function useRugs() {
-        return useMemo(
-          () => [
-            { id: "rug_a", x: -4.8, z: -3.8, w: 3.2, d: 2.0, h: 0.07 },
-            { id: "rug_b", x: 5.2, z: 3.6, w: 3.4, d: 2.1, h: 0.07 },
-            { id: "rug_c", x: 0.2, z: 0.6, w: 2.6, d: 1.7, h: 0.06 },
-          ],
-          []
-        );
-      }
-
-      function Ground({ rampTex, groundObjectsRef }) {
-        const ref = useRef();
-        const mat = useMemo(() => {
-          const m = new THREE.MeshToonMaterial({
-            color: new THREE.Color("#151a2d"),
-            gradientMap: rampTex,
-          });
-          m.dithering = true;
-          return m;
-        }, [rampTex]);
-
-        useEffect(() => {
-          if (ref.current && groundObjectsRef?.current)
-            groundObjectsRef.current.push(ref.current);
-          return () => {
-            if (!ref.current || !groundObjectsRef?.current) return;
-            const i = groundObjectsRef.current.indexOf(ref.current);
-            if (i >= 0) groundObjectsRef.current.splice(i, 1);
-          };
-        }, [groundObjectsRef]);
-
-        return (
-          <mesh
-            ref={ref}
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, 0, 0]}
-            material={mat}
-          >
-            <planeGeometry args={[120, 120, 1, 1]} />
-          </mesh>
-        );
-      }
-
-      function Rugs({ rugs, rampTex, groundObjectsRef }) {
-        const mat = useMemo(() => {
-          const m = new THREE.MeshToonMaterial({
-            color: new THREE.Color("#2a2146"),
-            gradientMap: rampTex,
-          });
-          m.dithering = true;
-          return m;
-        }, [rampTex]);
-
-        return (
-          <group>
-            {rugs.map((r) => (
-              <mesh
-                key={r.id}
-                position={[r.x, r.h * 0.5, r.z]}
-                material={mat}
-                ref={(el) => {
-                  if (!el || !groundObjectsRef?.current) return;
-                  if (!groundObjectsRef.current.includes(el))
-                    groundObjectsRef.current.push(el);
-                }}
-              >
-                <boxGeometry args={[r.w, r.h, r.d]} />
-              </mesh>
-            ))}
-          </group>
-        );
-      }
-
-      function groundHeightAt(x, z, rugs) {
-        let h = 0;
-        for (let i = 0; i < rugs.length; i++) {
-          const r = rugs[i];
-          const dx = Math.abs(x - r.x);
-          const dz = Math.abs(z - r.z);
-          if (dx <= r.w * 0.5 && dz <= r.d * 0.5) h = Math.max(h, r.h);
-        }
-        return h;
-      }
-
-      // -----------------------------
-      // Particles: Hearts (Sprites)
-      // -----------------------------
-
-      function useHeartTexture() {
-        return useMemo(() => {
-          const size = 64;
-          const c = document.createElement("canvas");
-          c.width = size;
-          c.height = size;
-          const ctx = c.getContext("2d");
-
-          ctx.clearRect(0, 0, size, size);
-          ctx.translate(size / 2, size / 2);
-
-          ctx.fillStyle = "#ff6aa8";
-          ctx.beginPath();
-          const s = size * 0.01;
-          for (let t = 0; t <= Math.PI * 2 + 0.01; t += 0.04) {
-            const x = 16 * Math.pow(Math.sin(t), 3);
-            const y =
-              13 * Math.cos(t) -
-              5 * Math.cos(2 * t) -
-              2 * Math.cos(3 * t) -
-              Math.cos(4 * t);
-            const px = x * s;
-            const py = -y * s;
-            if (t === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
-          ctx.closePath();
-          ctx.shadowColor = "rgba(255,106,168,0.55)";
-          ctx.shadowBlur = 10;
-          ctx.fill();
-
-          const tex = new THREE.CanvasTexture(c);
-          tex.minFilter = THREE.LinearFilter;
-          tex.magFilter = THREE.LinearFilter;
-          tex.generateMipmaps = false;
-          tex.needsUpdate = true;
-          return tex;
-        }, []);
-      }
-
-      function HeartPool({ apiRef }) {
-        const tex = useHeartTexture();
-        const groupRef = useRef();
-
-        const MAX = 42;
-        const sprites = useRef([]);
-        const items = useRef([]);
-
-        const mat = useMemo(() => {
-          return new THREE.SpriteMaterial({
-            map: tex,
-            transparent: true,
-            opacity: 0,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-          });
-        }, [tex]);
-
-        useEffect(() => {
-          items.current = new Array(MAX).fill(0).map(() => ({
-            active: false,
-            pos: new THREE.Vector3(0, -999, 0),
-            vel: new THREE.Vector3(),
-            life: 0,
-            maxLife: 1,
-            scale: 1,
-          }));
-        }, []);
-
-        const emit = useCallback((worldPos, n = 2) => {
-          const arr = items.current;
-          for (let k = 0; k < n; k++) {
-            const i = arr.findIndex((h) => !h.active);
-            if (i < 0) break;
-            const h = arr[i];
-            h.active = true;
-            h.life = 0;
-            h.maxLife = randRange(0.7, 1.15);
-            h.pos.copy(worldPos);
-            h.pos.y += randRange(0.35, 0.7);
-            h.vel.set(
-              randRange(-0.012, 0.012),
-              randRange(0.02, 0.035),
-              randRange(-0.012, 0.012)
-            );
-            h.scale = randRange(0.22, 0.32);
-          }
-        }, []);
-
-        useEffect(() => {
-          apiRef.current = { emit };
-        }, [apiRef, emit]);
-
-        useEffect(() => {
-          if (!groupRef.current) return;
-          sprites.current = new Array(MAX).fill(0).map(() => {
-            const s = new THREE.Sprite(mat);
-            s.position.set(0, -999, 0);
-            s.scale.set(0.001, 0.001, 0.001);
-            s.material.opacity = 0;
-            groupRef.current.add(s);
-            return s;
-          });
-          return () => {
-            for (const s of sprites.current) groupRef.current?.remove(s);
-            sprites.current = [];
-          };
-        }, [mat]);
-
-        useFrame((_, dt) => {
-          const arr = items.current;
-          const spr = sprites.current;
-          for (let i = 0; i < arr.length; i++) {
-            const h = arr[i];
-            const s = spr[i];
-            if (!s) continue;
-
-            if (!h.active) {
-              s.position.set(0, -999, 0);
-              s.material.opacity = 0;
-              s.scale.set(0.001, 0.001, 0.001);
-              continue;
-            }
-
-            h.life += dt;
-            const t = h.life / h.maxLife;
-            if (t >= 1) {
-              h.active = false;
-              continue;
-            }
-
-            h.vel.y -= 0.0032 * dt * 60;
-            h.pos.addScaledVector(h.vel, dt * 60);
-
-            const fade = 1.0 - smoothstep01((t - 0.55) / 0.45);
-            s.position.copy(h.pos);
-            s.material.opacity = 0.9 * fade;
-            const sc = h.scale * (0.9 + t * 0.5);
-            s.scale.set(sc, sc, sc);
-          }
-        });
-
-        return <group ref={groupRef} />;
-      }
-
-      // -----------------------------
-      // Particles: Dragon Breath (Points)
-      // -----------------------------
-
-      function BreathPool({ apiRef }) {
-        const MAX = 160;
-        const geo = useMemo(() => {
-          const g = new THREE.BufferGeometry();
-          const pos = new Float32Array(MAX * 3);
-          const col = new Float32Array(MAX * 3);
-          g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-          g.setAttribute("color", new THREE.BufferAttribute(col, 3));
-          return g;
-        }, []);
-
-        const mat = useMemo(
-          () =>
-            new THREE.PointsMaterial({
-              size: 0.11,
-              vertexColors: true,
-              transparent: true,
-              opacity: 0.9,
-              depthWrite: false,
-              blending: THREE.AdditiveBlending,
-            }),
-          []
-        );
-
-        const particles = useRef(
-          new Array(MAX).fill(0).map(() => ({
-            active: false,
-            pos: new THREE.Vector3(0, -999, 0),
-            vel: new THREE.Vector3(),
-            life: 0,
-            maxLife: 1,
-          }))
-        );
-
-        const emit = useCallback((origin, dir, n = 24) => {
-          const arr = particles.current;
-          for (let k = 0; k < n; k++) {
-            const i = arr.findIndex((p) => !p.active);
-            if (i < 0) break;
-            const p = arr[i];
-            p.active = true;
-            p.life = 0;
-            p.maxLife = randRange(0.45, 0.85);
-            p.pos.copy(origin);
-            p.pos.addScaledVector(dir, 0.25);
-            const spread = 0.12;
-            const jitter = new THREE.Vector3(
-              randRange(-spread, spread),
-              randRange(-spread * 0.4, spread * 0.4),
-              randRange(-spread, spread)
-            );
-            p.vel.copy(dir).multiplyScalar(randRange(0.18, 0.34)).add(jitter);
-          }
-        }, []);
-
-        useEffect(() => {
-          apiRef.current = { emit };
-        }, [apiRef, emit]);
-
-        useFrame((_, dt) => {
-          const posAttr = geo.getAttribute("position");
-          const colAttr = geo.getAttribute("color");
-          const arr = particles.current;
-          for (let i = 0; i < arr.length; i++) {
-            const p = arr[i];
-            if (!p.active) {
-              posAttr.setXYZ(i, 0, -999, 0);
-              colAttr.setXYZ(i, 0, 0, 0);
-              continue;
-            }
-
-            p.life += dt;
-            const t = p.life / p.maxLife;
-            if (t >= 1) {
-              p.active = false;
-              posAttr.setXYZ(i, 0, -999, 0);
-              colAttr.setXYZ(i, 0, 0, 0);
-              continue;
-            }
-
-            p.vel.multiplyScalar(Math.pow(0.9, dt * 60));
-            p.vel.y += 0.001 * dt * 60;
-            p.pos.addScaledVector(p.vel, dt * 60);
-            posAttr.setXYZ(i, p.pos.x, p.pos.y, p.pos.z);
-
-            const fade = 1.0 - smoothstep01((t - 0.35) / 0.65);
-            const hot = new THREE.Color().setHSL(0.05 + t * 0.03, 1.0, 0.58);
-            colAttr.setXYZ(i, hot.r * fade, hot.g * fade, hot.b * fade);
-          }
-          posAttr.needsUpdate = true;
-          colAttr.needsUpdate = true;
-        });
-
-        return <points geometry={geo} material={mat} frustumCulled={false} />;
-      }
-
-      // -----------------------------
-      // Leg (procedural)
-      // -----------------------------
-
-      const Leg = React.forwardRef(function Leg(
-        { material, len = 0.44, radius = 0.07 },
-        ref
-      ) {
-        return (
-          <group ref={ref}>
-            <mesh position={[0, -len * 0.5, 0]} material={material}>
-              <capsuleGeometry args={[radius, len, 6, 10]} />
-            </mesh>
-          </group>
-        );
-      });
-
-      // -----------------------------
-      // Species Model (ONLY primitives)
-      // -----------------------------
-
-      function SpeciesModel({
-        speciesKey,
-        rampTex,
-        colorHex,
-        seed,
-        wingPhaseRef,
-        bowRef,
-        blinkRef,
-      }) {
-        const sp = SPECIES_CONFIG[speciesKey];
-        const S = sp.scale;
-
-        const bodyMat = useMemo(() => {
-          const m = new THREE.MeshToonMaterial({
-            color: new THREE.Color(colorHex),
-            gradientMap: rampTex,
-          });
-          m.dithering = true;
-          return m;
-        }, [colorHex, rampTex]);
-
-        const accentMat = useMemo(() => {
-          const m = new THREE.MeshToonMaterial({
-            color: new THREE.Color("#f5f1ea"),
-            gradientMap: rampTex,
-          });
-          m.dithering = true;
-          return m;
-        }, [rampTex]);
-
-        const darkMat = useMemo(() => {
-          const m = new THREE.MeshToonMaterial({
-            color: new THREE.Color("#141423"),
-            gradientMap: rampTex,
-          });
-          m.dithering = true;
-          return m;
-        }, [rampTex]);
-
-        const eyeMat = useMemo(
-          () =>
-            new THREE.MeshBasicMaterial({ color: new THREE.Color("#0b0b12") }),
-          []
-        );
-
-        const bodyW = sp.body.w * S;
-        const bodyH = sp.body.h * S;
-        const bodyL = sp.body.l * S;
-        const headR = sp.head.r * S;
-
-        const leftEyeRef = useRef();
-        const rightEyeRef = useRef();
-
-        const mane = useMemo(() => {
-          if (!sp.traits?.mane) return null;
-          const rng = (() => {
-            let s = ((seed ?? 1) * 1000000) % 2147483647;
-            if (s <= 0) s += 2147483646;
-            return () => (s = (s * 16807) % 2147483647) / 2147483647;
-          })();
-          const n = 16;
-          return new Array(n).fill(0).map((_, i) => {
-            const a = (i / n) * Math.PI * 2;
-            return {
-              i,
-              a,
-              r: 0.52 + rng() * 0.06,
-              y: 0.1 + rng() * 0.08,
-              s: 0.1 + rng() * 0.06,
-              h: 0.18 + rng() * 0.12,
-            };
-          });
-        }, [seed, sp.traits?.mane]);
-
-        const maneMat = useMemo(() => {
-          const m = new THREE.MeshToonMaterial({
-            color: new THREE.Color("#6a3b1c"),
-            gradientMap: rampTex,
-          });
-          m.dithering = true;
-          return m;
-        }, [rampTex]);
-
-        useFrame((state) => {
-          const t = state.clock.getElapsedTime();
-          const blink = MU.clamp(blinkRef?.current ?? 0, 0, 1);
-          const sY = MU.lerp(1, 0.08, blink);
-          if (leftEyeRef.current) leftEyeRef.current.scale.y = sY;
-          if (rightEyeRef.current) rightEyeRef.current.scale.y = sY;
-
-          const drift = Math.sin(t * 0.7 + (seed ?? 0)) * 0.012;
-          if (leftEyeRef.current)
-            leftEyeRef.current.position.x = -0.18 * S + drift;
-          if (rightEyeRef.current)
-            rightEyeRef.current.position.x = 0.18 * S + drift;
-        });
-
-        const bow = bowRef?.current ?? 0;
-        const flap = wingPhaseRef?.current ?? 0;
-
-        return (
-          <group>
-            {/* Body */}
-            <group>
-              <mesh material={bodyMat} position={[0, 0.12 * S, 0]}>
-                <boxGeometry args={[bodyW, bodyH, bodyL]} />
-              </mesh>
-
-              {/* Lion heavy chest */}
-              {sp.traits?.heavyShoulders && (
-                <mesh material={bodyMat} position={[0, 0.18 * S, bodyL * 0.22]}>
-                  <boxGeometry
-                    args={[bodyW * 1.06, bodyH * 1.02, bodyL * 0.7]}
-                  />
-                </mesh>
-              )}
-
-              {/* Belly patch */}
-              <mesh material={accentMat} position={[0, 0.02 * S, bodyL * 0.14]}>
-                <boxGeometry
-                  args={[bodyW * 0.55, bodyH * 0.28, bodyL * 0.32]}
-                />
-              </mesh>
-            </group>
-
-            {/* Head */}
-            <group position={[0, 0.2 * S, sp.head.z * S]}>
-              <mesh material={bodyMat} position={[0, sp.head.y * S, 0]}>
-                <sphereGeometry args={[headR, 12, 10]} />
-              </mesh>
-
-              {/* Snout */}
-              <mesh
-                material={accentMat}
-                position={[0, sp.head.y * S - 0.08 * S, headR * 0.85]}
-              >
-                <sphereGeometry args={[headR * 0.52, 10, 9]} />
-              </mesh>
-
-              {/* Nose */}
-              <mesh
-                material={darkMat}
-                position={[0, sp.head.y * S - 0.08 * S, headR * 1.35]}
-              >
-                <sphereGeometry args={[headR * 0.14, 9, 8]} />
-              </mesh>
-
-              {/* Eyes */}
-              <mesh
-                ref={leftEyeRef}
-                material={eyeMat}
-                position={[-0.18 * S, sp.head.y * S + 0.1 * S, headR * 0.8]}
-              >
-                <sphereGeometry args={[headR * 0.12, 9, 8]} />
-              </mesh>
-              <mesh
-                ref={rightEyeRef}
-                material={eyeMat}
-                position={[0.18 * S, sp.head.y * S + 0.1 * S, headR * 0.8]}
-              >
-                <sphereGeometry args={[headR * 0.12, 9, 8]} />
-              </mesh>
-
-              {/* Ears */}
-              {sp.ears.type === "pointy" && (
-                <>
-                  <mesh
-                    material={bodyMat}
-                    position={[-0.22 * S, sp.head.y * S + 0.32 * S, 0]}
-                    rotation={[0.08, 0, 0.5]}
-                  >
-                    <coneGeometry
-                      args={[sp.ears.size * S, sp.ears.size * 1.8 * S, 8, 1]}
-                    />
-                  </mesh>
-                  <mesh
-                    material={bodyMat}
-                    position={[0.22 * S, sp.head.y * S + 0.32 * S, 0]}
-                    rotation={[0.08, 0, -0.5]}
-                  >
-                    <coneGeometry
-                      args={[sp.ears.size * S, sp.ears.size * 1.8 * S, 8, 1]}
-                    />
-                  </mesh>
-                </>
-              )}
-
-              {sp.ears.type === "flop" && (
-                <>
-                  <mesh
-                    material={bodyMat}
-                    position={[-0.27 * S, sp.head.y * S + 0.18 * S, 0.06 * S]}
-                    rotation={[0.25, 0.0, 0.9]}
-                  >
-                    <sphereGeometry args={[sp.ears.size * S, 10, 9]} />
-                  </mesh>
-                  <mesh
-                    material={bodyMat}
-                    position={[0.27 * S, sp.head.y * S + 0.18 * S, 0.06 * S]}
-                    rotation={[0.25, 0.0, -0.9]}
-                  >
-                    <sphereGeometry args={[sp.ears.size * S, 10, 9]} />
-                  </mesh>
-                </>
-              )}
-
-              {sp.ears.type === "long" && (
-                <>
-                  <mesh
-                    material={bodyMat}
-                    position={[-0.16 * S, sp.head.y * S + 0.55 * S, -0.05 * S]}
-                    rotation={[-0.15, 0, 0.2]}
-                  >
-                    <capsuleGeometry
-                      args={[0.06 * S, sp.ears.size * 1.6 * S, 6, 10]}
-                    />
-                  </mesh>
-                  <mesh
-                    material={bodyMat}
-                    position={[0.16 * S, sp.head.y * S + 0.55 * S, -0.05 * S]}
-                    rotation={[-0.15, 0, -0.2]}
-                  >
-                    <capsuleGeometry
-                      args={[0.06 * S, sp.ears.size * 1.6 * S, 6, 10]}
-                    />
-                  </mesh>
-                </>
-              )}
-
-              {sp.ears.type === "horn" && (
-                <>
-                  <mesh
-                    material={accentMat}
-                    position={[-0.18 * S, sp.head.y * S + 0.45 * S, 0.04 * S]}
-                    rotation={[-0.2, 0.0, 0.18]}
-                  >
-                    <coneGeometry
-                      args={[
-                        sp.ears.size * 0.55 * S,
-                        sp.ears.size * 1.8 * S,
-                        7,
-                        1,
-                      ]}
-                    />
-                  </mesh>
-                  <mesh
-                    material={accentMat}
-                    position={[0.18 * S, sp.head.y * S + 0.45 * S, 0.04 * S]}
-                    rotation={[-0.2, 0.0, -0.18]}
-                  >
-                    <coneGeometry
-                      args={[
-                        sp.ears.size * 0.55 * S,
-                        sp.ears.size * 1.8 * S,
-                        7,
-                        1,
-                      ]}
-                    />
-                  </mesh>
-                </>
-              )}
-
-              {sp.ears.type === "small" && (
-                <>
-                  <mesh
-                    material={bodyMat}
-                    position={[-0.16 * S, sp.head.y * S + 0.22 * S, 0]}
-                    rotation={[0.2, 0, 0]}
-                  >
-                    <sphereGeometry args={[sp.ears.size * 0.7 * S, 9, 8]} />
-                  </mesh>
-                  <mesh
-                    material={bodyMat}
-                    position={[0.16 * S, sp.head.y * S + 0.22 * S, 0]}
-                    rotation={[0.2, 0, 0]}
-                  >
-                    <sphereGeometry args={[sp.ears.size * 0.7 * S, 9, 8]} />
-                  </mesh>
-                </>
-              )}
-
-              {/* Mane */}
-              {mane && (
-                <group position={[0, sp.head.y * S - 0.04 * S, -0.08 * S]}>
-                  {mane.map((m) => (
-                    <mesh
-                      key={"m" + m.i}
-                      material={maneMat}
-                      position={[
-                        Math.cos(m.a) * m.r * S,
-                        m.y * S,
-                        Math.sin(m.a) * m.r * S,
-                      ]}
-                      rotation={[0.0, m.a, 0.0]}
-                    >
-                      <coneGeometry args={[m.s * S, m.h * S, 7, 1]} />
-                    </mesh>
-                  ))}
-                </group>
-              )}
-            </group>
-
-            {/* Tail */}
-            <group position={[0, 0.12 * S, -bodyL * 0.58]}>
-              {sp.tail.type === "pom" ? (
-                <mesh material={accentMat} position={[0, 0.08 * S, -0.12 * S]}>
-                  <sphereGeometry args={[0.13 * S, 10, 9]} />
-                </mesh>
-              ) : (
-                <mesh
-                  material={bodyMat}
-                  position={[0, 0.18 * S, -0.38 * S]}
-                  rotation={[0.9, 0, 0]}
-                >
-                  <capsuleGeometry args={[0.07 * S, sp.tail.len * S, 6, 10]} />
-                </mesh>
-              )}
-            </group>
-
-            {/* Dragon wings */}
-            {sp.traits?.wings && (
-              <group position={[0, 0.36 * S, -0.1 * S]}>
-                <mesh
-                  material={bodyMat}
-                  position={[-0.78 * S, 0.1 * S, 0]}
-                  rotation={[0, 0, 0.35 + flap * 0.95]}
-                >
-                  <boxGeometry args={[1.45 * S, 0.1 * S, 0.85 * S]} />
-                </mesh>
-                <mesh
-                  material={bodyMat}
-                  position={[0.78 * S, 0.1 * S, 0]}
-                  rotation={[0, 0, -0.35 - flap * 0.95]}
-                >
-                  <boxGeometry args={[1.45 * S, 0.1 * S, 0.85 * S]} />
-                </mesh>
-              </group>
-            )}
-
-            {/* Dog play-bow chest */}
-            {sp.key === "dog" && (
-              <group
-                position={[0, 0.12 * S, bodyL * 0.25]}
-                rotation={[bow * 0.35, 0, 0]}
-              >
-                <mesh material={bodyMat}>
-                  <boxGeometry
-                    args={[bodyW * 1.02, bodyH * 0.88, bodyL * 0.42]}
-                  />
-                </mesh>
-              </group>
-            )}
-          </group>
-        );
-      }
-
-      // -----------------------------
-      // Pet (AI + locomotion)
-      // -----------------------------
-
-      function Pet({
-        pet,
-        rampTex,
-        rugs,
-        registerHit,
-        unregisterHit,
-        registerAPI,
-        unregisterAPI,
-        playerRef,
-        heldRef,
-        heartAPIRef,
-        breathAPIRef,
-        allPosMapRef,
-      }) {
-        const sp = SPECIES_CONFIG[pet.speciesKey];
-        const groupRef = useRef();
-        const hitRef = useRef();
-
-        const wingPhaseRef = useRef(0);
-        const bowRef = useRef(0);
-        const blinkRef = useRef(0);
-
-        const pos = useRef(
-          new THREE.Vector3(pet.position[0], 0, pet.position[1])
-        );
-        const vel = useRef(new THREE.Vector3());
-        const yaw = useRef(pet.yaw ?? Math.random() * Math.PI * 2);
-        const lastYaw = useRef(yaw.current);
-
-        const brain = useRef({
-          mode: AI.ROAM,
-          t: randRange(0.6, 1.4),
-          seed: pet.seed ?? Math.random() * 10,
-          target: new THREE.Vector3(pet.position[0], 0, pet.position[1]),
-          restSpot: new THREE.Vector3(),
-          lastInteractAt: performance.now() * 0.001,
-          socialUntil: 0,
-          socialPartner: null,
-          hop: { phase: 0, t: 0 },
-          bowT: 0,
-          breathT: randRange(5, 10),
-        });
-
-        const legFL = useRef();
-        const legFR = useRef();
-        const legBL = useRef();
-        const legBR = useRef();
-
-        const legMat = useMemo(() => {
-          const m = new THREE.MeshToonMaterial({
-            color: new THREE.Color(pet.color).multiplyScalar(0.95),
-            gradientMap: rampTex,
-          });
-          m.dithering = true;
-          return m;
-        }, [pet.color, rampTex]);
-
-        useEffect(() => {
-          if (hitRef.current) registerHit(hitRef.current, pet.id);
-          return () => {
-            if (hitRef.current) unregisterHit(hitRef.current);
-          };
-        }, [pet.id, registerHit, unregisterHit]);
-
-        useEffect(() => {
-          registerAPI(pet.id, {
-            getPose: () => ({
-              x: pos.current.x,
-              y: pos.current.y,
-              z: pos.current.z,
-              yaw: yaw.current,
-              mode: brain.current.mode,
-              speciesKey: pet.speciesKey,
-            }),
-            pet: () => {
-              brain.current.lastInteractAt = performance.now() * 0.001;
-              heartAPIRef.current?.emit?.(
-                pos.current.clone(),
-                sp.key === "lion" ? 3 : sp.key === "dragon" ? 4 : 2
-              );
-              vel.current.y += 0.012;
-            },
-            setSocial: ({ partnerId, until, partnerPos }) => {
-              brain.current.mode = AI.SOCIAL;
-              brain.current.socialPartner = partnerId;
-              brain.current.socialUntil = until;
-              if (partnerPos)
-                brain.current.target.set(partnerPos.x, 0, partnerPos.z);
-            },
-            forceFlee: (secs = 1.0) => {
-              brain.current.mode = AI.FLEE;
-              brain.current.t = secs;
-            },
-          });
-          return () => unregisterAPI(pet.id);
-        }, [pet.id, pet.speciesKey, registerAPI, unregisterAPI, heartAPIRef]);
-
-        function pickRoamTarget() {
-          const B = brain.current;
-          const r = WORLD.radius * 0.75;
-
-          if (sp.traits?.climbsRugs && Math.random() < 0.45) {
-            const rug = pick(rugs);
-            B.target.set(
-              rug.x + randRange(-rug.w * 0.25, rug.w * 0.25),
-              0,
-              rug.z + randRange(-rug.d * 0.25, rug.d * 0.25)
-            );
-            B.t = randRange(1.2, 2.4);
-            return;
-          }
-
-          B.target.set(randRange(-r, r), 0, randRange(-r, r));
-          B.t = randRange(1.2, 2.9);
+      (async function boot() {
+        if (!hasWebGL()) {
+          showError(
+            "WebGL is not available in this browser/context. Try opening in Safari/Chrome directly (not in-app browser)."
+          );
+          return;
         }
 
-        useFrame((state, dt) => {
-          const t = state.clock.getElapsedTime();
-          const B = brain.current;
-          const player = playerRef.current;
+        // Three.js + OrbitControls (CDN fallbacks)
+        await loadAny([
+          "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+        ]);
 
-          allPosMapRef.current.set(pet.id, {
-            x: pos.current.x,
-            y: pos.current.y,
-            z: pos.current.z,
-            speciesKey: pet.speciesKey,
-          });
+        await loadAny([
+          "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js",
+          "https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js",
+        ]);
 
-          const held = heldRef.current.id === pet.id;
+        if (!window.THREE) {
+          showError("THREE failed to load.");
+          return;
+        }
 
-          // blink
-          {
-            const rate = sp.key === "cat" ? 0.17 : 0.28;
-            const wave = 0.5 + 0.5 * Math.sin(t * rate + B.seed);
-            const pulse = smoothstep01(
-              (wave - (sp.key === "cat" ? 0.965 : 0.985)) /
-                (1.0 - (sp.key === "cat" ? 0.965 : 0.985))
-            );
-            const target = held
-              ? 0
-              : MU.clamp(pulse * (sp.traits?.slowBlink ? 1.0 : 0.85), 0, 1);
-            blinkRef.current = MU.lerp(blinkRef.current, target, 0.18);
-          }
+        try {
+          startSpacePets();
+          bootEl.style.display = "none";
+        } catch (err) {
+          showError(err);
+        }
+      })();
 
-          // wings
-          if (sp.traits?.wings)
-            wingPhaseRef.current = Math.sin(t * 3.2 + B.seed) * 0.55;
-          else wingPhaseRef.current = MU.lerp(wingPhaseRef.current, 0, 0.08);
+      // ======== App code (vanilla Three, optimized for mobile) ========
+      function startSpacePets() {
+        // --- Simple mobile detection
+        const isMobile =
+          matchMedia("(pointer: coarse)").matches ||
+          Math.min(window.innerWidth, window.innerHeight) < 700;
 
-          // dog bow
-          if (sp.traits?.playBow && !held) {
-            const dx = player.pos.x - pos.current.x;
-            const dz = player.pos.z - pos.current.z;
-            const d2 = dx * dx + dz * dz;
-            if (d2 < 4.6 * 4.6 && Math.random() < 0.01)
-              B.bowT = 0.65 + Math.random() * 0.35;
-            if (B.bowT > 0) {
-              B.bowT -= dt;
-              bowRef.current = MU.lerp(bowRef.current, 1.0, 0.18);
-            } else {
-              bowRef.current = MU.lerp(bowRef.current, 0.0, 0.1);
-            }
-          } else {
-            bowRef.current = MU.lerp(bowRef.current, 0.0, 0.08);
-          }
+        const perfBadge = document.getElementById("perfBadge");
+        perfBadge.textContent = isMobile ? "MOBILE LITE" : "DESKTOP";
 
-          // dragon breath
-          if (sp.traits?.breath && !held) {
-            B.breathT -= dt;
-            if (B.breathT <= 0) {
-              B.breathT = randRange(6.5, 12.0);
-              const forward = new THREE.Vector3(
-                Math.sin(yaw.current),
-                0,
-                Math.cos(yaw.current)
-              ).normalize();
-              const mouth = pos.current.clone();
-              const gY = groundHeightAt(pos.current.x, pos.current.z, rugs);
-              const hoverY = gY + sp.hoverY + Math.sin(t * 1.1 + B.seed) * 0.12;
-              mouth.y = hoverY + 0.95;
-              mouth.addScaledVector(forward, sp.body.l * sp.scale * 0.55);
-              breathAPIRef.current?.emit?.(
-                mouth,
-                forward,
-                22 + ((Math.random() * 10) | 0)
-              );
-            }
-          }
+        const toastEl = document.getElementById("toast");
+        let toastT = 0;
+        function toast(msg) {
+          toastEl.textContent = msg;
+          toastEl.classList.add("show");
+          clearTimeout(toastT);
+          toastT = setTimeout(() => toastEl.classList.remove("show"), 1100);
+        }
 
-          // held
-          if (held) {
-            B.mode = AI.HELD;
-            const tgt = heldRef.current.target;
-            const k = 1 - Math.pow(1 - 0.16, dt * 60);
-            pos.current.x = MU.lerp(pos.current.x, tgt.x, k);
-            pos.current.z = MU.lerp(pos.current.z, tgt.z, k);
-            pos.current.y = MU.lerp(pos.current.y, tgt.y, k);
+        // ============ CONFIG ============
+        const GROUND_Y = 0;
+        let holdHeight = 1.5;
+        let heldPet = null;
+        let hoveredPet = null;
+        const pets = [];
+        const MAX_PETS = isMobile ? 16 : 36;
+        const WORLD_BOUNDS = 16;
 
-            // face camera
-            const camDir = new THREE.Vector3();
-            state.camera.getWorldDirection(camDir);
-            const targetYaw = Math.atan2(camDir.x, camDir.z) + Math.PI;
-            yaw.current = dampAngle(yaw.current, targetYaw, 0.18);
+        const petNames = [
+          "Nova",
+          "Mochi",
+          "Cosmo",
+          "Luna",
+          "Pip",
+          "Byte",
+          "Orion",
+          "Sprout",
+          "Echo",
+          "Miso",
+          "Comet",
+          "Ziggy",
+          "Bean",
+          "Nori",
+          "Pebble",
+        ];
 
-            const w = Math.sin(t * 10.5 + B.seed) * 0.65;
-            if (legFL.current) legFL.current.rotation.x = w;
-            if (legFR.current) legFR.current.rotation.x = -w;
-            if (legBL.current) legBL.current.rotation.x = -w;
-            if (legBR.current) legBR.current.rotation.x = w;
+        const SPECIES = {
+          cat: {
+            key: "cat",
+            label: "Cat",
+            emoji: "🐱",
+            earType: "pointy",
+            snoutScale: [0.9, 0.7, 0.9],
+            snoutPos: [0, -0.08, 0.36],
+            tailType: "long",
+            whiskers: true,
+            roam: { min: 1.0, max: 2.8 },
+            rarity: "common",
+          },
+          dog: {
+            key: "dog",
+            label: "Dog",
+            emoji: "🐕",
+            earType: "floppy",
+            snoutScale: [1.15, 0.85, 1.2],
+            snoutPos: [0, -0.09, 0.38],
+            tailType: "short",
+            whiskers: false,
+            roam: { min: 0.9, max: 2.2 },
+            rarity: "common",
+          },
+          bunny: {
+            key: "bunny",
+            label: "Bunny",
+            emoji: "🐰",
+            earType: "long",
+            snoutScale: [0.8, 0.6, 0.8],
+            snoutPos: [0, -0.09, 0.35],
+            tailType: "pom",
+            whiskers: false,
+            roam: { min: 0.8, max: 2.0 },
+            rarity: "common",
+          },
+          tiger: {
+            key: "tiger",
+            label: "Tiger",
+            emoji: "🐯",
+            earType: "pointy",
+            snoutScale: [1.2, 0.9, 1.1],
+            snoutPos: [0, -0.07, 0.38],
+            tailType: "long",
+            whiskers: true,
+            roam: { min: 1.2, max: 3.0 },
+            rarity: "rare",
+            stripes: true,
+            scale: 1.15,
+          },
+          wolf: {
+            key: "wolf",
+            label: "Wolf",
+            emoji: "🐺",
+            earType: "pointy",
+            snoutScale: [1.3, 0.95, 1.3],
+            snoutPos: [0, -0.08, 0.4],
+            tailType: "long",
+            whiskers: false,
+            roam: { min: 1.5, max: 3.5 },
+            rarity: "rare",
+            scale: 1.2,
+          },
+          dragon: {
+            key: "dragon",
+            label: "Dragon",
+            emoji: "🐲",
+            earType: "pointy",
+            snoutScale: [1.4, 1.0, 1.5],
+            snoutPos: [0, -0.05, 0.42],
+            tailType: "long",
+            whiskers: false,
+            roam: { min: 2.0, max: 4.0 },
+            rarity: "legendary",
+            horns: true,
+            wings: true,
+            scale: 1.35,
+          },
+        };
 
-            if (groupRef.current) {
-              groupRef.current.position.set(
-                pos.current.x,
-                pos.current.y,
-                pos.current.z
-              );
-              groupRef.current.rotation.set(
-                Math.sin(t * 5.2 + B.seed) * 0.1,
-                yaw.current,
-                Math.cos(t * 4.7 + B.seed) * 0.05
-              );
-              groupRef.current.scale.set(1, 1, 1);
-            }
-            return;
-          }
-
-          // release transition
-          if (B.mode === AI.HELD) {
-            B.mode = AI.ROAM;
-            B.t = randRange(0.8, 1.4);
-          }
-
-          // social expiry
-          if (B.mode === AI.SOCIAL && t > B.socialUntil) {
-            B.mode = AI.ROAM;
-            B.socialPartner = null;
-            B.t = randRange(0.6, 1.4);
-          }
-
-          // sleep
-          const sinceInteract =
-            performance.now() * 0.001 - (B.lastInteractAt || 0);
-          if (B.mode !== AI.SLEEP && B.mode !== AI.SOCIAL) {
-            const baseChance =
-              sp.key === "cat"
-                ? 0.03
-                : sp.key === "lion"
-                ? 0.02
-                : sp.key === "rabbit"
-                ? 0.015
-                : 0.01;
-            if (sinceInteract > 18 && Math.random() < baseChance * dt) {
-              B.mode = AI.SLEEP;
-              B.t = randRange(4.0, 8.0);
-              if (sp.traits?.climbsRugs) {
-                const rug = pick(rugs);
-                B.restSpot.set(rug.x, 0, rug.z);
-              } else {
-                B.restSpot.set(randRange(-6, 6), 0, randRange(-6, 6));
-              }
-            }
-          }
-
-          // player triggers
-          const dxp = player.pos.x - pos.current.x;
-          const dzp = player.pos.z - pos.current.z;
-          const dPlayer = Math.hypot(dxp, dzp);
-          const playerRunning = player.isSprinting && player.speed > 0.6;
-
-          if (
-            playerRunning &&
-            dPlayer < 5.0 &&
-            (sp.traits?.timid || sp.key === "cat")
-          ) {
-            B.mode = AI.FLEE;
-            B.t = 0.85;
-          }
-
-          if (
-            sp.traits?.chasesPlayer &&
-            dPlayer < 10 &&
-            B.mode !== AI.SLEEP &&
-            B.mode !== AI.SOCIAL
-          ) {
-            B.mode = AI.ROAM;
-            B.target.set(player.pos.x, 0, player.pos.z);
-          }
-
-          // rabbit burst hop
-          if (
-            sp.traits?.burstHop &&
-            (B.mode === AI.ROAM || B.mode === AI.FLEE)
-          ) {
-            B.hop.t -= dt;
-            if (B.hop.t <= 0) {
-              B.hop.phase = (B.hop.phase + 1) % 2;
-              B.hop.t =
-                B.hop.phase === 0
-                  ? randRange(0.22, 0.38)
-                  : randRange(0.18, 0.35);
-            }
-          }
-
-          // timers
-          B.t -= dt;
-
-          if (B.mode === AI.ROAM && B.t <= 0) {
-            if (sp.traits?.aloof && Math.random() < 0.28) {
-              B.mode = AI.IDLE;
-              B.t = randRange(0.8, 1.8);
-            } else {
-              pickRoamTarget();
-            }
-          }
-
-          if (B.mode === AI.IDLE && B.t <= 0) {
-            B.mode = AI.ROAM;
-            pickRoamTarget();
-          }
-
-          if (B.mode === AI.FLEE && B.t <= 0) {
-            B.mode = AI.ROAM;
-            pickRoamTarget();
-          }
-
-          if (B.mode === AI.SLEEP) {
-            const to = new THREE.Vector3(
-              B.restSpot.x - pos.current.x,
-              0,
-              B.restSpot.z - pos.current.z
-            );
-            const d = to.length();
-            if (d > 0.35) {
-              to.multiplyScalar(1 / (d || 1));
-              vel.current.x += to.x * dt * 0.9;
-              vel.current.z += to.z * dt * 0.9;
-              const targetYaw = Math.atan2(vel.current.x, vel.current.z);
-              if (isFinite(targetYaw))
-                yaw.current = dampAngle(yaw.current, targetYaw, 0.08);
-            } else {
-              vel.current.multiplyScalar(Math.pow(0.72, dt * 60));
-              if (B.t <= 0) {
-                B.mode = AI.ROAM;
-                pickRoamTarget();
-                B.lastInteractAt = performance.now() * 0.001;
-              }
-            }
-          }
-
-          // separation
-          const sep = new THREE.Vector3();
-          for (const [id, p2] of allPosMapRef.current) {
-            if (id === pet.id) continue;
-            const ox = pos.current.x - p2.x;
-            const oz = pos.current.z - p2.z;
-            const d2 = ox * ox + oz * oz;
-            const minD = sp.key === "lion" ? 1.8 : 1.25;
-            if (d2 > 0.0001 && d2 < minD * minD) {
-              const d = Math.sqrt(d2);
-              const push = (1.0 - d / minD) * 0.018;
-              sep.x += (ox / d) * push;
-              sep.z += (oz / d) * push;
-            }
-          }
-          if (dPlayer < 1.3) {
-            const inv = 1 / Math.max(0.001, dPlayer);
-            sep.x += -dxp * inv * 0.022;
-            sep.z += -dzp * inv * 0.022;
-          }
-
-          // desired
-          let desiredDir = new THREE.Vector3(0, 0, 0);
-          let desiredSpeed = 0;
-
-          if (
-            B.mode === AI.IDLE ||
-            B.mode === AI.SOCIAL ||
-            B.mode === AI.SLEEP
-          ) {
-            desiredSpeed = 0;
-          } else if (B.mode === AI.FLEE) {
-            desiredDir.set(-dxp, 0, -dzp).normalize();
-            desiredSpeed = sp.gait.speed * 1.25;
-          } else {
-            desiredDir.set(
-              B.target.x - pos.current.x,
-              0,
-              B.target.z - pos.current.z
-            );
-            const dl = desiredDir.length();
-            if (dl > 0.2) desiredDir.multiplyScalar(1 / dl);
-            else desiredDir.set(0, 0, 0);
-            desiredSpeed = sp.gait.speed;
-            if (sp.traits?.burstHop && B.hop.phase === 1) desiredSpeed = 0;
-          }
-
-          desiredDir.addScaledVector(sep, 1.35);
-          const dirL = desiredDir.length();
-          if (dirL > 0.001) desiredDir.multiplyScalar(1 / dirL);
-
-          const accel = 0.03 * desiredSpeed;
-          vel.current.x += desiredDir.x * accel * dt * 60;
-          vel.current.z += desiredDir.z * accel * dt * 60;
-
-          const damp =
-            B.mode === AI.IDLE || B.mode === AI.SOCIAL || B.mode === AI.SLEEP
-              ? 0.8
-              : 0.88;
-          vel.current.x *= Math.pow(damp, dt * 60);
-          vel.current.z *= Math.pow(damp, dt * 60);
-
-          const vLen = Math.hypot(vel.current.x, vel.current.z);
-          const maxV = desiredSpeed * 0.085;
-          if (vLen > maxV) {
-            const s = maxV / (vLen || 1);
-            vel.current.x *= s;
-            vel.current.z *= s;
-          }
-
-          pos.current.x += vel.current.x * dt * 60;
-          pos.current.z += vel.current.z * dt * 60;
-
-          // bounds
-          const r = Math.hypot(pos.current.x, pos.current.z);
-          if (r > WORLD.radius) {
-            const s = WORLD.radius / (r || 1);
-            pos.current.x *= s;
-            pos.current.z *= s;
-            vel.current.x *= 0.65;
-            vel.current.z *= 0.65;
-          }
-
-          // face
-          if (vLen > 0.004) {
-            const targetYaw = Math.atan2(vel.current.x, vel.current.z);
-            yaw.current = dampAngle(yaw.current, targetYaw, 0.1);
-          }
-
-          if (B.mode === AI.SOCIAL) {
-            const fx = B.target.x - pos.current.x;
-            const fz = B.target.z - pos.current.z;
-            const targetYaw = Math.atan2(fx, fz);
-            if (isFinite(targetYaw))
-              yaw.current = dampAngle(yaw.current, targetYaw, 0.14);
-          }
-
-          // vertical
-          const gY = groundHeightAt(pos.current.x, pos.current.z, rugs);
-          const desiredBaseY = gY + sp.baseY;
-          const hoverY = sp.traits?.hover
-            ? gY + sp.hoverY + Math.sin(t * 1.1 + B.seed) * 0.12
-            : desiredBaseY;
-          pos.current.y = sp.traits?.hover
-            ? hoverY
-            : MU.lerp(pos.current.y, desiredBaseY, 1 - Math.pow(0.82, dt * 60));
-
-          // gait legs
-          const speedNorm = MU.clamp(vLen / (maxV || 0.0001), 0, 1);
-          const phase = t * sp.gait.stepFreq * (0.85 + speedNorm * 0.55);
-          const hopBoost = sp.traits?.burstHop
-            ? B.hop.phase === 0
-              ? 1.35
-              : 0.35
-            : 1.0;
-          const swingA = Math.sin(phase) * sp.gait.amp * speedNorm * hopBoost;
-          const swingB =
-            Math.sin(phase + Math.PI) * sp.gait.amp * speedNorm * hopBoost;
-          if (legFL.current) legFL.current.rotation.x = swingA;
-          if (legBR.current) legBR.current.rotation.x = swingA;
-          if (legFR.current) legFR.current.rotation.x = swingB;
-          if (legBL.current) legBL.current.rotation.x = swingB;
-
-          // body bob/lean/bank
-          const bob =
-            Math.sin(phase * 0.95 + B.seed) *
-            sp.gait.bob *
-            speedNorm *
-            hopBoost;
-          const lean = -sp.gait.lean * speedNorm;
-          const yawDelta = yaw.current - lastYaw.current;
-          lastYaw.current = yaw.current;
-          const bank = MU.clamp(yawDelta * 8.0, -1, 1) * sp.gait.bank;
-
-          const sleepPose = B.mode === AI.SLEEP ? 1 : 0;
-          const sleepSquash = MU.lerp(1, 0.78, sleepPose);
-
-          if (groupRef.current) {
-            groupRef.current.position.set(
-              pos.current.x,
-              pos.current.y + bob,
-              pos.current.z
-            );
-            groupRef.current.rotation.set(
-              MU.lerp(lean, 0, sleepPose) +
-                (sp.key === "dragon" ? Math.sin(t * 0.6 + B.seed) * 0.05 : 0),
-              yaw.current,
-              bank
-            );
-            groupRef.current.scale.set(1.0, sleepSquash, 1.0);
-          }
-        });
-
-        const hitMat = useMemo(
-          () =>
-            new THREE.MeshBasicMaterial({
-              transparent: true,
-              opacity: 0.0,
-              depthWrite: false,
-            }),
-          []
+        // Helper to get species array for random selection
+        const SPECIES_LIST = Object.values(SPECIES);
+        const COMMON_SPECIES = SPECIES_LIST.filter(
+          (s) => s.rarity === "common"
         );
-        const S = sp.scale;
-        const hitSize =
-          sp.key === "lion" ? 2.6 * S : sp.key === "dragon" ? 2.9 * S : 2.2 * S;
 
-        return (
-          <group ref={groupRef}>
-            <group>
-              <SpeciesModel
-                speciesKey={pet.speciesKey}
-                rampTex={rampTex}
-                colorHex={pet.color}
-                seed={pet.seed}
-                wingPhaseRef={wingPhaseRef}
-                bowRef={bowRef}
-                blinkRef={blinkRef}
-              />
+        // ============ UI refs (define early to avoid TDZ problems) ============
+        const addBtn = document.getElementById("addBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const heightSlider = document.getElementById("heightSlider");
+        const heightVal = document.getElementById("heightVal");
+        const petNameEl = document.getElementById("petName");
 
-              {/* Legs */}
-              <group position={[0, 0.16 * sp.scale, 0]}>
-                <group position={[-0.35 * sp.scale, 0.0, 0.45 * sp.scale]}>
-                  <Leg
-                    ref={legFL}
-                    material={legMat}
-                    len={0.46 * sp.scale}
-                    radius={0.075 * sp.scale}
-                  />
-                </group>
-                <group position={[0.35 * sp.scale, 0.0, 0.45 * sp.scale]}>
-                  <Leg
-                    ref={legFR}
-                    material={legMat}
-                    len={0.46 * sp.scale}
-                    radius={0.075 * sp.scale}
-                  />
-                </group>
-                <group position={[-0.35 * sp.scale, 0.0, -0.45 * sp.scale]}>
-                  <Leg
-                    ref={legBL}
-                    material={legMat}
-                    len={0.46 * sp.scale}
-                    radius={0.075 * sp.scale}
-                  />
-                </group>
-                <group position={[0.35 * sp.scale, 0.0, -0.45 * sp.scale]}>
-                  <Leg
-                    ref={legBR}
-                    material={legMat}
-                    len={0.46 * sp.scale}
-                    radius={0.075 * sp.scale}
-                  />
-                </group>
-              </group>
-            </group>
+        // ============ THREE SETUP ============
+        const container = document.getElementById("app");
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x050510, 12, 50);
 
-            {/* Hitbox for center-ray interaction */}
-            <mesh ref={hitRef} material={hitMat}>
-              <boxGeometry args={[hitSize, hitSize * 0.72, hitSize]} />
-            </mesh>
-          </group>
+        const camera = new THREE.PerspectiveCamera(
+          55,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          160
         );
-      }
+        camera.position.set(0, 5, 12);
 
-      // -----------------------------
-      // Pet System (HUD + registry + interaction)
-      // -----------------------------
-
-      function PetSystem({ rampTex, rugs, groundObjectsRef }) {
-        const MAX = 18;
-
-        const heartAPIRef = useRef(null);
-        const breathAPIRef = useRef(null);
-
-        const playerRef = useRef({
-          pos: new THREE.Vector3(0, 1.7, 6.5),
-          isSprinting: false,
-          speed: 0,
-        });
-        const heldRef = useRef({
-          id: null,
-          target: new THREE.Vector3(0, 1.6, 0),
-        });
-
-        const hitObjectsRef = useRef([]);
-        const hitToIdRef = useRef(new Map());
-        const petAPIMapRef = useRef(new Map());
-        const allPosMapRef = useRef(new Map());
-
-        const [hudVisible, setHudVisible] = useState(false);
-
-        // Toggle HUD with H key and manage pointer lock
-        useEffect(() => {
-          const onKey = (e) => {
-            if (e.key === "h" || e.key === "H") {
-              setHudVisible((v) => {
-                const newVal = !v;
-                if (newVal) {
-                  // Opening menu - exit pointer lock
-                  if (document.pointerLockElement) {
-                    document.exitPointerLock();
-                  }
-                } else {
-                  // Closing menu - request pointer lock
-                  const canvas = document.querySelector("canvas");
-                  if (canvas) {
-                    canvas.requestPointerLock();
-                  }
-                }
-                return newVal;
-              });
-            }
-          };
-          window.addEventListener("keydown", onKey);
-          return () => window.removeEventListener("keydown", onKey);
-        }, []);
-
-        const [pets, setPets] = useState(() => {
-          const cozy = {
-            cat: [0xcdb4db, 0xbde0fe, 0xa2d2ff, 0xffc8dd],
-            rabbit: [0xd0f4de, 0xa9def9, 0xe4c1f9, 0xfcf6bd],
-          };
-
-          const mk = (speciesKey, x, z) => ({
-            id: uuidv4(),
-            speciesKey,
-            name:
-              (SPECIES_CONFIG[speciesKey]?.label ?? "Animal") +
-              " " +
-              ((Math.random() * 100) | 0),
-            color: pick(cozy[speciesKey] || cozy.cat),
-            position: [x, z],
-            yaw: Math.random() * Math.PI * 2,
-            seed: Math.random() * 10,
+        let renderer;
+        try {
+          renderer = new THREE.WebGLRenderer({
+            antialias: !isMobile,
+            alpha: true,
+            powerPreference: "high-performance",
           });
-
-          return [
-            mk("cat", -2.5, 0.5),
-            mk("rabbit", 2.3, -1.0),
-            mk("cat", 0.8, 2.6),
-            mk("rabbit", -3.5, -2.2),
-          ];
-        });
-
-        const counts = useMemo(() => {
-          const c = {};
-          for (const k of SPECIES_KEYS) c[k] = 0;
-          for (const p of pets) c[p.speciesKey] = (c[p.speciesKey] || 0) + 1;
-          return c;
-        }, [pets]);
-
-        const addPet = useCallback((speciesKey) => {
-          setPets((prev) => {
-            if (prev.length >= MAX) return prev;
-            const r = WORLD.radius * 0.55;
-            const x = randRange(-r, r);
-            const z = randRange(-r, r);
-            const palettes = {
-              cat: [0xcdb4db, 0xbde0fe, 0xa2d2ff, 0xffc8dd],
-              dog: [0xffd6a5, 0xfec89a, 0xfde4cf, 0xcdeac0],
-              lion: [0xf2b772, 0xe09f3e, 0xf6d365],
-              rabbit: [0xd0f4de, 0xa9def9, 0xe4c1f9, 0xfcf6bd],
-              dragon: [0x6ee7b7, 0x60a5fa, 0xa7f3d0, 0x93c5fd],
-            };
-            return prev.concat({
-              id: uuidv4(),
-              speciesKey,
-              name:
-                (SPECIES_CONFIG[speciesKey]?.label ?? "Animal") +
-                " " +
-                ((Math.random() * 100) | 0),
-              color: pick(palettes[speciesKey] || palettes.cat),
-              position: [x, z],
-              yaw: Math.random() * Math.PI * 2,
-              seed: Math.random() * 10,
-            });
-          });
-        }, []);
-
-        const registerHit = useCallback((obj, id) => {
-          if (!obj) return;
-          if (!hitObjectsRef.current.includes(obj))
-            hitObjectsRef.current.push(obj);
-          hitToIdRef.current.set(obj.uuid, id);
-        }, []);
-
-        const unregisterHit = useCallback((obj) => {
-          if (!obj) return;
-          const i = hitObjectsRef.current.indexOf(obj);
-          if (i >= 0) hitObjectsRef.current.splice(i, 1);
-          hitToIdRef.current.delete(obj.uuid);
-        }, []);
-
-        const registerAPI = useCallback((id, api) => {
-          petAPIMapRef.current.set(id, api);
-        }, []);
-
-        const unregisterAPI = useCallback((id) => {
-          petAPIMapRef.current.delete(id);
-        }, []);
-
-        // Social manager
-        const pairCooldownRef = useRef(new Map());
-        const SOCIAL_DISTANCE = 1.3;
-        const SOCIAL_COOLDOWN_S = 9;
-        const SOCIAL_DURATION = 1.2;
-
-        useFrame((state) => {
-          const t = state.clock.getElapsedTime();
-          const ids = Array.from(petAPIMapRef.current.keys());
-
-          for (let i = 0; i < ids.length; i++) {
-            for (let j = i + 1; j < ids.length; j++) {
-              const a = ids[i];
-              const b = ids[j];
-              if (heldRef.current.id === a || heldRef.current.id === b)
-                continue;
-
-              const pa = allPosMapRef.current.get(a);
-              const pb = allPosMapRef.current.get(b);
-              if (!pa || !pb) continue;
-
-              const dx = pa.x - pb.x;
-              const dz = pa.z - pb.z;
-              const d2 = dx * dx + dz * dz;
-              if (d2 > SOCIAL_DISTANCE * SOCIAL_DISTANCE) continue;
-
-              const key = a < b ? a + "|" + b : b + "|" + a;
-              const until = pairCooldownRef.current.get(key) || 0;
-              if (t < until) continue;
-              pairCooldownRef.current.set(key, t + SOCIAL_COOLDOWN_S);
-
-              const apiA = petAPIMapRef.current.get(a);
-              const apiB = petAPIMapRef.current.get(b);
-              if (!apiA || !apiB) continue;
-
-              const untilT = t + SOCIAL_DURATION;
-              apiA.setSocial?.({
-                partnerId: b,
-                until: untilT,
-                partnerPos: new THREE.Vector3(pb.x, 0, pb.z),
-              });
-              apiB.setSocial?.({
-                partnerId: a,
-                until: untilT,
-                partnerPos: new THREE.Vector3(pa.x, 0, pa.z),
-              });
-
-              heartAPIRef.current?.emit?.(
-                new THREE.Vector3(
-                  (pa.x + pb.x) * 0.5,
-                  0.6,
-                  (pa.z + pb.z) * 0.5
-                ),
-                2
-              );
-            }
-          }
-        });
-
-        function HUD() {
-          return (
-            <Html fullscreen style={{ pointerEvents: "none" }}>
-              <div
-                className="fixed top-3 left-3 z-[1200] pointer-events-auto"
-                style={{
-                  display: hudVisible ? "block" : "none",
-                  maxWidth: "min(560px,92vw)",
-                }}
-              >
-                <div className="glass px-4 py-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-lg font-bold leading-tight">
-                        Biome
-                      </div>
-                      <div className="text-xs text-white/70">
-                        No-build R3F • True-walk locomotion • Center-ray
-                        interact
-                      </div>
-                      <div className="mt-1 text-[11px] text-white/55">
-                        H: toggle HUD • Click canvas: lock pointer • WASD move •
-                        Shift sprint
-                      </div>
-                    </div>
-                    <div className="text-[11px] rounded-full px-2 py-1 border border-white/10 bg-white/10 text-white/80">
-                      {pets.length}/{MAX}
-                    </div>
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-5 gap-2 text-[11px]">
-                    {SPECIES_KEYS.map((k) => (
-                      <div
-                        key={k}
-                        className="rounded-xl border border-white/10 bg-white/5 px-2 py-2"
-                      >
-                        <div className="text-white/90 font-semibold flex items-center justify-between">
-                          <span>
-                            {SPECIES_CONFIG[k].icon} {SPECIES_CONFIG[k].label}
-                          </span>
-                          <span className="text-white/70">
-                            {counts[k] || 0}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <div className="text-[11px] text-white/60">Spawn</div>
-                    <div className="grid grid-cols-5 gap-2">
-                      {SPECIES_KEYS.map((k) => (
-                        <button
-                          key={k}
-                          className="px-2 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-base"
-                          onClick={() => addPet(k)}
-                          title={`Add ${SPECIES_CONFIG[k].label}`}
-                        >
-                          {SPECIES_CONFIG[k].icon}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-2 text-[11px] text-white/55 space-y-1">
-                    <div>
-                      <strong>Click</strong> on a pet (crosshair) = hearts
-                    </div>
-                    <div>
-                      <strong>Hold click</strong> (0.2s) = pick up (dangle) •
-                      release to drop
-                    </div>
-                    <div>
-                      <strong>Social</strong>: nose-boop greetings
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Html>
+        } catch (e) {
+          throw new Error(
+            "WebGLRenderer failed to initialize. " + (e?.message || e)
           );
         }
 
-        // -----------------------------
-        // True-Walk FPS Controller
-        // -----------------------------
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(
+          Math.min(window.devicePixelRatio || 1, isMobile ? 1.15 : 2)
+        );
 
-        function PlayerController() {
-          const { camera, gl } = useThree();
-          const [, getKeys] = useKeyboardControls();
+        // Shadows are expensive on phones
+        renderer.shadowMap.enabled = !isMobile;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setClearColor(0x050510, 1);
 
-          const raycaster = useMemo(() => new THREE.Raycaster(), []);
-          const downRayOrigin = useMemo(() => new THREE.Vector3(), []);
-          const downDir = useMemo(() => new THREE.Vector3(0, -1, 0), []);
+        // Ensure only one canvas exists if hot-reloaded
+        container.innerHTML = "";
+        container.appendChild(renderer.domElement);
 
-          const tmpForward = useMemo(() => new THREE.Vector3(), []);
-          const tmpRight = useMemo(() => new THREE.Vector3(), []);
-          const tmpMove = useMemo(() => new THREE.Vector3(), []);
+        // Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
+        controls.maxPolarAngle = Math.PI * 0.48;
+        controls.minDistance = 5;
+        controls.maxDistance = 32;
+        controls.enablePan = false;
 
-          const interactionRef = useRef({ down: false, t: 0, targetId: null });
+        // Desktop mouse mapping
+        controls.mouseButtons = {
+          LEFT: null,
+          MIDDLE: THREE.MOUSE.DOLLY,
+          RIGHT: THREE.MOUSE.ROTATE,
+        };
 
-          const raycastCenterPet = useCallback(() => {
-            if (!hitObjectsRef.current.length) return null;
-            raycaster.setFromCamera({ x: 0, y: 0 }, camera);
-            const hits = raycaster.intersectObjects(
-              hitObjectsRef.current,
-              false
-            );
-            if (!hits.length) return null;
-            const obj = hits[0].object;
-            return hitToIdRef.current.get(obj.uuid) || null;
-          }, [camera, raycaster]);
+        // Touch: one-finger rotate if not holding pet; two-finger dolly
+        controls.touches = {
+          ONE: THREE.TOUCH.ROTATE,
+          TWO: THREE.TOUCH.DOLLY_PAN,
+        };
 
-          const raycastGroundY = useCallback(() => {
-            const arr = groundObjectsRef?.current || [];
-            if (!arr.length) return 0;
-            downRayOrigin.set(
-              camera.position.x,
-              camera.position.y + 5.0,
-              camera.position.z
-            );
-            raycaster.ray.origin.copy(downRayOrigin);
-            raycaster.ray.direction.copy(downDir);
-            raycaster.far = 50;
-            const hits = raycaster.intersectObjects(arr, false);
-            if (hits.length) return hits[0].point.y;
-            return 0;
-          }, [camera, downDir, downRayOrigin, groundObjectsRef, raycaster]);
+        // ============ LIGHTING (Toony) ============
+        scene.add(new THREE.AmbientLight(0x8899ff, 0.7));
 
-          useEffect(() => {
-            const el = gl.domElement;
-            const onLockChange = () => {
-              const locked = document.pointerLockElement === el;
-              crosshairEl.classList.toggle("show", locked);
-            };
-            document.addEventListener("pointerlockchange", onLockChange);
-            onLockChange();
-            return () =>
-              document.removeEventListener("pointerlockchange", onLockChange);
-          }, [gl.domElement]);
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        mainLight.position.set(8, 12, 5);
+        mainLight.castShadow = !isMobile;
+        if (!isMobile) {
+          mainLight.shadow.mapSize.width = 1024;
+          mainLight.shadow.mapSize.height = 1024;
+          mainLight.shadow.camera.near = 1;
+          mainLight.shadow.camera.far = 40;
+          mainLight.shadow.camera.left = -16;
+          mainLight.shadow.camera.right = 16;
+          mainLight.shadow.camera.top = 16;
+          mainLight.shadow.camera.bottom = -16;
+        }
+        scene.add(mainLight);
 
-          useEffect(() => {
-            const el = gl.domElement;
+        const fillLight = new THREE.DirectionalLight(0x6688ff, 0.45);
+        fillLight.position.set(-6, 7, -8);
+        scene.add(fillLight);
 
-            const onDown = (e) => {
-              if (e.button !== 0) return;
-              if (document.pointerLockElement !== el) return;
-              interactionRef.current.down = true;
-              interactionRef.current.t = 0;
-              interactionRef.current.targetId = raycastCenterPet();
-            };
+        // ============ TOON GRADIENT ============
+        function createToonGradient() {
+          // 3-step luminance ramp (dark-mid-light)
+          const data = new Uint8Array([55, 140, 255]);
+          const tex = new THREE.DataTexture(data, 3, 1, THREE.LuminanceFormat);
+          tex.minFilter = THREE.NearestFilter;
+          tex.magFilter = THREE.NearestFilter;
+          tex.needsUpdate = true;
+          return tex;
+        }
+        const toonGradient = createToonGradient();
 
-            const onUp = (e) => {
-              if (e.button !== 0) return;
-              if (document.pointerLockElement !== el) return;
-
-              const wasHolding = !!heldRef.current.id;
-              const id = interactionRef.current.targetId;
-              const pressT = interactionRef.current.t;
-
-              if (wasHolding) {
-                heldRef.current.id = null;
-              } else {
-                if (id && pressT < 0.18) {
-                  petAPIMapRef.current.get(id)?.pet?.();
-                }
-              }
-
-              interactionRef.current.down = false;
-              interactionRef.current.t = 0;
-              interactionRef.current.targetId = null;
-            };
-
-            window.addEventListener("mousedown", onDown);
-            window.addEventListener("mouseup", onUp);
-            return () => {
-              window.removeEventListener("mousedown", onDown);
-              window.removeEventListener("mouseup", onUp);
-            };
-          }, [gl.domElement, raycastCenterPet]);
-
-          useFrame((state, dt) => {
-            const k = getKeys();
-            const sprint = !!k.sprint;
-
-            let mx = (k.right ? 1 : 0) - (k.left ? 1 : 0);
-            let mz = (k.backward ? 1 : 0) - (k.forward ? 1 : 0);
-
-            const moving = Math.abs(mx) + Math.abs(mz) > 0.01;
-            const len = Math.hypot(mx, mz) || 1;
-            mx /= len;
-            mz /= len;
-
-            const baseSpeed = 3.6;
-            const speed = sprint ? baseSpeed * 1.65 : baseSpeed;
-
-            camera.getWorldDirection(tmpForward);
-            tmpForward.y = 0;
-            tmpForward.normalize();
-            tmpRight.set(tmpForward.z, 0, -tmpForward.x);
-
-            tmpMove.set(0, 0, 0);
-            tmpMove.addScaledVector(tmpRight, mx);
-            tmpMove.addScaledVector(tmpForward, mz);
-            const dl = tmpMove.length();
-            if (dl > 0.001) tmpMove.multiplyScalar(1 / dl);
-
-            camera.position.x += tmpMove.x * speed * dt;
-            camera.position.z += tmpMove.z * speed * dt;
-
-            // keep within world
-            const rr = Math.hypot(camera.position.x, camera.position.z);
-            if (rr > WORLD.radius) {
-              const s = WORLD.radius / (rr || 1);
-              camera.position.x *= s;
-              camera.position.z *= s;
-            }
-
-            // ground snap via downward raycast
-            const groundY = raycastGroundY();
-            const targetY = groundY + 1.7;
-            const headBob = moving
-              ? Math.sin(state.clock.getElapsedTime() * (sprint ? 10.5 : 8.0)) *
-                (sprint ? 0.06 : 0.045)
-              : 0;
-            const finalY = targetY + headBob;
-            const kY = 1 - Math.pow(0.7, dt * 60);
-            camera.position.y = MU.lerp(camera.position.y, finalY, kY);
-
-            playerRef.current.pos.copy(camera.position);
-            playerRef.current.isSprinting = sprint;
-            playerRef.current.speed = moving ? speed : 0;
-
-            // Hold-to-pickup under crosshair
-            if (document.pointerLockElement === state.gl.domElement) {
-              if (interactionRef.current.down) {
-                interactionRef.current.t += dt;
-                if (!heldRef.current.id && interactionRef.current.t > 0.2) {
-                  const id = interactionRef.current.targetId;
-                  if (id) heldRef.current.id = id;
-                }
-              }
-
-              if (heldRef.current.id) {
-                camera.getWorldDirection(tmpForward);
-                tmpForward.y = 0;
-                tmpForward.normalize();
-                heldRef.current.target
-                  .copy(camera.position)
-                  .addScaledVector(tmpForward, 2.25);
-                const gy = groundHeightAt(
-                  heldRef.current.target.x,
-                  heldRef.current.target.z,
-                  rugs
-                );
-                heldRef.current.target.y = gy + 1.55;
-              }
-            }
+        // ============ STARS (light) ============
+        function createStars(count) {
+          const geometry = new THREE.BufferGeometry();
+          const vertices = new Float32Array(count * 3);
+          for (let i = 0; i < count; i++) {
+            const r = 65 + Math.random() * 30;
+            const theta = Math.random() * Math.PI * 2;
+            const u = Math.random() * 2 - 1;
+            const phi = Math.acos(u);
+            const idx = i * 3;
+            vertices[idx] = r * Math.sin(phi) * Math.cos(theta);
+            vertices[idx + 1] = r * Math.sin(phi) * Math.sin(theta);
+            vertices[idx + 2] = r * Math.cos(phi);
+          }
+          geometry.setAttribute(
+            "position",
+            new THREE.BufferAttribute(vertices, 3)
+          );
+          const material = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: isMobile ? 0.42 : 0.55,
+            sizeAttenuation: true,
+            transparent: true,
+            opacity: 0.9,
           });
+          const points = new THREE.Points(geometry, material);
+          points.frustumCulled = false;
+          return points;
+        }
+        const stars = createStars(isMobile ? 460 : 980);
+        scene.add(stars);
+        let twinkleSeed = Math.random() * Math.PI * 2;
 
+        // ============ FLOOR + GRID ============
+        const floor = new THREE.Mesh(
+          new THREE.PlaneGeometry(80, 80),
+          new THREE.MeshToonMaterial({
+            color: 0x07071c,
+            gradientMap: toonGradient,
+          })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = GROUND_Y;
+        floor.receiveShadow = !isMobile;
+        scene.add(floor);
+
+        const grid = new THREE.GridHelper(
+          isMobile ? 34 : 44,
+          isMobile ? 22 : 36,
+          0x4460ff,
+          0x1a1a44
+        );
+        grid.material.transparent = true;
+        grid.material.opacity = 0.35;
+        grid.position.y = GROUND_Y + 0.01;
+        scene.add(grid);
+
+        // ============ PETS ============
+        const colliderGeometry = new THREE.SphereGeometry(0.85, 8, 6);
+        const colliderMaterial = new THREE.MeshBasicMaterial({
+          transparent: true,
+          opacity: 0.0,
+          depthWrite: false,
+        });
+
+        // Low-poly shared geometries
+        const GEO = (() => {
+          const sA = isMobile ? 12 : 20;
+          const sB = isMobile ? 9 : 14;
+          const tailRadial = isMobile ? 7 : 11;
+          return {
+            body: new THREE.SphereGeometry(0.55, sA, sB),
+            bodyOutline: new THREE.SphereGeometry(0.6, sA, sB),
+            belly: new THREE.SphereGeometry(
+              0.32,
+              isMobile ? 10 : 16,
+              isMobile ? 8 : 12
+            ),
+            head: new THREE.SphereGeometry(0.42, sA, sB),
+            headOutline: new THREE.SphereGeometry(0.46, sA, sB),
+            snout: new THREE.SphereGeometry(
+              0.18,
+              isMobile ? 9 : 13,
+              isMobile ? 7 : 10
+            ),
+            nose: new THREE.SphereGeometry(0.05, 8, 6),
+            eye: new THREE.SphereGeometry(0.06, 8, 6),
+            highlight: new THREE.SphereGeometry(0.02, 6, 5),
+            blush: new THREE.SphereGeometry(0.06, 8, 6),
+            ear: new THREE.ConeGeometry(0.12, 0.3, isMobile ? 7 : 11),
+            earOutline: new THREE.ConeGeometry(0.14, 0.32, isMobile ? 7 : 11),
+            longEar: new THREE.CylinderGeometry(
+              0.055,
+              0.04,
+              0.6,
+              isMobile ? 7 : 10,
+              1
+            ),
+            tail: new THREE.CylinderGeometry(0.06, 0.06, 0.55, tailRadial, 1),
+            tailLong: new THREE.CylinderGeometry(
+              0.055,
+              0.05,
+              0.85,
+              tailRadial,
+              1
+            ),
+            tip: new THREE.SphereGeometry(0.1, 8, 6),
+            foot: new THREE.SphereGeometry(0.12, 8, 6),
+            whisker: new THREE.CylinderGeometry(0.01, 0.01, 0.38, 6, 1),
+            pom: new THREE.SphereGeometry(0.11, 8, 6),
+            earFlop: new THREE.SphereGeometry(
+              0.12,
+              isMobile ? 9 : 12,
+              isMobile ? 7 : 10
+            ),
+          };
+        })();
+
+        const colliders = []; // raycast list
+
+        // Reusable temp vecs to avoid allocations
+        const _v1 = new THREE.Vector3();
+        const _v2 = new THREE.Vector3();
+        const _v3 = new THREE.Vector3();
+        const cursorWorld = new THREE.Vector3(0, 0.6, 0);
+
+        function lerpAngle(a, b, t) {
+          let diff = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI;
+          return a + diff * t;
+        }
+
+        function pickSpecies() {
+          // Regular add button only gets common species
+          return COMMON_SPECIES[(Math.random() * COMMON_SPECIES.length) | 0];
+        }
+
+        function pickColor(speciesKey) {
+          // Slightly more "real animal" palette while staying kawaii
+          const palettes = {
+            cat: [0x8f8f9a, 0x5a5a66, 0xe0b7a5, 0xc8c8d6],
+            dog: [0xd2a679, 0x9a6b43, 0xf2e6d8, 0xc8b28a],
+            bunny: [0xf5f5f8, 0xe6d3ef, 0xd8dde6, 0xf1d1d9],
+          };
+          const arr = palettes[speciesKey] || [0x7bd7ff, 0xff9bd4, 0xa7ff7b];
+          return new THREE.Color(
+            arr[(Math.random() * arr.length) | 0]
+          ).offsetHSL((Math.random() - 0.5) * 0.05, 0.05, 0.03);
+        }
+
+        class Pet {
+          constructor(x, z, color, species) {
+            this.id = Math.random().toString(36).slice(2);
+            this.species = species || pickSpecies();
+            this.name =
+              petNames[(Math.random() * petNames.length) | 0] +
+              " " +
+              ((Math.random() * 100) | 0);
+
+            this.baseColor = new THREE.Color(
+              color !== null ? color : pickColor(this.species.key)
+            );
+            this.outlineColor = this.baseColor.clone().multiplyScalar(0.35);
+
+            this.group = new THREE.Group();
+            this.group.position.set(x, 0.6, z);
+            this.group.userData.pet = this;
+
+            this.velocity = new THREE.Vector3();
+            this.targetPos = new THREE.Vector3(x, 0.6, z);
+            this.wanderTarget = new THREE.Vector3(x, 0.6, z);
+            this.wanderTimer = 0.5 + Math.random() * 1.5;
+            this.pauseTimer = 0;
+
+            this.isHeld = false;
+            this.bobPhase = Math.random() * Math.PI * 2;
+            this.blinkTimer = 1 + Math.random() * 2;
+            this.isBlinking = false;
+
+            // Collider used for picking (fast)
+            this.collider = new THREE.Mesh(colliderGeometry, colliderMaterial);
+            this.collider.userData.parentPet = this;
+            this.collider.position.set(0, 0.15, 0);
+            this.group.add(this.collider);
+            colliders.push(this.collider);
+
+            this.createBody();
+            scene.add(this.group);
+          }
+
+          createBody() {
+            const bodyMat = new THREE.MeshToonMaterial({
+              color: this.baseColor,
+              gradientMap: toonGradient,
+            });
+            const whiteMat = new THREE.MeshToonMaterial({
+              color: 0xffffff,
+              gradientMap: toonGradient,
+            });
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111122 });
+            const blushMat = new THREE.MeshToonMaterial({
+              color: 0xff6699,
+              gradientMap: toonGradient,
+              transparent: true,
+              opacity: 0.6,
+            });
+            const outlineMat = new THREE.MeshBasicMaterial({
+              color: this.outlineColor,
+              side: THREE.BackSide,
+            });
+
+            // Body
+            const body = new THREE.Mesh(GEO.body, bodyMat);
+            body.castShadow = !isMobile;
+            this.group.add(body);
+
+            const bodyOutline = new THREE.Mesh(GEO.bodyOutline, outlineMat);
+            this.group.add(bodyOutline);
+
+            // Belly
+            const belly = new THREE.Mesh(GEO.belly, whiteMat);
+            belly.position.set(0, -0.05, 0.28);
+            belly.scale.set(1, 0.85, 0.7);
+            this.group.add(belly);
+
+            // Head
+            this.head = new THREE.Group();
+            this.head.position.set(0, 0.52, 0.12);
+            this.group.add(this.head);
+
+            const headMesh = new THREE.Mesh(GEO.head, bodyMat);
+            headMesh.castShadow = !isMobile;
+            this.head.add(headMesh);
+
+            const headOutline = new THREE.Mesh(GEO.headOutline, outlineMat);
+            this.head.add(headOutline);
+
+            // Snout (species tweak)
+            const snout = new THREE.Mesh(GEO.snout, whiteMat);
+            snout.position.set(
+              this.species.snoutPos[0],
+              this.species.snoutPos[1],
+              this.species.snoutPos[2]
+            );
+            snout.scale.set(
+              this.species.snoutScale[0],
+              this.species.snoutScale[1],
+              this.species.snoutScale[2]
+            );
+            this.head.add(snout);
+
+            // Nose
+            const nose = new THREE.Mesh(GEO.nose, eyeMat);
+            nose.position.set(0, -0.03, 0.5);
+            if (this.species.key === "dog") nose.position.z = 0.53;
+            this.head.add(nose);
+
+            // Eyes
+            this.leftEye = new THREE.Mesh(GEO.eye, eyeMat);
+            this.leftEye.position.set(-0.14, 0.06, 0.36);
+            this.head.add(this.leftEye);
+
+            this.rightEye = new THREE.Mesh(GEO.eye, eyeMat);
+            this.rightEye.position.set(0.14, 0.06, 0.36);
+            this.head.add(this.rightEye);
+
+            // Highlights
+            const highlightMat = new THREE.MeshBasicMaterial({
+              color: 0xffffff,
+            });
+            const leftHighlight = new THREE.Mesh(GEO.highlight, highlightMat);
+            leftHighlight.position.set(-0.12, 0.08, 0.41);
+            this.head.add(leftHighlight);
+
+            const rightHighlight = new THREE.Mesh(GEO.highlight, highlightMat);
+            rightHighlight.position.set(0.16, 0.08, 0.41);
+            this.head.add(rightHighlight);
+
+            // Blush
+            const leftBlush = new THREE.Mesh(GEO.blush, blushMat);
+            leftBlush.position.set(-0.24, -0.02, 0.32);
+            leftBlush.scale.set(1.4, 0.6, 0.4);
+            this.head.add(leftBlush);
+
+            const rightBlush = new THREE.Mesh(GEO.blush, blushMat);
+            rightBlush.position.set(0.24, -0.02, 0.32);
+            rightBlush.scale.set(1.4, 0.6, 0.4);
+            this.head.add(rightBlush);
+
+            // Ears (species variants)
+            if (this.species.earType === "pointy") {
+              const leftEar = new THREE.Mesh(GEO.ear, bodyMat);
+              leftEar.position.set(-0.22, 0.35, 0);
+              leftEar.rotation.z = 0.3;
+              this.head.add(leftEar);
+
+              const leftEarOutline = new THREE.Mesh(GEO.earOutline, outlineMat);
+              leftEarOutline.position.copy(leftEar.position);
+              leftEarOutline.rotation.copy(leftEar.rotation);
+              this.head.add(leftEarOutline);
+
+              const rightEar = new THREE.Mesh(GEO.ear, bodyMat);
+              rightEar.position.set(0.22, 0.35, 0);
+              rightEar.rotation.z = -0.3;
+              this.head.add(rightEar);
+
+              const rightEarOutline = new THREE.Mesh(
+                GEO.earOutline,
+                outlineMat
+              );
+              rightEarOutline.position.copy(rightEar.position);
+              rightEarOutline.rotation.copy(rightEar.rotation);
+              this.head.add(rightEarOutline);
+            } else if (this.species.earType === "floppy") {
+              // Floppy dog ears: stretched spheres
+              const makeFlop = (sx) => {
+                const ear = new THREE.Mesh(GEO.earFlop, bodyMat);
+                ear.scale.set(0.7, 1.55, 0.55);
+                ear.position.set(sx * 0.26, 0.27, 0.02);
+                ear.rotation.z = sx * 0.65;
+                ear.rotation.x = 0.15;
+                this.head.add(ear);
+
+                const earO = new THREE.Mesh(GEO.earFlop, outlineMat);
+                earO.scale.copy(ear.scale).multiplyScalar(1.06);
+                earO.position.copy(ear.position);
+                earO.rotation.copy(ear.rotation);
+                this.head.add(earO);
+              };
+              makeFlop(-1);
+              makeFlop(1);
+            } else {
+              // Bunny long ears
+              const makeLong = (sx) => {
+                const ear = new THREE.Mesh(GEO.longEar, bodyMat);
+                ear.position.set(sx * 0.16, 0.48, -0.02);
+                ear.rotation.z = sx * 0.16;
+                ear.rotation.x = -0.15;
+                this.head.add(ear);
+
+                const earO = new THREE.Mesh(GEO.longEar, outlineMat);
+                earO.scale.set(1.07, 1.06, 1.07);
+                earO.position.copy(ear.position);
+                earO.rotation.copy(ear.rotation);
+                this.head.add(earO);
+
+                const tip = new THREE.Mesh(GEO.tip, whiteMat);
+                tip.scale.set(0.7, 0.7, 0.7);
+                tip.position.set(sx * 0.16, 0.78, -0.02);
+                this.head.add(tip);
+              };
+              makeLong(-1);
+              makeLong(1);
+            }
+
+            // Whiskers (cat)
+            if (this.species.whiskers) {
+              const whiskMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+              const makeWhisk = (sx, y, z, rotY) => {
+                const w = new THREE.Mesh(GEO.whisker, whiskMat);
+                w.position.set(sx * 0.2, y, z);
+                w.rotation.z = Math.PI / 2;
+                w.rotation.y = rotY;
+                w.scale.set(1, 1, 1);
+                this.head.add(w);
+              };
+              makeWhisk(-1, -0.02, 0.44, 0.25);
+              makeWhisk(-1, -0.06, 0.44, 0.05);
+              makeWhisk(1, -0.02, 0.44, -0.25);
+              makeWhisk(1, -0.06, 0.44, -0.05);
+            }
+
+            // Tail
+            this.tail = new THREE.Group();
+            this.tail.position.set(0, 0.05, -0.5);
+            this.group.add(this.tail);
+
+            if (this.species.tailType === "long") {
+              const tailSeg = new THREE.Mesh(GEO.tailLong, bodyMat);
+              tailSeg.position.set(0, 0.3, -0.18);
+              tailSeg.rotation.x = Math.PI * 0.45;
+              this.tail.add(tailSeg);
+
+              const tailTip = new THREE.Mesh(GEO.tip, whiteMat);
+              tailTip.scale.set(0.8, 0.8, 0.8);
+              tailTip.position.set(0, 0.58, -0.52);
+              this.tail.add(tailTip);
+            } else if (this.species.tailType === "pom") {
+              const pom = new THREE.Mesh(GEO.pom, whiteMat);
+              pom.position.set(0, 0.13, -0.6);
+              this.tail.add(pom);
+            } else {
+              const tailSeg = new THREE.Mesh(GEO.tail, bodyMat);
+              tailSeg.position.set(0, 0.2, -0.12);
+              tailSeg.rotation.x = Math.PI * 0.35;
+              this.tail.add(tailSeg);
+
+              const tailTip = new THREE.Mesh(GEO.tip, whiteMat);
+              tailTip.position.set(0, 0.38, -0.36);
+              this.tail.add(tailTip);
+            }
+
+            // Feet
+            const positions = [
+              [-0.22, -0.38, 0.18],
+              [0.22, -0.38, 0.18],
+              [-0.22, -0.38, -0.15],
+              [0.22, -0.38, -0.15],
+            ];
+            for (let i = 0; i < positions.length; i++) {
+              const p = positions[i];
+              const foot = new THREE.Mesh(GEO.foot, whiteMat);
+              foot.position.set(p[0], p[1], p[2]);
+              foot.castShadow = !isMobile;
+              this.group.add(foot);
+            }
+          }
+
+          chooseNewWander() {
+            const r = 0.25 + Math.random() * 0.75;
+            const tx = (Math.random() * 2 - 1) * WORLD_BOUNDS * r;
+            const tz = (Math.random() * 2 - 1) * WORLD_BOUNDS * r;
+            this.wanderTarget.set(tx, 0.6, tz);
+            this.wanderTimer =
+              this.species.roam.min +
+              Math.random() * (this.species.roam.max - this.species.roam.min);
+
+            // Small chance to pause (cute idle)
+            if (Math.random() < 0.22) {
+              this.pauseTimer = 0.7 + Math.random() * 1.6;
+            }
+          }
+
+          update(time, dt) {
+            // Calculate movement speed for animations
+            const vx = this.velocity.x;
+            const vz = this.velocity.z;
+            const speed = Math.sqrt(vx * vx + vz * vz);
+            const isMoving = speed > 0.01 && this.pauseTimer <= 0;
+
+            // Autonomous roaming (when not held)
+            if (!this.isHeld) {
+              if (this.pauseTimer > 0) {
+                this.pauseTimer -= dt;
+              } else {
+                this.wanderTimer -= dt;
+                if (this.wanderTimer <= 0) this.chooseNewWander();
+
+                // Smoothly interpolate target position (no teleporting!)
+                const lerpSpeed = 0.02;
+                this.targetPos.x = THREE.MathUtils.lerp(
+                  this.targetPos.x,
+                  this.wanderTarget.x,
+                  lerpSpeed
+                );
+                this.targetPos.z = THREE.MathUtils.lerp(
+                  this.targetPos.z,
+                  this.wanderTarget.z,
+                  lerpSpeed
+                );
+              }
+
+              // Face movement direction smoothly
+              _v2.set(
+                this.targetPos.x - this.group.position.x,
+                0,
+                this.targetPos.z - this.group.position.z
+              );
+              const dist = _v2.length();
+              if (dist > 0.05) {
+                const targetYaw = Math.atan2(_v2.x, _v2.z);
+                // Smoother rotation - slower turn rate for natural movement
+                this.group.rotation.y = lerpAngle(
+                  this.group.rotation.y,
+                  targetYaw,
+                  0.06
+                );
+              }
+            }
+
+            // ===== CUTE WADDLE ANIMATIONS =====
+            const walkCycle =
+              time * (this.species.key === "bunny" ? 8 : 5) + this.bobPhase;
+
+            // Bobbing - more pronounced when moving
+            if (!this.isHeld) {
+              const bobFreq = isMoving ? 5.5 : 2.0;
+              const bobAmp = isMoving ? 0.08 : 0.03;
+              const bob = Math.sin(time * bobFreq + this.bobPhase) * bobAmp;
+
+              // Hop effect for bunnies
+              const hopBonus =
+                this.species.key === "bunny" && isMoving
+                  ? Math.max(0, Math.sin(walkCycle * 1.2)) * 0.12
+                  : 0;
+
+              this.group.position.y = 0.6 + bob + hopBonus;
+              if (hoveredPet === this) this.group.position.y += 0.14;
+            }
+
+            // Side-to-side waddle (roll) - penguin-like wobble
+            if (!this.isHeld) {
+              const waddleAmp = isMoving ? 0.12 : 0.03;
+              const waddleFreq = isMoving ? 5.5 : 2.0;
+              const waddle =
+                Math.sin(time * waddleFreq + this.bobPhase) * waddleAmp;
+              this.group.rotation.z = THREE.MathUtils.lerp(
+                this.group.rotation.z,
+                waddle,
+                0.15
+              );
+
+              // Forward tilt when moving (lean into movement)
+              const tiltAmount = isMoving ? -0.08 : 0;
+              this.group.rotation.x = THREE.MathUtils.lerp(
+                this.group.rotation.x,
+                tiltAmount,
+                0.1
+              );
+            }
+
+            // Head bobbing and curiosity
+            if (this.head) {
+              const wantsLook = hoveredPet === this || this.isHeld;
+              const lookStrength = wantsLook ? 0.12 : 0.06;
+
+              if (wantsLook) {
+                _v3.copy(cursorWorld);
+                this.group.worldToLocal(_v3);
+                const yaw = Math.atan2(_v3.x, _v3.z);
+                const pitch = -Math.atan2(
+                  _v3.y - 0.1,
+                  Math.max(0.001, Math.sqrt(_v3.x * _v3.x + _v3.z * _v3.z))
+                );
+                const cy = THREE.MathUtils.clamp(yaw, -0.65, 0.65);
+                const cx = THREE.MathUtils.clamp(pitch, -0.35, 0.25);
+                this.head.rotation.y = lerpAngle(
+                  this.head.rotation.y,
+                  cy,
+                  lookStrength
+                );
+                this.head.rotation.x = THREE.MathUtils.lerp(
+                  this.head.rotation.x,
+                  cx,
+                  lookStrength
+                );
+              } else {
+                // Gentle head bob while walking
+                const headBob = isMoving ? Math.sin(walkCycle * 1.1) * 0.08 : 0;
+                const headTilt =
+                  Math.sin(time * 0.8 + this.bobPhase * 2) * 0.04; // Slight curiosity tilt
+                this.head.rotation.y = lerpAngle(
+                  this.head.rotation.y,
+                  headTilt,
+                  0.08
+                );
+                this.head.rotation.x = THREE.MathUtils.lerp(
+                  this.head.rotation.x,
+                  headBob - 0.05,
+                  0.08
+                );
+              }
+
+              // Ear twitching (if ears exist)
+              if (this.leftEar && this.rightEar) {
+                const twitch = Math.sin(time * 4 + this.bobPhase * 3) * 0.15;
+                const randomTwitch =
+                  Math.sin(time * 7.3 + this.bobPhase) > 0.92 ? 0.2 : 0;
+                this.leftEar.rotation.z = 0.3 + twitch + randomTwitch;
+                this.rightEar.rotation.z = -0.3 - twitch - randomTwitch;
+              }
+            }
+
+            // Tail wag - faster and more vigorous when moving/excited
+            const excitement = isMoving ? 1.3 : 1.0;
+            const hoverExcitement = hoveredPet === this ? 1.5 : 1.0;
+            const wagSpeed = this.isHeld
+              ? 11
+              : this.species.key === "cat"
+              ? 4.6 * excitement
+              : this.species.key === "dog"
+              ? 7.0 * excitement * hoverExcitement
+              : 4.5 * excitement;
+            const wagAmount = this.isHeld
+              ? 0.75
+              : this.species.key === "dog"
+              ? 0.65 * hoverExcitement
+              : 0.4;
+            this.tail.rotation.y = Math.sin(time * wagSpeed) * wagAmount;
+            this.tail.rotation.x = Math.cos(time * wagSpeed * 0.7) * 0.22;
+
+            // Blink with personality
+            this.blinkTimer -= dt;
+            if (this.blinkTimer <= 0) {
+              this.isBlinking = !this.isBlinking;
+              this.blinkTimer = this.isBlinking
+                ? 0.08 + Math.random() * 0.04
+                : 1.5 + Math.random() * 3.5;
+            }
+            const eyeScale = this.isBlinking ? 0.08 : 1;
+            this.leftEye.scale.y = THREE.MathUtils.lerp(
+              this.leftEye.scale.y,
+              eyeScale,
+              0.4
+            );
+            this.rightEye.scale.y = THREE.MathUtils.lerp(
+              this.rightEye.scale.y,
+              eyeScale,
+              0.4
+            );
+
+            // Happy squint when petted/hovered
+            if (hoveredPet === this && !this.isBlinking) {
+              this.leftEye.scale.y = THREE.MathUtils.lerp(
+                this.leftEye.scale.y,
+                0.7,
+                0.1
+              );
+              this.rightEye.scale.y = THREE.MathUtils.lerp(
+                this.rightEye.scale.y,
+                0.7,
+                0.1
+              );
+            }
+
+            // Held wiggle
+            if (this.isHeld) {
+              this.group.rotation.z = Math.sin(time * 9) * 0.12;
+              this.group.rotation.x = Math.cos(time * 7) * 0.06;
+            }
+
+            // ===== SMOOTH PHYSICS-BASED MOVEMENT =====
+            // Much softer spring for natural, gradual movement
+            const spring = this.isHeld ? 8 : 1.5; // Reduced from 7.5 to 1.5
+            const damping = this.isHeld ? 0.75 : 0.92; // Increased damping for smooth stop
+
+            _v1.subVectors(this.targetPos, this.group.position);
+            _v1.y = 0; // Don't affect Y velocity
+            this.velocity.add(_v1.multiplyScalar(spring * dt));
+            this.velocity.multiplyScalar(damping);
+
+            // Clamp max speed for natural movement
+            const maxSpeed = this.species.key === "bunny" ? 0.08 : 0.05;
+            const currentSpeed = Math.sqrt(
+              this.velocity.x * this.velocity.x +
+                this.velocity.z * this.velocity.z
+            );
+            if (currentSpeed > maxSpeed) {
+              this.velocity.x = (this.velocity.x / currentSpeed) * maxSpeed;
+              this.velocity.z = (this.velocity.z / currentSpeed) * maxSpeed;
+            }
+
+            this.group.position.x += this.velocity.x * dt * 60;
+            this.group.position.z += this.velocity.z * dt * 60;
+
+            // Keep within bounds
+            this.group.position.x = THREE.MathUtils.clamp(
+              this.group.position.x,
+              -WORLD_BOUNDS,
+              WORLD_BOUNDS
+            );
+            this.group.position.z = THREE.MathUtils.clamp(
+              this.group.position.z,
+              -WORLD_BOUNDS,
+              WORLD_BOUNDS
+            );
+
+            // Squash/stretch based on speed (subtle)
+            const squashAmount = isMoving ? 0.06 : 0;
+            const squash = 1 + Math.abs(Math.sin(walkCycle)) * squashAmount;
+            const stretch =
+              1 - Math.abs(Math.sin(walkCycle)) * squashAmount * 0.5;
+            this.group.scale.set(
+              THREE.MathUtils.lerp(this.group.scale.x, stretch, 0.12),
+              THREE.MathUtils.lerp(this.group.scale.y, squash, 0.12),
+              THREE.MathUtils.lerp(this.group.scale.z, stretch, 0.12)
+            );
+          }
+
+          grab() {
+            this.isHeld = true;
+            this.targetPos.y = holdHeight;
+            this.pauseTimer = 0;
+          }
+
+          release() {
+            this.isHeld = false;
+            this.targetPos.y = 0.6;
+            this.velocity.y = -2.0;
+            this.chooseNewWander();
+          }
+
+          moveTo(x, z) {
+            this.targetPos.x = THREE.MathUtils.clamp(
+              x,
+              -WORLD_BOUNDS,
+              WORLD_BOUNDS
+            );
+            this.targetPos.z = THREE.MathUtils.clamp(
+              z,
+              -WORLD_BOUNDS,
+              WORLD_BOUNDS
+            );
+            this.wanderTarget.x = this.targetPos.x;
+            this.wanderTarget.z = this.targetPos.z;
+          }
+        }
+
+        // ============ INITIAL PETS ============
+        function removeCollider(c) {
+          const idx = colliders.indexOf(c);
+          if (idx >= 0) colliders.splice(idx, 1);
+        }
+
+        function clearPets() {
+          for (let i = 0; i < pets.length; i++) {
+            scene.remove(pets[i].group);
+          }
+          pets.length = 0;
+          colliders.length = 0;
+          heldPet = null;
+          hoveredPet = null;
+          petNameEl.textContent = "";
+        }
+
+        function createInitialPets() {
+          clearPets();
+          pets.push(new Pet(-2.2, 0.6, null, SPECIES.cat));
+          pets.push(new Pet(0.0, -1.0, null, SPECIES.dog));
+          pets.push(new Pet(2.2, 0.8, null, SPECIES.bunny));
+
+          if (isMobile) {
+            // Keep 2 pets on mobile (remove third cleanly)
+            const removed = pets.pop();
+            scene.remove(removed.group);
+            removeCollider(removed.collider);
+          }
+        }
+        createInitialPets();
+
+        // ============ RAYCASTING (colliders) ============
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const intersectPoint = new THREE.Vector3();
+        const dragOffset = new THREE.Vector3();
+
+        function updateMouseFromClient(clientX, clientY) {
+          mouse.x = (clientX / window.innerWidth) * 2 - 1;
+          mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function getPetUnderMouse() {
+          if (colliders.length === 0) return null;
+          raycaster.setFromCamera(mouse, camera);
+          const hits = raycaster.intersectObjects(colliders, false);
+          if (hits.length) return hits[0].object.userData.parentPet;
           return null;
         }
 
-        return (
-          <>
-            <HUD />
+        function getPlaneIntersection(y) {
+          dragPlane.constant = -y;
+          raycaster.setFromCamera(mouse, camera);
+          raycaster.ray.intersectPlane(dragPlane, intersectPoint);
+          return intersectPoint;
+        }
 
-            <HeartPool apiRef={heartAPIRef} />
-            <BreathPool apiRef={breathAPIRef} />
+        // ============ POINTER EVENTS (mobile-friendly) ============
+        let activePointerId = null;
 
-            <PlayerController />
+        function setCursor(state) {
+          renderer.domElement.style.cursor = state;
+        }
 
-            {pets.map((p) => (
-              <Pet
-                key={p.id}
-                pet={p}
-                rampTex={rampTex}
-                rugs={rugs}
-                registerHit={registerHit}
-                unregisterHit={unregisterHit}
-                registerAPI={registerAPI}
-                unregisterAPI={unregisterAPI}
-                playerRef={playerRef}
-                heldRef={heldRef}
-                heartAPIRef={heartAPIRef}
-                breathAPIRef={breathAPIRef}
-                allPosMapRef={allPosMapRef}
-              />
-            ))}
-          </>
+        renderer.domElement.addEventListener(
+          "pointermove",
+          (e) => {
+            updateMouseFromClient(e.clientX, e.clientY);
+            cursorWorld.copy(getPlaneIntersection(0.6));
+
+            if (heldPet && e.pointerId === activePointerId) {
+              const point = getPlaneIntersection(holdHeight);
+              heldPet.moveTo(point.x + dragOffset.x, point.z + dragOffset.z);
+            } else if (!heldPet) {
+              const pet = getPetUnderMouse();
+              if (pet !== hoveredPet) {
+                hoveredPet = pet;
+                setCursor(pet ? "grab" : "default");
+                petNameEl.textContent = pet
+                  ? "🐾 " + pet.species.label + " — " + pet.name
+                  : "";
+              }
+            }
+          },
+          { passive: true }
         );
-      }
 
-      // -----------------------------
-      // Main Scene
-      // -----------------------------
+        renderer.domElement.addEventListener(
+          "pointerdown",
+          (e) => {
+            if (!e.isPrimary) return;
 
-      function Scene() {
-        const rampTex = useToonRampTexture();
-        const rugs = useRugs();
-        const groundObjectsRef = useRef([]);
+            updateMouseFromClient(e.clientX, e.clientY);
+            cursorWorld.copy(getPlaneIntersection(0.6));
+            const pet = getPetUnderMouse();
 
-        return (
-          <div className="w-screen h-screen overflow-hidden">
-            <KeyboardControls
-              map={[
-                { name: "forward", keys: ["KeyW", "ArrowUp"] },
-                { name: "backward", keys: ["KeyS", "ArrowDown"] },
-                { name: "left", keys: ["KeyA", "ArrowLeft"] },
-                { name: "right", keys: ["KeyD", "ArrowRight"] },
-                { name: "sprint", keys: ["ShiftLeft", "ShiftRight"] },
-              ]}
-            >
-              <Canvas
-                dpr={Math.min(window.devicePixelRatio || 1, 2)}
-                gl={{
-                  antialias: true,
-                  powerPreference: "high-performance",
-                  alpha: false,
-                }}
-                camera={{
-                  position: [0, 1.7, 6.5],
-                  fov: 60,
-                  near: 0.1,
-                  far: 140,
-                }}
-                onCreated={({ gl }) => {
-                  gl.domElement.addEventListener("click", () => {
-                    if (!document.pointerLockElement)
-                      gl.domElement.requestPointerLock?.();
-                  });
-                }}
-              >
-                <color attach="background" args={["#050610"]} />
-                <fog attach="fog" args={["#050610", 10, 56]} />
+            if (pet) {
+              e.preventDefault();
+              activePointerId = e.pointerId;
+              if (renderer.domElement.setPointerCapture)
+                renderer.domElement.setPointerCapture(e.pointerId);
 
-                <ambientLight intensity={0.85} color={"#90a6ff"} />
-                <directionalLight
-                  intensity={1.25}
-                  position={[7, 12, 5]}
-                  color={"#ffffff"}
-                />
-                <directionalLight
-                  intensity={0.35}
-                  position={[-6, 7, -8]}
-                  color={"#7b8dff"}
-                />
+              heldPet = pet;
+              pet.grab();
+              controls.enabled = false;
+              setCursor("grabbing");
 
-                <Sky
-                  distance={450000}
-                  sunPosition={[0.5, 0.2, 0.8]}
-                  turbidity={8}
-                  rayleigh={2.6}
-                  mieCoefficient={0.01}
-                  mieDirectionalG={0.8}
-                />
-                <Stars
-                  radius={75}
-                  depth={35}
-                  count={1100}
-                  factor={2.2}
-                  saturation={0}
-                  fade
-                  speed={0.35}
-                />
-                <Sparkles
-                  count={90}
-                  speed={0.22}
-                  opacity={0.25}
-                  scale={[38, 10, 38]}
-                  size={1.2}
-                  color={"#cbd7ff"}
-                />
-
-                <Ground rampTex={rampTex} groundObjectsRef={groundObjectsRef} />
-                <Rugs
-                  rugs={rugs}
-                  rampTex={rampTex}
-                  groundObjectsRef={groundObjectsRef}
-                />
-
-                <PointerLockControls makeDefault />
-
-                <PetSystem
-                  rampTex={rampTex}
-                  rugs={rugs}
-                  groundObjectsRef={groundObjectsRef}
-                />
-              </Canvas>
-            </KeyboardControls>
-          </div>
+              const point = getPlaneIntersection(holdHeight);
+              dragOffset.set(
+                pet.group.position.x - point.x,
+                0,
+                pet.group.position.z - point.z
+              );
+            }
+          },
+          { passive: false }
         );
-      }
 
-      // Mount
-      try {
-        const root = createRoot(document.getElementById("root"));
-        root.render(<Scene />);
-        bootEl2.style.display = "none";
-      } catch (err) {
-        const errorEl = document.getElementById("errorOverlay");
-        errorEl.style.display = "block";
-        errorEl.textContent =
-          "Biome failed to start:\n\n" +
-          (err && err.stack ? err.stack : String(err));
-        bootEl2.style.display = "none";
+        function endHold(pointerId) {
+          if (heldPet && (activePointerId === pointerId || pointerId == null)) {
+            heldPet.release();
+            heldPet = null;
+            activePointerId = null;
+            controls.enabled = true;
+            setCursor(hoveredPet ? "grab" : "default");
+          }
+        }
+
+        renderer.domElement.addEventListener(
+          "pointerup",
+          (e) => endHold(e.pointerId),
+          { passive: true }
+        );
+        renderer.domElement.addEventListener(
+          "pointercancel",
+          (e) => endHold(e.pointerId),
+          { passive: true }
+        );
+        window.addEventListener("blur", () => endHold(null));
+
+        // Desktop wheel lift/lower (guarded)
+        window.addEventListener(
+          "wheel",
+          (e) => {
+            if (!heldPet) return;
+            e.preventDefault();
+            holdHeight = THREE.MathUtils.clamp(
+              holdHeight - e.deltaY * 0.003,
+              0.6,
+              4
+            );
+            heightSlider.value = String(holdHeight);
+            heightVal.textContent = holdHeight.toFixed(1);
+            heldPet.targetPos.y = holdHeight;
+          },
+          { passive: false }
+        );
+
+        // ============ UI ============
+        function addPet() {
+          if (pets.length >= MAX_PETS) {
+            toast("Pet limit reached (" + MAX_PETS + ")");
+            return;
+          }
+          const x = (Math.random() * 2 - 1) * 8;
+          const z = (Math.random() * 2 - 1) * 8;
+          const sp = pickSpecies();
+          pets.push(new Pet(x, z, null, sp));
+          toast("Added a " + sp.label);
+        }
+
+        // Single click handlers to avoid double-firing
+        let lastAddTime = 0;
+        addBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          // Debounce to prevent double-add
+          if (Date.now() - lastAddTime < 300) return;
+          lastAddTime = Date.now();
+          addPet();
+        });
+
+        let lastResetTime = 0;
+        resetBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (Date.now() - lastResetTime < 300) return;
+          lastResetTime = Date.now();
+          createInitialPets();
+          toast("Reset");
+        });
+
+        // ============ COLOR PICKER ============
+        let selectedColor = 0xffc8dd; // Default pastel pink
+        const colorBtns = document.querySelectorAll(".color-btn");
+        colorBtns.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            colorBtns.forEach((b) => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            selectedColor = parseInt(btn.dataset.color);
+            toast("Color selected!");
+          });
+        });
+        // Select first color by default
+        colorBtns[0]?.classList.add("selected");
+
+        // ============ GACHA SYSTEM ============
+        const RARITY_CONFIG = {
+          common: {
+            name: "Common",
+            species: ["cat", "dog", "bunny"],
+            weight: 70,
+            stars: 1,
+            color: "#9ca3af",
+          },
+          rare: {
+            name: "Rare",
+            species: ["tiger", "wolf"],
+            weight: 25,
+            stars: 2,
+            color: "#60a5fa",
+          },
+          legendary: {
+            name: "Legendary",
+            species: ["dragon"],
+            weight: 5,
+            stars: 3,
+            color: "#fbbf24",
+          },
+        };
+
+        let gachaPullCount = 0;
+        let hasFirstRare = false;
+
+        function rollGacha() {
+          gachaPullCount++;
+
+          // First 3 pulls guarantee at least rare
+          if (!hasFirstRare && gachaPullCount === 3) {
+            return Math.random() < 0.2 ? "legendary" : "rare";
+          }
+
+          const roll = Math.random() * 100;
+          if (roll < RARITY_CONFIG.legendary.weight) return "legendary";
+          if (roll < RARITY_CONFIG.legendary.weight + RARITY_CONFIG.rare.weight)
+            return "rare";
+          return "common";
+        }
+
+        function getSpeciesForRarity(rarity) {
+          const species = RARITY_CONFIG[rarity].species;
+          return species[Math.floor(Math.random() * species.length)];
+        }
+
+        const gachaModal = document.getElementById("gachaModal");
+        const gachaCard = document.getElementById("gachaCard");
+        const gachaStars = document.getElementById("gachaStars");
+        const gachaEmoji = document.getElementById("gachaEmoji");
+        const gachaRarity = document.getElementById("gachaRarity");
+        const gachaSpecies = document.getElementById("gachaSpecies");
+        const gachaClose = document.getElementById("gachaClose");
+        const gachaBtn = document.getElementById("gachaBtn");
+
+        let pendingGachaPet = null;
+
+        function showGachaReveal(rarity, speciesKey) {
+          const config = RARITY_CONFIG[rarity];
+          const speciesInfo = SPECIES[speciesKey];
+
+          // Reset state
+          gachaCard.style.transform = "scale(0)";
+          gachaStars.innerHTML = "";
+
+          // Show modal
+          gachaModal.style.display = "flex";
+          setTimeout(() => gachaModal.classList.add("show"), 10);
+
+          // Animate card in
+          setTimeout(() => {
+            gachaCard.style.transform = "scale(1)";
+          }, 100);
+
+          // Animate stars one by one
+          setTimeout(() => {
+            for (let i = 0; i < config.stars; i++) {
+              const star = document.createElement("span");
+              star.textContent = "⭐";
+              star.className = "star-animate";
+              star.style.animationDelay = `${i * 200}ms`;
+              gachaStars.appendChild(star);
+            }
+          }, 400);
+
+          // Show species info
+          setTimeout(() => {
+            gachaEmoji.textContent = speciesInfo.emoji;
+            gachaRarity.textContent = config.name;
+            gachaRarity.className = `rarity-${rarity}`;
+            gachaSpecies.textContent = speciesInfo.label;
+            gachaSpecies.style.color = config.color;
+          }, 600 + config.stars * 200);
+        }
+
+        function closeGacha() {
+          gachaModal.classList.remove("show");
+          setTimeout(() => {
+            gachaModal.style.display = "none";
+
+            // Add the pet
+            if (pendingGachaPet) {
+              if (pets.length >= MAX_PETS) {
+                pets[0].group.removeFromParent();
+                pets.shift();
+              }
+              const x = (Math.random() * 2 - 1) * WORLD_BOUNDS * 0.6;
+              const z = (Math.random() * 2 - 1) * WORLD_BOUNDS * 0.6;
+              const sp = SPECIES[pendingGachaPet.speciesKey];
+              const pet = new Pet(x, z, pendingGachaPet.color, sp);
+              pets.push(pet);
+              toast(`${sp.emoji} ${sp.label} joined your collection!`);
+              pendingGachaPet = null;
+            }
+          }, 300);
+        }
+
+        gachaClose.addEventListener("click", closeGacha);
+        gachaModal.addEventListener("click", (e) => {
+          if (e.target === gachaModal) closeGacha();
+        });
+
+        function doGachaPull() {
+          const rarity = rollGacha();
+          const speciesKey = getSpeciesForRarity(rarity);
+
+          if (rarity !== "common") hasFirstRare = true;
+
+          // Determine color - legendary gets gold, rare gets blue, common uses selected
+          let color = selectedColor;
+          if (rarity === "legendary") {
+            color = 0xfbbf24; // Gold
+          } else if (rarity === "rare") {
+            color = Math.random() > 0.5 ? 0x60a5fa : selectedColor; // 50% blue
+          }
+
+          pendingGachaPet = { speciesKey, color, rarity };
+          showGachaReveal(rarity, speciesKey);
+        }
+
+        let lastGachaTime = 0;
+        gachaBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (Date.now() - lastGachaTime < 500) return;
+          lastGachaTime = Date.now();
+          doGachaPull();
+        });
+
+        heightSlider.addEventListener("input", (e) => {
+          holdHeight = parseFloat(e.target.value);
+          heightVal.textContent = holdHeight.toFixed(1);
+          if (heldPet) heldPet.targetPos.y = holdHeight;
+        });
+
+        // Resize
+        window.addEventListener("resize", () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          renderer.setPixelRatio(
+            Math.min(window.devicePixelRatio || 1, isMobile ? 1.15 : 2)
+          );
+        });
+
+        // ============ ANIMATION LOOP ============
+        const clock = new THREE.Clock();
+
+        function animate() {
+          requestAnimationFrame(animate);
+          const dt = Math.min(clock.getDelta(), 0.033);
+          const time = clock.getElapsedTime();
+
+          // Twinkle (cheap: opacity only)
+          twinkleSeed += 0.0025;
+          stars.material.opacity =
+            0.76 + Math.sin(time * 1.2 + twinkleSeed) * 0.12;
+
+          for (let i = 0; i < pets.length; i++) pets[i].update(time, dt);
+
+          controls.update();
+          renderer.render(scene, camera);
+        }
+
+        animate();
       }
     </script>
   </body>

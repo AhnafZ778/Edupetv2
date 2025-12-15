@@ -7,8 +7,7 @@ import {
   Instances,
   Instance,
   Sparkles,
-  Grid,
-  Html
+  Grid
 } from '@react-three/drei';
 import { a, useSpring } from '@react-spring/three';
 import { useDrag } from '@use-gesture/react';
@@ -1992,76 +1991,74 @@ function PetManager({ bounds, rugs, rampTex, blobTex, isDraggingRef }) {
   return (
     <>
       {/* HUD */}
-      <Html fullscreen style={{ pointerEvents: 'none' }}>
-        <div className="fixed top-3 left-3 z-[90] max-w-[94vw] pointer-events-auto">
-          <div className="flex justify-end">
-            <button
-              className="mb-2 px-3 py-2 rounded-xl bg-white/40 hover:bg-white/50 border border-black/10 text-sm"
-              onClick={() => setHudVisible((v) => !v)}
-              title="Toggle HUD (Screenshot mode)"
-            >
-              👁️
-            </button>
-          </div>
-
-          {hudVisible && (
-            <div className="rounded-2xl border border-black/10 bg-white/35 backdrop-blur-md px-4 py-3 text-black">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-lg font-bold leading-tight">Garden Pets</div>
-                  <div className="text-xs text-black/70">Zen garden companions • Saved locally</div>
-                  <div className="mt-1 text-[11px] text-black/50">{pets.length} pet(s) • Mobile-first</div>
-                </div>
-                <div className="text-[11px] rounded-full px-2 py-1 border border-black/10 bg-white/30">
-                  {isMobile ? 'MOBILE' : 'DESKTOP'}
-                </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-6 gap-2">
-                {Object.entries(SPECIES).map(([k, v]) => (
-                  <button
-                    key={k}
-                    className="px-2 py-2 rounded-xl bg-white/30 hover:bg-white/45 border border-black/10 text-base"
-                    onClick={() => addPet(k)}
-                    title={`Spawn ${v.label}`}
-                  >
-                    {v.emoji}
-                  </button>
-                ))}
-                <button
-                  className="col-span-2 px-3 py-2 rounded-xl bg-white/30 hover:bg-white/45 border border-black/10 text-sm"
-                  onClick={resetPets}
-                >
-                  Reset
-                </button>
-              </div>
-
-              <div className="mt-3 text-[11px] text-black/60 space-y-1">
-                <div><b>Desktop</b>: Click to lock mouse • WASD move • Shift sprint</div>
-                <div><b>Mobile</b>: Joystick move • Drag right side to look</div>
-                <div><b>Pet</b>: Tap = hop+hearts • Drag = carry • Rub = love</div>
-                <div><b>Social</b>: greet within {SOCIAL_DISTANCE}u (every {SOCIAL_CHECK_EVERY_FRAMES} frames), cooldown {SOCIAL_COOLDOWN_S}s</div>
-              </div>
-
-              <div className="mt-2 text-[12px] text-emerald-900 min-h-[16px]">
-                {hovered ? (
-                  <span><b>{SPECIES[hovered.speciesKey]?.label ?? 'Pet'}</b> — {hovered.name}</span>
-                ) : (
-                  <span className="text-black/45">Hover a pet to see its name</span>
-                )}
-              </div>
-            </div>
-          )}
+      <div className="fixed top-3 left-3 z-[90] max-w-[94vw] pointer-events-auto">
+        <div className="flex justify-end">
+          <button
+            className="mb-2 px-3 py-2 rounded-xl bg-white/40 hover:bg-white/50 border border-black/10 text-sm"
+            onClick={() => setHudVisible((v) => !v)}
+            title="Toggle HUD (Screenshot mode)"
+          >
+            👁️
+          </button>
         </div>
 
-        {/* Vignette */}
-        <div
-          className="fixed inset-0 pointer-events-none z-[85]"
-          style={{
-            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.28) 100%)'
-          }}
-        />
-      </Html>
+        {hudVisible && (
+          <div className="rounded-2xl border border-black/10 bg-white/35 backdrop-blur-md px-4 py-3 text-black">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-lg font-bold leading-tight">Garden Pets</div>
+                <div className="text-xs text-black/70">Zen garden companions • Saved locally</div>
+                <div className="mt-1 text-[11px] text-black/50">{pets.length} pet(s) • Mobile-first</div>
+              </div>
+              <div className="text-[11px] rounded-full px-2 py-1 border border-black/10 bg-white/30">
+                {isMobile ? 'MOBILE' : 'DESKTOP'}
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-6 gap-2">
+              {Object.entries(SPECIES).map(([k, v]) => (
+                <button
+                  key={k}
+                  className="px-2 py-2 rounded-xl bg-white/30 hover:bg-white/45 border border-black/10 text-base"
+                  onClick={() => addPet(k)}
+                  title={`Spawn ${v.label}`}
+                >
+                  {v.emoji}
+                </button>
+              ))}
+              <button
+                className="col-span-2 px-3 py-2 rounded-xl bg-white/30 hover:bg-white/45 border border-black/10 text-sm"
+                onClick={resetPets}
+              >
+                Reset
+              </button>
+            </div>
+
+            <div className="mt-3 text-[11px] text-black/60 space-y-1">
+              <div><b>Desktop</b>: Click to lock mouse • WASD move • Shift sprint</div>
+              <div><b>Mobile</b>: Joystick move • Drag right side to look</div>
+              <div><b>Pet</b>: Tap = hop+hearts • Drag = carry • Rub = love</div>
+              <div><b>Social</b>: greet within {SOCIAL_DISTANCE}u (every {SOCIAL_CHECK_EVERY_FRAMES} frames), cooldown {SOCIAL_COOLDOWN_S}s</div>
+            </div>
+
+            <div className="mt-2 text-[12px] text-emerald-900 min-h-[16px]">
+              {hovered ? (
+                <span><b>{SPECIES[hovered.speciesKey]?.label ?? 'Pet'}</b> — {hovered.name}</span>
+              ) : (
+                <span className="text-black/45">Hover a pet to see its name</span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Vignette */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[85]"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.28) 100%)'
+        }}
+      />
 
       {/* Hearts */}
       <HeartPool getEmitterRef={(api) => (heartEmitterRef.current = api)} />

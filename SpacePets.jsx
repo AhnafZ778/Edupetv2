@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Grid, Stars, Sparkles, Html } from '@react-three/drei';
+import { Grid, Stars, Sparkles } from '@react-three/drei';
 import { a, useSpring } from '@react-spring/three';
 import { useDrag } from '@use-gesture/react';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -1834,61 +1834,59 @@ function PetManager({ bounds, rugs, isMobile, rampTex, blobTex, joystickRef, dra
 
   return (
     <>
-      <Html fullscreen style={{ pointerEvents: 'none' }}>
-        {/* HUD */}
-        <div className="fixed top-3 left-3 z-[60] max-w-[92vw] text-white pointer-events-auto">
-          <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md px-4 py-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-lg font-bold leading-tight">Palace Pets</div>
-                <div className="text-xs text-white/70">Free-roam Mind Palace companions</div>
-                <div className="mt-1 text-[11px] text-white/50">Saved to localStorage • {pets.length} pet(s)</div>
-              </div>
-              <div className="text-[11px] rounded-full px-2 py-1 border border-white/10 bg-white/10">
-                {isMobile ? 'MOBILE LITE' : 'DESKTOP'}
-              </div>
+      {/* HUD */}
+      <div className="fixed top-3 left-3 z-[60] max-w-[92vw] text-white pointer-events-auto">
+        <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-lg font-bold leading-tight">Palace Pets</div>
+              <div className="text-xs text-white/70">Free-roam Mind Palace companions</div>
+              <div className="mt-1 text-[11px] text-white/50">Saved to localStorage • {pets.length} pet(s)</div>
             </div>
-
-            <div className="mt-3 flex gap-2">
-              <button
-                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-sm"
-                onClick={addPet}
-              >
-                + Add Pet
-              </button>
-              <button
-                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-sm"
-                onClick={resetPets}
-              >
-                Reset
-              </button>
-            </div>
-
-            <div className="mt-3 text-[11px] text-white/60 space-y-1">
-              <div><b>Desktop</b>: Click canvas to lock mouse • WASD to walk • Shift to sprint</div>
-              <div><b>Mobile</b>: Joystick to move • Drag empty space to look</div>
-              <div><b>Pet</b>: Tap = hop + hearts • Drag = carry • Rub = purr + love</div>
-              <div><b>Social</b>: greet within {SOCIAL_DISTANCE}u (check {SOCIAL_CHECK_EVERY_FRAMES} frames), cooldown {SOCIAL_COOLDOWN_S}s</div>
-            </div>
-
-            <div className="mt-2 text-[12px] text-cyan-200 min-h-[16px]">
-              {hovered ? (
-                <span><b>{SPECIES[hovered.speciesKey]?.label ?? 'Pet'}</b> — {hovered.name}</span>
-              ) : (
-                <span className="text-white/50">Hover a pet to see its name</span>
-              )}
+            <div className="text-[11px] rounded-full px-2 py-1 border border-white/10 bg-white/10">
+              {isMobile ? 'MOBILE LITE' : 'DESKTOP'}
             </div>
           </div>
-        </div>
 
-        {/* Vignette */}
-        <div
-          className="fixed inset-0 pointer-events-none z-[55]"
-          style={{
-            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%)'
-          }}
-        />
-      </Html>
+          <div className="mt-3 flex gap-2">
+            <button
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-sm"
+              onClick={addPet}
+            >
+              + Add Pet
+            </button>
+            <button
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-sm"
+              onClick={resetPets}
+            >
+              Reset
+            </button>
+          </div>
+
+          <div className="mt-3 text-[11px] text-white/60 space-y-1">
+            <div><b>Desktop</b>: Click canvas to lock mouse • WASD to walk • Shift to sprint</div>
+            <div><b>Mobile</b>: Joystick to move • Drag empty space to look</div>
+            <div><b>Pet</b>: Tap = hop + hearts • Drag = carry • Rub = purr + love</div>
+            <div><b>Social</b>: greet within {SOCIAL_DISTANCE}u (check {SOCIAL_CHECK_EVERY_FRAMES} frames), cooldown {SOCIAL_COOLDOWN_S}s</div>
+          </div>
+
+          <div className="mt-2 text-[12px] text-cyan-200 min-h-[16px]">
+            {hovered ? (
+              <span><b>{SPECIES[hovered.speciesKey]?.label ?? 'Pet'}</b> — {hovered.name}</span>
+            ) : (
+              <span className="text-white/50">Hover a pet to see its name</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Vignette */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[55]"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%)'
+        }}
+      />
 
       {/* Hearts pool */}
       <HeartPool getEmitterRef={(api) => (heartEmitterRef.current = api)} />
