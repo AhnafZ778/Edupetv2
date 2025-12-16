@@ -480,45 +480,55 @@ limits. Below is the code it gave:>
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.1;
+        renderer.toneMappingExposure = 1.15;
         container.appendChild(renderer.domElement);
 
         // ==========================================
-        // LIGHTING - ENHANCED FOR PREMIUM VINYL LOOK
+        // LIGHTING - PHASE 4 ENHANCED PREMIUM SETUP
         // ==========================================
         // Warm ambient for soft vinyl appearance
-        const ambientLight = new THREE.AmbientLight(0xfff8f0, 0.75);
+        const ambientLight = new THREE.AmbientLight(0xfff8f0, 0.7);
         scene.add(ambientLight);
 
-        // Key light - warm, main illumination
-        const keyLight = new THREE.DirectionalLight(0xffeedd, 2.2);
+        // Key light - warm, main illumination with HIGH QUALITY shadows
+        const keyLight = new THREE.DirectionalLight(0xffeedd, 2.4);
         keyLight.position.set(5, 10, 4);
         keyLight.castShadow = true;
-        keyLight.shadow.mapSize.width = 2048;
-        keyLight.shadow.mapSize.height = 2048;
-        keyLight.shadow.bias = -0.0001;
-        keyLight.shadow.radius = 6;
-        keyLight.shadow.camera.near = 1;
-        keyLight.shadow.camera.far = 20;
+        keyLight.shadow.mapSize.width = 4096; // 4K shadow for crisp edges
+        keyLight.shadow.mapSize.height = 4096;
+        keyLight.shadow.bias = -0.00005; // Reduced bias for less peter-panning
+        keyLight.shadow.normalBias = 0.02; // Helps with self-shadowing
+        keyLight.shadow.radius = 4; // Softer shadows
+        keyLight.shadow.camera.near = 0.5;
+        keyLight.shadow.camera.far = 25;
+        keyLight.shadow.camera.left = -8;
+        keyLight.shadow.camera.right = 8;
+        keyLight.shadow.camera.top = 8;
+        keyLight.shadow.camera.bottom = -8;
         scene.add(keyLight);
 
         // Cool fill light - adds dimension
-        const fillLight = new THREE.DirectionalLight(0xddeeff, 1.4);
+        const fillLight = new THREE.DirectionalLight(0xc8e0ff, 1.5);
         fillLight.position.set(-5, 4, -2);
         scene.add(fillLight);
 
-        // Strong rim light for silhouette definition
-        const rimLight = new THREE.DirectionalLight(0xffeeff, 1.2);
-        rimLight.position.set(0, 3, -7);
+        // ENHANCED RIM LIGHT - Colored for dramatic effect
+        const rimLight = new THREE.DirectionalLight(0xffc8ff, 1.5);
+        rimLight.position.set(0, 4, -8);
         scene.add(rimLight);
 
-        // Bottom fill for softer shadows (simulates ground bounce)
-        const bottomFill = new THREE.DirectionalLight(0xfff5ee, 0.4);
-        bottomFill.position.set(0, -2, 2);
+        // Secondary rim (opposite side) for balanced silhouette
+        const rimLight2 = new THREE.DirectionalLight(0xc8ffff, 0.8);
+        rimLight2.position.set(3, 2, -6);
+        scene.add(rimLight2);
+
+        // Bottom fill for softer under-shadows (ground bounce)
+        const bottomFill = new THREE.DirectionalLight(0xfff5ee, 0.5);
+        bottomFill.position.set(0, -3, 2);
         scene.add(bottomFill);
 
         // Subtle side accent light
-        const accentLight = new THREE.DirectionalLight(0xffe8d0, 0.6);
+        const accentLight = new THREE.DirectionalLight(0xffe8d0, 0.7);
         accentLight.position.set(-4, 2, 5);
         scene.add(accentLight);
 
@@ -529,9 +539,9 @@ limits. Below is the code it gave:>
         composer.addPass(new RenderPass(scene, camera));
         const bloomPass = new UnrealBloomPass(
           new THREE.Vector2(window.innerWidth, window.innerHeight),
-          0.25, // Slightly increased bloom strength
-          0.4, // Lower radius for tighter glow
-          0.82 // Adjusted threshold
+          0.3, // Increased bloom strength for premium glow
+          0.35, // Tighter radius
+          0.85 // Higher threshold for selective glow
         );
         composer.addPass(bloomPass);
 
@@ -544,7 +554,7 @@ limits. Below is the code it gave:>
         controls.maxPolarAngle = Math.PI / 1.9;
 
         // ==========================================
-        // MATERIAL FACTORY - ENHANCED FOR PREMIUM VINYL LOOK
+        // MATERIAL FACTORY - PHASE 4 PREMIUM VINYL
         // ==========================================
         function createVinylMaterial(color, options = {}) {
           // Calculate sheen color based on primary color for subtle iridescence
@@ -553,18 +563,20 @@ limits. Below is the code it gave:>
 
           return new THREE.MeshPhysicalMaterial({
             color: color,
-            roughness: options.roughness ?? 0.22,
+            roughness: options.roughness ?? 0.2,
             metalness: options.metalness ?? 0.0,
-            clearcoat: options.clearcoat ?? 0.5,
-            clearcoatRoughness: options.clearcoatRoughness ?? 0.08,
-            reflectivity: options.reflectivity ?? 0.6,
-            // Enhanced sheen for soft vinyl subsurface simulation
-            sheen: options.sheen ?? 0.3,
-            sheenRoughness: options.sheenRoughness ?? 0.4,
+            clearcoat: options.clearcoat ?? 0.6,
+            clearcoatRoughness: options.clearcoatRoughness ?? 0.06,
+            reflectivity: options.reflectivity ?? 0.7,
+            // Enhanced sheen for soft vinyl subsurface
+            sheen: options.sheen ?? 0.35,
+            sheenRoughness: options.sheenRoughness ?? 0.35,
             sheenColor: options.sheenColor ?? sheenColor,
-            // Subtle iridescence for premium look
-            iridescence: options.iridescence ?? 0.15,
-            iridescenceIOR: options.iridescenceIOR ?? 1.3,
+            // Stronger iridescence for premium look
+            iridescence: options.iridescence ?? 0.2,
+            iridescenceIOR: options.iridescenceIOR ?? 1.4,
+            // Environment map intensity for reflections
+            envMapIntensity: options.envMapIntensity ?? 0.8,
             side: THREE.DoubleSide,
             ...options,
           });
@@ -3229,6 +3241,22 @@ limits. Below is the code it gave:>
         pedCyl.receiveShadow = true;
         pedestal.add(pedCyl);
 
+        // CONTACT SHADOW - Soft ambient occlusion under animal
+        const contactShadowGeo = new THREE.CircleGeometry(0.5, 32);
+        const contactShadowMat = new THREE.MeshBasicMaterial({
+          color: 0x000000,
+          transparent: true,
+          opacity: 0.35,
+          depthWrite: false,
+        });
+        const contactShadow = new THREE.Mesh(
+          contactShadowGeo,
+          contactShadowMat
+        );
+        contactShadow.rotation.x = -Math.PI / 2;
+        contactShadow.position.y = 0.005; // Just above pedestal
+        pedestal.add(contactShadow);
+
         const islandGeom = new THREE.CylinderGeometry(4, 1.5, 1.5, 8, 3);
         const pos = islandGeom.attributes.position;
         for (let i = 0; i < pos.count; i++) {
@@ -3414,79 +3442,174 @@ limits. Below is the code it gave:>
             const type = currentAnimal.userData.type;
             const data = currentAnimal.userData.animationData;
 
-            // Subtle breathing (reduced amplitude)
-            const breath = 1 + Math.sin(t * 2) * 0.008;
-            currentAnimal.scale.y = breath;
+            // ===== ENHANCED BREATHING (localized to body) =====
+            const breathCycle = Math.sin(t * 1.8);
+            const breath = 1 + breathCycle * 0.015;
+            currentAnimal.scale.set(1, breath, 1 + breathCycle * 0.008);
 
-            // Smooth blinking (every ~4 seconds)
+            // ===== ENHANCED BLINKING (asymmetric + expressive) =====
             const blinkCycle = 4;
             const blinkPhase = (t % blinkCycle) / blinkCycle;
-            // Quick blink at start of cycle
-            let eyeScaleY = 1;
-            if (blinkPhase < 0.03) {
-              eyeScaleY = 1 - blinkPhase / 0.03; // Close
-            } else if (blinkPhase < 0.06) {
-              eyeScaleY = (blinkPhase - 0.03) / 0.03; // Open
-            }
-            eyeScaleY = Math.max(0.15, eyeScaleY); // Never fully close
+            // Add occasional slow "sleepy" blink
+            const slowBlink = Math.floor(t / 12) % 3 === 0;
+            const blinkSpeed = slowBlink ? 0.08 : 0.03;
 
-            // Apply blink to eye scleras only (not other parts)
+            let eyeScaleY = 1;
+            if (blinkPhase < blinkSpeed) {
+              eyeScaleY = 1 - blinkPhase / blinkSpeed; // Close
+            } else if (blinkPhase < blinkSpeed * 2) {
+              eyeScaleY = (blinkPhase - blinkSpeed) / blinkSpeed; // Open
+            }
+            // Squash effect during blink (eyes widen slightly horizontally)
+            const eyeScaleX = 1 + (1 - eyeScaleY) * 0.15;
+            eyeScaleY = Math.max(0.1, eyeScaleY);
+
+            // ===== EYE DART - SMOOTH LOOK, HOLD, RETURN =====
+            // Look cycle: 8 seconds total
+            // 0-1s: smoothly look to side, 1-2.5s: hold, 2.5-3.5s: return, 3.5-8s: rest
+            const lookCycle = 8;
+            const lookPhase = t % lookCycle;
+            let eyeOffsetX = 0;
+
+            // Determine direction (alternate left/right each cycle)
+            const lookDir = Math.floor(t / lookCycle) % 2 === 0 ? 1 : -1;
+            const maxOffset = 0.012;
+
+            if (lookPhase < 1.0) {
+              // Smooth ease-out to look position
+              const progress = lookPhase / 1.0;
+              const eased = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+              eyeOffsetX = maxOffset * lookDir * eased;
+            } else if (lookPhase < 2.5) {
+              // Hold at look position
+              eyeOffsetX = maxOffset * lookDir;
+            } else if (lookPhase < 3.5) {
+              // Smooth ease-in-out return to center
+              const progress = (lookPhase - 2.5) / 1.0;
+              const eased =
+                progress < 0.5
+                  ? 2 * progress * progress
+                  : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+              eyeOffsetX = maxOffset * lookDir * (1 - eased);
+            }
+            // else: rest at center (eyeOffsetX = 0)
+
+            // Apply enhanced blink and eye dart to ALL eye parts
             currentAnimal.traverse((child) => {
               if (
                 child.isMesh &&
                 child.material === SPECIAL_MATERIALS.eyeWhite
               ) {
-                // Store original scale if not stored
                 if (child.userData.origScaleY === undefined) {
                   child.userData.origScaleY = child.scale.y;
+                  child.userData.origScaleX = child.scale.x;
+                  child.userData.origPosX = child.position.x;
                 }
                 child.scale.y = child.userData.origScaleY * eyeScaleY;
+                child.scale.x = child.userData.origScaleX * eyeScaleX;
+                child.position.x = child.userData.origPosX + eyeOffsetX;
+              }
+              // Move pupils with eye dart
+              if (
+                child.isMesh &&
+                child.material === SPECIAL_MATERIALS.eyeBlack
+              ) {
+                if (child.userData.origPosX === undefined) {
+                  child.userData.origPosX = child.position.x;
+                }
+                child.position.x = child.userData.origPosX + eyeOffsetX * 1.5;
+              }
+              // Move specular highlights with eye dart too!
+              if (
+                child.isMesh &&
+                child.material === SPECIAL_MATERIALS.specular
+              ) {
+                if (child.userData.origPosX === undefined) {
+                  child.userData.origPosX = child.position.x;
+                }
+                child.position.x = child.userData.origPosX + eyeOffsetX * 1.5;
               }
             });
+
+            // ===== WEIGHT SHIFT (subtle body sway) =====
+            const swayPhase = Math.sin(t * 0.7) * 0.008;
+            currentAnimal.rotation.z = swayPhase;
 
             // Type-specific animations
             switch (type) {
               case "bunny":
-                // Ear twitch
+                // Enhanced ear twitch with independent timing
                 if (data.ears) {
                   data.ears.children.forEach((ear, i) => {
+                    const earPhase = t * 3 + i * 1.5;
                     ear.rotation.z =
-                      (i === 0 ? -1 : 1) * (0.15 + Math.sin(t * 3 + i) * 0.05);
+                      (i === 0 ? -1 : 1) * (0.15 + Math.sin(earPhase) * 0.08);
+                    // Occasional alert perk
+                    if (Math.floor(t / 6) % 3 === i) {
+                      ear.rotation.z += (i === 0 ? -1 : 1) * 0.15;
+                    }
                   });
                 }
-                // Nose wiggle
+                // Faster nose wiggle (bunnies twitch a lot!)
                 if (data.nose) {
-                  data.nose.rotation.z = Math.sin(t * 8) * 0.1;
-                  data.nose.scale.x = 1 + Math.sin(t * 6) * 0.1;
+                  data.nose.rotation.z = Math.sin(t * 10) * 0.12;
+                  data.nose.scale.x = 1 + Math.sin(t * 8) * 0.15;
+                }
+                // Occasional foot thump
+                const thumpPhase = t % 7;
+                if (thumpPhase > 6.7 && thumpPhase < 6.85) {
+                  currentAnimal.position.y = 0.02;
+                } else {
+                  currentAnimal.position.y = 0;
                 }
                 break;
 
               case "bear":
-                // Subtle head sway
+                // Enhanced head sway with occasional look around
                 if (data.head) {
-                  data.head.rotation.z = Math.sin(t * 1.2) * 0.03;
-                  data.head.rotation.y = Math.sin(t * 0.8) * 0.02;
+                  const lookAround = Math.floor(t / 8) % 2 === 0;
+                  const headSwayAmp = lookAround ? 0.08 : 0.03;
+                  data.head.rotation.z = Math.sin(t * 1.2) * headSwayAmp;
+                  data.head.rotation.y = Math.sin(t * 0.6) * headSwayAmp * 1.5;
+                  // Gentle head tilt
+                  data.head.rotation.x = Math.sin(t * 0.4) * 0.02;
                 }
+                // Shoulder roll motion
+                currentAnimal.rotation.x = Math.sin(t * 0.8) * 0.015;
                 break;
 
               case "penguin":
-                // Side-to-side waddle
-                currentAnimal.rotation.z = Math.sin(t * 2) * 0.05;
-                currentAnimal.position.x = Math.sin(t * 2) * 0.02;
+                // Enhanced waddle with happy flipper flutter
+                const waddleSpeed = 2.5;
+                currentAnimal.rotation.z = Math.sin(t * waddleSpeed) * 0.06;
+                currentAnimal.position.x = Math.sin(t * waddleSpeed) * 0.025;
+                // Occasional excited hop
+                const hopPhase = t % 10;
+                if (hopPhase > 9.5) {
+                  currentAnimal.position.y =
+                    Math.sin((hopPhase - 9.5) * Math.PI * 2) * 0.05;
+                }
                 break;
 
               case "fox":
-                // Enhanced tail physics - wave propagation through segments
+                // Enhanced tail physics
                 if (data.tail) {
-                  data.tail.rotation.z = Math.sin(t * 3) * 0.2;
-                  data.tail.rotation.x = -0.25 + Math.sin(t * 1.5) * 0.08;
-                  // Wave rotation through segments (not position to avoid drift)
+                  data.tail.rotation.z = Math.sin(t * 3) * 0.22;
+                  data.tail.rotation.x = -0.25 + Math.sin(t * 1.5) * 0.1;
                   data.tail.children.forEach((seg, i) => {
                     if (seg.isMesh) {
                       const delay = i * 0.15;
-                      seg.rotation.z = Math.sin(t * 4 - delay) * 0.1;
+                      seg.rotation.z = Math.sin(t * 4 - delay) * 0.12;
                     }
                   });
+                }
+                // Alert sniff motion (head bob)
+                if (data.head) {
+                  const sniffCycle = t % 4;
+                  if (sniffCycle > 3.5) {
+                    data.head.rotation.x =
+                      Math.sin((sniffCycle - 3.5) * Math.PI * 8) * 0.03;
+                  }
                 }
                 break;
 
@@ -3509,67 +3632,113 @@ limits. Below is the code it gave:>
                 // Enhanced tail swish with physics
                 if (data.tail) {
                   const swishSpeed = 2.5;
-                  const swishAmp = 0.25;
+                  const swishAmp = 0.28;
                   data.tail.rotation.z = Math.sin(t * swishSpeed) * swishAmp;
-                  // Wave rotation for fluid motion (not position to avoid drift)
                   data.tail.children.forEach((seg, i) => {
                     if (seg.isMesh) {
                       const delay = i * 0.12;
-                      seg.rotation.z = Math.sin(t * 3 - delay) * 0.08;
+                      seg.rotation.z = Math.sin(t * 3 - delay) * 0.1;
                     }
                   });
                 }
-                // Ear rotation
+                // Enhanced ear swivel (independent movement)
                 if (data.ears) {
                   data.ears.children.forEach((ear, i) => {
                     if (i % 2 === 0) {
-                      ear.rotation.y = Math.sin(t * 1.5 + i) * 0.1;
+                      ear.rotation.y = Math.sin(t * 1.8 + i * 0.5) * 0.12;
+                      // Occasional alert perk
+                      if (Math.floor(t / 5) % 4 === i) {
+                        ear.rotation.z = -0.1;
+                      }
                     }
                   });
+                }
+                // Subtle paw knead
+                const kneadPhase = t % 3;
+                if (kneadPhase < 0.5) {
+                  currentAnimal.position.y =
+                    Math.sin(kneadPhase * Math.PI * 4) * 0.008;
                 }
                 break;
 
               case "owl":
-                // Head rotation (up to 180 degrees occasionally)
+                // Enhanced head rotation with tilt
                 if (data.head) {
-                  const headRotation = Math.sin(t * 0.5) * 0.3;
-                  // Occasional dramatic turn
+                  const headRotation = Math.sin(t * 0.5) * 0.35;
+                  // Occasional dramatic turn (owls are known for this!)
                   const dramaticTurn =
                     Math.floor(t / 5) % 2 === 0
-                      ? Math.sin(((t % 5) * Math.PI) / 5) * 1.5
+                      ? Math.sin(((t % 5) * Math.PI) / 5) * 1.8
                       : 0;
-                  data.head.rotation.y = headRotation + dramaticTurn * 0.3;
+                  data.head.rotation.y = headRotation + dramaticTurn * 0.35;
+                  // Head tilt (curious look)
+                  data.head.rotation.z = Math.sin(t * 0.7) * 0.15;
+                }
+                // Feather ruffle (body puff)
+                const rufflePhase = t % 12;
+                if (rufflePhase > 11.5) {
+                  currentAnimal.scale.x =
+                    1 + Math.sin((rufflePhase - 11.5) * Math.PI * 4) * 0.03;
                 }
                 break;
 
               case "panda":
-                // Chewing motion
+                // Enhanced chewing motion (happy munching!)
                 if (data.muzzle) {
-                  data.muzzle.scale.y = 0.7 + Math.abs(Math.sin(t * 4)) * 0.1;
+                  const munchSpeed = 5;
+                  data.muzzle.scale.y =
+                    0.7 + Math.abs(Math.sin(t * munchSpeed)) * 0.12;
                 }
                 if (data.head) {
-                  data.head.rotation.x = Math.sin(t * 4) * 0.02;
+                  data.head.rotation.x = Math.sin(t * 5) * 0.025;
+                  // Gentle side-to-side while eating
+                  data.head.rotation.y = Math.sin(t * 0.8) * 0.04;
+                }
+                // Occasional belly pat (happy panda!)
+                const patPhase = t % 8;
+                if (patPhase > 7.5) {
+                  currentAnimal.scale.z =
+                    1 + Math.sin((patPhase - 7.5) * Math.PI * 4) * 0.02;
                 }
                 break;
 
               case "duck":
-                // Subtle head rotation only (no position changes to avoid beak glitch)
+                // Enhanced head rotation with occasional quack
                 if (data.head) {
-                  data.head.rotation.x = Math.sin(t * 2) * 0.05;
-                  data.head.rotation.y = Math.sin(t * 1.5) * 0.03;
+                  data.head.rotation.x = Math.sin(t * 2.2) * 0.06;
+                  data.head.rotation.y = Math.sin(t * 1.3) * 0.04;
+                  // Quack motion (head up!)
+                  const quackPhase = t % 6;
+                  if (quackPhase > 5.5 && quackPhase < 5.7) {
+                    data.head.rotation.x = -0.15;
+                  }
                 }
+                // Tail waggle
+                const tailWag = Math.sin(t * 4) * 0.03;
+                currentAnimal.rotation.y = tailWag;
                 break;
 
               case "frog":
-                // Throat pulse
+                // Enhanced throat pulse
                 if (data.throat) {
-                  const pulse = 1 + Math.max(0, Math.sin(t * 2)) * 0.3;
+                  const pulseSpeed = 2.5;
+                  const pulse =
+                    1 + Math.max(0, Math.sin(t * pulseSpeed)) * 0.35;
                   data.throat.scale.set(1.1 * pulse, 0.6 * pulse, 0.8);
                 }
-                // Occasional jump anticipation
+                // Leg twitch (ready to jump!)
+                const legTwitch = t % 5;
+                if (legTwitch > 4.5 && legTwitch < 4.7) {
+                  currentAnimal.scale.y = 0.95;
+                } else {
+                  currentAnimal.scale.y = 1 + Math.sin(t * 1.8) * 0.015; // Breathing
+                }
+                // Occasional jump anticipation with crouch
                 const jumpPhase = t % 8;
-                if (jumpPhase > 7.5) {
-                  currentAnimal.position.y = 0.05 + (jumpPhase - 7.5) * 0.1;
+                if (jumpPhase > 7.3 && jumpPhase < 7.5) {
+                  currentAnimal.scale.y = 0.92; // Crouch
+                } else if (jumpPhase > 7.5) {
+                  currentAnimal.position.y = 0.05 + (jumpPhase - 7.5) * 0.12;
                 } else {
                   currentAnimal.position.y = 0;
                 }
