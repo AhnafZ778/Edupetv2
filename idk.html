@@ -61,14 +61,16 @@ limits. Below is the code it gave:>
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       }
 
-      .animal-btn {
+      .animal-btn,
+      .room-btn {
         transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         position: relative;
         overflow: hidden;
         background: rgba(40, 40, 55, 0.6);
         color: #b0b8c8;
       }
-      .animal-btn::after {
+      .animal-btn::after,
+      .room-btn::after {
         content: "";
         position: absolute;
         inset: 0;
@@ -80,20 +82,42 @@ limits. Below is the code it gave:>
         opacity: 0;
         transition: opacity 0.3s;
       }
-      .animal-btn:hover {
+      .animal-btn:hover,
+      .room-btn:hover {
         transform: translateY(-2px);
         background: rgba(60, 60, 80, 0.85);
         color: #e0e4ec;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
       }
-      .animal-btn.active {
+      .animal-btn.active,
+      .room-btn.active {
         background: #4a5068;
         color: #ffffff;
         font-weight: 700;
         box-shadow: 0 4px 12px rgba(139, 155, 180, 0.25);
         transform: scale(1.02);
       }
-      .animal-btn.active::after {
+      .style-btn {
+        background: rgba(40, 44, 56, 0.8);
+        color: #8b9bb4;
+        border: 1px solid rgba(139, 155, 180, 0.2);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 11px;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+      .style-btn:hover {
+        background: rgba(60, 66, 82, 0.9);
+        border-color: rgba(139, 155, 180, 0.4);
+      }
+      .style-btn.active {
+        background: #5a6478;
+        color: #ffffff;
+        border-color: rgba(139, 155, 180, 0.6);
+      }
+      .animal-btn.active::after,
+      .room-btn.active::after {
         opacity: 1;
       }
 
@@ -277,74 +301,59 @@ limits. Below is the code it gave:>
     <!-- Canvas -->
     <div id="canvas-container"></div>
 
-    <!-- Controls -->
+    <!-- Room Navigation -->
     <div
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[120] w-[95%] max-w-3xl"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[120] w-[95%] max-w-2xl"
     >
-      <div class="glass rounded-2xl p-2 sm:p-3">
+      <div class="glass rounded-2xl p-3">
         <div
-          class="flex overflow-x-auto btn-scroll gap-2 pb-1 justify-start sm:justify-center"
+          class="text-[#8b9bb4] text-[10px] font-bold tracking-widest uppercase mb-2 text-center"
         >
+          Rooms
+        </div>
+        <div class="flex gap-3 justify-center">
           <button
-            class="animal-btn active px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="bunny"
+            class="room-btn active px-4 py-3 rounded-xl text-xs font-medium flex flex-col items-center gap-1 min-w-[90px]"
+            data-room="living"
           >
-            🐰 Bunny
+            <span class="text-2xl">🛋️</span>
+            <span class="text-[#5a6b85]">Living Room</span>
+            <span class="text-[10px] text-[#8b9bb4]">🐰🐱🐻</span>
           </button>
           <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="bear"
+            class="room-btn px-4 py-3 rounded-xl text-xs font-medium flex flex-col items-center gap-1 min-w-[90px]"
+            data-room="bedroom"
           >
-            🐻 Bear
+            <span class="text-2xl">🛏️</span>
+            <span class="text-[#5a6b85]">Bedroom</span>
+            <span class="text-[10px] text-[#8b9bb4]">🦉🐼🦊</span>
           </button>
           <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="penguin"
+            class="room-btn px-4 py-3 rounded-xl text-xs font-medium flex flex-col items-center gap-1 min-w-[90px]"
+            data-room="garden"
           >
-            🐧 Penguin
+            <span class="text-2xl">🌳</span>
+            <span class="text-[#5a6b85]">Garden</span>
+            <span class="text-[10px] text-[#8b9bb4]">🐧🦆🐸🐘</span>
           </button>
-          <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="fox"
+        </div>
+
+        <!-- Art Style Selector -->
+        <div class="mt-4">
+          <div
+            class="text-[#8b9bb4] text-[10px] font-bold tracking-widest uppercase mb-2 text-center"
           >
-            🦊 Fox
-          </button>
-          <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="elephant"
-          >
-            🐘 Elephant
-          </button>
-          <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="cat"
-          >
-            🐱 Cat
-          </button>
-          <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="owl"
-          >
-            🦉 Owl
-          </button>
-          <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="panda"
-          >
-            🐼 Panda
-          </button>
-          <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="duck"
-          >
-            🦆 Duck
-          </button>
-          <button
-            class="animal-btn px-3 py-2 rounded-xl text-xs text-[#6b7c93] font-medium whitespace-nowrap flex-shrink-0"
-            data-type="frog"
-          >
-            🐸 Frog
-          </button>
+            Art Style
+          </div>
+          <div class="flex gap-2 justify-center flex-wrap" id="style-selector">
+            <button class="style-btn active" data-style="vinyl">
+              🎨 Vinyl
+            </button>
+            <button class="style-btn" data-style="matte">🧸 Matte</button>
+            <button class="style-btn" data-style="plastic">✨ Plastic</button>
+            <button class="style-btn" data-style="glossy">💧 Glossy</button>
+            <button class="style-btn" data-style="fuzzy">🧶 Fuzzy</button>
+          </div>
         </div>
       </div>
     </div>
@@ -547,11 +556,17 @@ limits. Below is the code it gave:>
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 1.0;
-        controls.minDistance = 3;
-        controls.maxDistance = 10;
-        controls.maxPolarAngle = Math.PI / 1.9;
+        controls.dampingFactor = 0.08;
+        controls.autoRotate = false; // Disable auto-rotate to stay in room
+        controls.minDistance = 4;
+        controls.maxDistance = 8;
+        // Limit vertical angle (don't look too far up or down)
+        controls.minPolarAngle = Math.PI / 4; // 45 degrees from top
+        controls.maxPolarAngle = Math.PI / 2.2; // ~80 degrees from top
+        // Limit horizontal rotation to stay within room
+        controls.minAzimuthAngle = -Math.PI / 3; // -60 degrees
+        controls.maxAzimuthAngle = Math.PI / 3; // +60 degrees
+        controls.enablePan = false; // Disable panning to prevent leaving room
 
         // ==========================================
         // MATERIAL FACTORY - PHASE 4 PREMIUM VINYL
@@ -650,6 +665,109 @@ limits. Below is the code it gave:>
             });
           },
         };
+
+        // ==========================================
+        // ART STYLES SYSTEM
+        // ==========================================
+
+        // Current global art style
+        let currentArtStyle = "vinyl";
+
+        // Art style presets with material properties
+        const ART_STYLES = {
+          vinyl: {
+            name: "Vinyl Toy",
+            roughness: 0.15,
+            metalness: 0.0,
+            clearcoat: 0.8,
+            clearcoatRoughness: 0.1,
+            sheen: 0.8,
+            sheenRoughness: 0.3,
+            envMapIntensity: 0.6,
+            saturation: 1.0,
+          },
+          matte: {
+            name: "Soft Plush",
+            roughness: 0.7,
+            metalness: 0.0,
+            clearcoat: 0.0,
+            clearcoatRoughness: 0.8,
+            sheen: 0.9,
+            sheenRoughness: 0.9,
+            envMapIntensity: 0.2,
+            saturation: 0.9,
+          },
+          plastic: {
+            name: "Bright Plastic",
+            roughness: 0.25,
+            metalness: 0.02,
+            clearcoat: 0.6,
+            clearcoatRoughness: 0.2,
+            sheen: 0.3,
+            sheenRoughness: 0.4,
+            envMapIntensity: 0.5,
+            saturation: 1.2,
+          },
+          glossy: {
+            name: "Glossy Wet",
+            roughness: 0.05,
+            metalness: 0.05,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.0,
+            sheen: 0.2,
+            sheenRoughness: 0.2,
+            envMapIntensity: 0.9,
+            saturation: 1.0,
+          },
+          fuzzy: {
+            name: "Fuzzy Felt",
+            roughness: 0.95,
+            metalness: 0.0,
+            clearcoat: 0.0,
+            clearcoatRoughness: 1.0,
+            sheen: 1.0,
+            sheenRoughness: 1.0,
+            envMapIntensity: 0.1,
+            saturation: 0.85,
+          },
+        };
+
+        // Create material with specified art style
+        function createStyledMaterial(
+          baseColor,
+          artStyle = null,
+          options = {}
+        ) {
+          const style = ART_STYLES[artStyle || currentArtStyle];
+          const color = new THREE.Color(baseColor);
+
+          // Apply saturation adjustment
+          const hsl = {};
+          color.getHSL(hsl);
+          color.setHSL(hsl.h, hsl.s * style.saturation, hsl.l);
+
+          return new THREE.MeshPhysicalMaterial({
+            color: color,
+            roughness: style.roughness,
+            metalness: style.metalness,
+            clearcoat: style.clearcoat,
+            clearcoatRoughness: style.clearcoatRoughness,
+            sheen: style.sheen,
+            sheenRoughness: style.sheenRoughness,
+            sheenColor: color.clone().offsetHSL(0, -0.1, 0.2),
+            envMapIntensity: style.envMapIntensity,
+            side: THREE.DoubleSide,
+            ...options,
+          });
+        }
+
+        // Change art style for all animals (will need respawn or material update)
+        function setArtStyle(styleName) {
+          if (ART_STYLES[styleName]) {
+            currentArtStyle = styleName;
+            console.log(`Art style changed to: ${ART_STYLES[styleName].name}`);
+          }
+        }
 
         // ==========================================
         // GEOMETRY HELPERS
@@ -3225,54 +3343,165 @@ limits. Below is the code it gave:>
         }
 
         // ==========================================
-        // TERRAIN & PEDESTAL
+        // ROOM SYSTEM - 3D ENVIRONMENT
         // ==========================================
-        const pedestal = new THREE.Group();
 
-        const pedCyl = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.6, 0.7, 0.4, 24),
-          new THREE.MeshPhysicalMaterial({
-            color: 0x3a3a45,
-            roughness: 0.6,
-            metalness: 0.1,
-          })
-        );
-        pedCyl.position.y = -0.2;
-        pedCyl.receiveShadow = true;
-        pedestal.add(pedCyl);
+        // Room configuration
+        const ROOM_CONFIG = {
+          living: {
+            name: "Living Room",
+            size: { x: 10, y: 4, z: 10 },
+            floorColor: 0x8b7355, // Warm wood
+            wallColor: 0xfff8e7, // Cream
+            accentColor: 0xd4a574,
+            animals: ["bunny", "cat", "bear"],
+          },
+          bedroom: {
+            name: "Bedroom",
+            size: { x: 8, y: 3.5, z: 8 },
+            floorColor: 0x6b5b7a, // Purple carpet
+            wallColor: 0xe8e4f0, // Soft lavender
+            accentColor: 0x9b8ab8,
+            animals: ["owl", "panda", "fox"],
+          },
+          garden: {
+            name: "Garden",
+            size: { x: 12, y: 6, z: 12 },
+            floorColor: 0x4a7c4e, // Grass green
+            wallColor: 0x87ceeb, // Sky blue (open sky)
+            accentColor: 0x8fbc8f,
+            animals: ["penguin", "duck", "frog", "elephant"],
+          },
+        };
 
-        // CONTACT SHADOW - Soft ambient occlusion under animal
-        const contactShadowGeo = new THREE.CircleGeometry(0.5, 32);
-        const contactShadowMat = new THREE.MeshBasicMaterial({
-          color: 0x000000,
-          transparent: true,
-          opacity: 0.35,
-          depthWrite: false,
-        });
-        const contactShadow = new THREE.Mesh(
-          contactShadowGeo,
-          contactShadowMat
-        );
-        contactShadow.rotation.x = -Math.PI / 2;
-        contactShadow.position.y = 0.005; // Just above pedestal
-        pedestal.add(contactShadow);
+        // Room class
+        class Room {
+          constructor(config, key) {
+            this.config = config;
+            this.key = key;
+            this.group = new THREE.Group();
+            this.animals = [];
+            this.createRoom();
+          }
 
-        const islandGeom = new THREE.CylinderGeometry(4, 1.5, 1.5, 8, 3);
-        const pos = islandGeom.attributes.position;
-        for (let i = 0; i < pos.count; i++) {
-          if (pos.getY(i) > 0) {
-            pos.setY(i, pos.getY(i) + (Math.random() - 0.5) * 0.2);
+          createRoom() {
+            const { size, floorColor, wallColor } = this.config;
+
+            // Floor
+            const floorGeo = new THREE.PlaneGeometry(size.x, size.z);
+            const floorMat = new THREE.MeshPhysicalMaterial({
+              color: floorColor,
+              roughness: 0.7,
+              metalness: 0,
+            });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            this.group.add(floor);
+
+            // Contact shadow in center
+            const shadowGeo = new THREE.CircleGeometry(1.5, 32);
+            const shadowMat = new THREE.MeshBasicMaterial({
+              color: 0x000000,
+              transparent: true,
+              opacity: 0.25,
+              depthWrite: false,
+            });
+            const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+            shadowMesh.rotation.x = -Math.PI / 2;
+            shadowMesh.position.y = 0.01;
+            this.group.add(shadowMesh);
+
+            // Walls (only for indoor rooms)
+            if (this.key !== "garden") {
+              this.createWalls(size, wallColor);
+            } else {
+              // Garden has sky dome instead
+              this.createSkyDome();
+            }
+          }
+
+          createWalls(size, wallColor) {
+            const wallMat = new THREE.MeshPhysicalMaterial({
+              color: wallColor,
+              roughness: 0.9,
+              side: THREE.DoubleSide,
+            });
+
+            // Back wall
+            const backWall = new THREE.Mesh(
+              new THREE.PlaneGeometry(size.x, size.y),
+              wallMat
+            );
+            backWall.position.set(0, size.y / 2, -size.z / 2);
+            this.group.add(backWall);
+
+            // Side walls
+            [-1, 1].forEach((side) => {
+              const sideWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(size.z, size.y),
+                wallMat
+              );
+              sideWall.position.set((side * size.x) / 2, size.y / 2, 0);
+              sideWall.rotation.y = (side * Math.PI) / 2;
+              this.group.add(sideWall);
+            });
+          }
+
+          createSkyDome() {
+            // Simple sky gradient for garden
+            const skyGeo = new THREE.SphereGeometry(
+              15,
+              32,
+              16,
+              0,
+              Math.PI * 2,
+              0,
+              Math.PI / 2
+            );
+            const skyMat = new THREE.MeshBasicMaterial({
+              color: 0x87ceeb,
+              side: THREE.BackSide,
+            });
+            const sky = new THREE.Mesh(skyGeo, skyMat);
+            this.group.add(sky);
+
+            // Grass texture on floor (dots)
+            for (let i = 0; i < 50; i++) {
+              const blade = new THREE.Mesh(
+                new THREE.ConeGeometry(0.03, 0.15, 4),
+                new THREE.MeshBasicMaterial({ color: 0x3a6b3a })
+              );
+              blade.position.set(
+                (Math.random() - 0.5) * 10,
+                0.05,
+                (Math.random() - 0.5) * 10
+              );
+              this.group.add(blade);
+            }
+          }
+
+          addAnimal(animal) {
+            this.animals.push(animal);
+            this.group.add(animal);
           }
         }
-        islandGeom.computeVertexNormals();
-        const island = new THREE.Mesh(
-          islandGeom,
-          new THREE.MeshStandardMaterial({ color: 0x2a3a2a, flatShading: true })
-        );
-        island.position.y = -1.2;
-        island.receiveShadow = true;
-        scene.add(island);
-        scene.add(pedestal);
+
+        // Create all rooms
+        const rooms = {};
+        let roomOffsetX = 0;
+        Object.entries(ROOM_CONFIG).forEach(([key, config]) => {
+          const room = new Room(config, key);
+          room.group.position.x = roomOffsetX;
+          room.group.visible = false; // Hide all initially
+          rooms[key] = room;
+          scene.add(room.group);
+          roomOffsetX += 50; // Offset rooms far apart
+        });
+
+        // Current room state
+        let currentRoom = "living";
+        rooms[currentRoom].group.visible = true;
 
         // ==========================================
         // STATE MANAGEMENT
@@ -3353,10 +3582,6 @@ limits. Below is the code it gave:>
           badgeEl.classList.remove("pop-in");
           void badgeEl.offsetWidth;
           badgeEl.classList.add("pop-in");
-
-          document.querySelectorAll(".animal-btn").forEach((btn) => {
-            btn.classList.toggle("active", btn.dataset.type === type);
-          });
         }
 
         // Color change handler
@@ -3368,22 +3593,760 @@ limits. Below is the code it gave:>
               swatch.dataset.color === colorName
             );
           });
+        }
 
-          if (currentAnimal) {
-            switchAnimal(currentType, colorName);
+        // ==========================================
+        // ROOM SWITCHING SYSTEM
+        // ==========================================
+        function switchRoom(roomKey) {
+          if (roomKey === currentRoom) return;
+
+          // Hide current room
+          rooms[currentRoom].group.visible = false;
+
+          // Show new room
+          currentRoom = roomKey;
+          rooms[currentRoom].group.visible = true;
+
+          // Move camera to new room position
+          const roomPos = rooms[currentRoom].group.position;
+          camera.position.set(roomPos.x, 3, roomPos.z + 8);
+          controls.target.set(roomPos.x, 1, roomPos.z);
+          controls.update();
+
+          // Update room badge
+          const roomConfig = ROOM_CONFIG[roomKey];
+          document.getElementById("animal-name").textContent = roomConfig.name;
+          document.getElementById("animal-emoji").textContent =
+            roomKey === "living" ? "🛋️" : roomKey === "bedroom" ? "🛏️" : "🌳";
+
+          // Update room button active states
+          document.querySelectorAll(".room-btn").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.room === roomKey);
+          });
+        }
+
+        // ANIMAL AI - PHASE 2 TYPE-SPECIFIC LOCOMOTION
+        // ==========================================
+
+        // Type-specific locomotion profiles
+        const LOCOMOTION_PROFILES = {
+          bunny: {
+            hopHeight: 0.35,
+            hopSpeed: 8,
+            waddle: 0.05,
+            squashIntensity: 0.25,
+            speed: 1.2,
+            style: "hop",
+          },
+          bear: {
+            hopHeight: 0.08,
+            hopSpeed: 4,
+            waddle: 0.12,
+            squashIntensity: 0.15,
+            speed: 0.5,
+            style: "lumber",
+          },
+          penguin: {
+            hopHeight: 0.05,
+            hopSpeed: 6,
+            waddle: 0.25,
+            squashIntensity: 0.1,
+            speed: 0.6,
+            style: "waddle",
+          },
+          fox: {
+            hopHeight: 0.15,
+            hopSpeed: 7,
+            waddle: 0.08,
+            squashIntensity: 0.18,
+            speed: 1.0,
+            style: "trot",
+          },
+          elephant: {
+            hopHeight: 0.03,
+            hopSpeed: 2,
+            waddle: 0.06,
+            squashIntensity: 0.08,
+            speed: 0.3,
+            style: "stomp",
+          },
+          cat: {
+            hopHeight: 0.12,
+            hopSpeed: 5,
+            waddle: 0.04,
+            squashIntensity: 0.2,
+            speed: 0.9,
+            style: "prowl",
+          },
+          owl: {
+            hopHeight: 0.2,
+            hopSpeed: 3,
+            waddle: 0.02,
+            squashIntensity: 0.15,
+            speed: 0.4,
+            style: "hop",
+          },
+          panda: {
+            hopHeight: 0.06,
+            hopSpeed: 3,
+            waddle: 0.18,
+            squashIntensity: 0.12,
+            speed: 0.4,
+            style: "waddle",
+          },
+          duck: {
+            hopHeight: 0.08,
+            hopSpeed: 7,
+            waddle: 0.22,
+            squashIntensity: 0.1,
+            speed: 0.7,
+            style: "waddle",
+          },
+          frog: {
+            hopHeight: 0.5,
+            hopSpeed: 2,
+            waddle: 0.0,
+            squashIntensity: 0.4,
+            speed: 0.8,
+            style: "leap",
+          },
+        };
+
+        class AnimalAI {
+          constructor(animal, roomConfig) {
+            this.animal = animal;
+            this.roomConfig = roomConfig;
+            this.animalType = animal.userData.type || "bunny";
+            this.locomotion =
+              LOCOMOTION_PROFILES[this.animalType] || LOCOMOTION_PROFILES.bunny;
+
+            this.state = "idle"; // idle, anticipation, walking, arriving, sitting, playing
+            this.targetPosition = new THREE.Vector3();
+            this.startPosition = new THREE.Vector3();
+            this.moveSpeed = this.locomotion.speed + Math.random() * 0.2;
+            this.stateTimer = 0;
+            this.stateDuration = 3 + Math.random() * 2;
+            this.roomBounds = {
+              x: roomConfig.size.x / 2 - 1.5,
+              z: roomConfig.size.z / 2 - 1.5,
+            };
+            this.walkCycle = 0;
+            this.bouncePhase = 0;
+            this.squash = 1;
+            this.stretch = 1;
+            this.hopCount = 0; // For discrete hop styles
+            this.pickNewTarget();
+          }
+
+          pickNewTarget() {
+            this.startPosition.copy(this.animal.position);
+
+            // Try to find a good target that avoids other animals
+            let attempts = 0;
+            let bestTarget = new THREE.Vector3();
+            let valid = false;
+
+            while (!valid && attempts < 5) {
+              attempts++;
+
+              // Occasionally explore edges/corners (30% chance)
+              if (Math.random() < 0.3) {
+                // Pick an edge or corner position
+                const edgeX =
+                  (Math.random() > 0.5 ? 1 : -1) * this.roomBounds.x * 0.85;
+                const edgeZ =
+                  (Math.random() > 0.5 ? 1 : -1) * this.roomBounds.z * 0.85;
+                if (Math.random() > 0.5) {
+                  bestTarget.set(
+                    edgeX,
+                    0,
+                    (Math.random() - 0.5) * this.roomBounds.z
+                  );
+                } else {
+                  bestTarget.set(
+                    (Math.random() - 0.5) * this.roomBounds.x,
+                    0,
+                    edgeZ
+                  );
+                }
+              } else {
+                // Normal random position
+                bestTarget.set(
+                  (Math.random() - 0.5) * this.roomBounds.x * 1.4,
+                  0,
+                  (Math.random() - 0.5) * this.roomBounds.z * 1.4
+                );
+              }
+
+              // Check distance from other animals
+              valid = true;
+              animalAIs.forEach((otherAI) => {
+                if (otherAI !== this && otherAI.roomKey === this.roomKey) {
+                  const dist = bestTarget.distanceTo(otherAI.animal.position);
+                  if (dist < 1.2) {
+                    // Minimum safe distance
+                    valid = false;
+                  }
+                }
+              });
+            }
+
+            this.targetPosition.copy(bestTarget);
+            this.journeyLength = this.startPosition.distanceTo(
+              this.targetPosition
+            );
+          }
+
+          // Cartoon easing functions
+          easeOutBack(t) {
+            const c1 = 1.70158;
+            const c3 = c1 + 1;
+            return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+          }
+
+          easeOutElastic(t) {
+            if (t === 0 || t === 1) return t;
+            return (
+              Math.pow(2, -10 * t) *
+                Math.sin(((t * 10 - 0.75) * (2 * Math.PI)) / 3) +
+              1
+            );
+          }
+
+          easeInOutQuad(t) {
+            return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+          }
+
+          update(deltaTime) {
+            this.stateTimer += deltaTime;
+            const t = this.stateTimer;
+
+            switch (this.state) {
+              case "idle":
+                // Gentle breathing (reset squash/stretch)
+                this.squash = 1 + Math.sin(t * 2) * 0.02;
+                this.stretch = 1;
+                this.applySquashStretch();
+
+                // ===== PERSONALITY BEHAVIORS WHILE IDLE =====
+                const data = this.animal.userData.animationData;
+
+                // Curious looking around (head movement)
+                if (data && data.head) {
+                  const lookCycle = t * 0.5;
+                  // Occasional look to side
+                  const lookSide = Math.sin(lookCycle) * 0.2;
+                  // Random curious tilt
+                  const tilt = Math.sin(t * 0.3) * 0.1;
+                  data.head.rotation.y = lookSide;
+                  data.head.rotation.z = tilt;
+                }
+
+                // Ear twitches (alert/curious)
+                if (data && data.ears) {
+                  data.ears.children.forEach((ear, i) => {
+                    if (ear.isMesh || ear.isGroup) {
+                      const twitch = Math.sin(t * 4 + i * 2) * 0.05;
+                      ear.rotation.z = (i === 0 ? -1 : 1) * (0.15 + twitch);
+                    }
+                  });
+                }
+
+                // Occasional yawn (every 8+ seconds)
+                const yawnPhase = t % 10;
+                if (yawnPhase > 8 && yawnPhase < 8.8) {
+                  const yawnProgress = (yawnPhase - 8) / 0.8;
+                  // Open mouth wide, tilt head back
+                  if (data && data.head) {
+                    data.head.rotation.x =
+                      -Math.sin(yawnProgress * Math.PI) * 0.2;
+                  }
+                  // Squash-stretch during yawn
+                  this.squash = 1 + Math.sin(yawnProgress * Math.PI) * 0.1;
+                  this.applySquashStretch();
+                }
+
+                // Tail gentle sway while idle
+                if (data && data.tail) {
+                  data.tail.rotation.z = Math.sin(t * 1.5) * 0.15;
+                }
+
+                if (t > this.stateDuration) {
+                  this.transitionTo("anticipation");
+                }
+                break;
+
+              case "anticipation":
+                // SQUASH DOWN before jumping/moving (wind-up)
+                const anticipationDuration = 0.4;
+                const anticipationProgress = Math.min(
+                  t / anticipationDuration,
+                  1
+                );
+
+                // Turn to face target BEFORE hopping
+                const turnDirection = new THREE.Vector3().subVectors(
+                  this.targetPosition,
+                  this.animal.position
+                );
+                if (turnDirection.length() > 0.1) {
+                  const targetRot = Math.atan2(
+                    turnDirection.x,
+                    turnDirection.z
+                  );
+                  let rotDiff = targetRot - this.animal.rotation.y;
+                  while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+                  while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+                  this.animal.rotation.y += rotDiff * 0.6; // Faster turn (was 0.3)
+                }
+
+                // Squash down dramatically
+                this.squash = 1 - anticipationProgress * 0.3; // Compress to 70%
+                this.stretch = 1 + anticipationProgress * 0.15; // Widen
+                this.applySquashStretch();
+
+                // Crouch down
+                this.animal.position.y = -anticipationProgress * 0.1;
+
+                if (t > anticipationDuration) {
+                  this.transitionTo("walking");
+                }
+                break;
+
+              case "walking":
+                // TYPE-SPECIFIC LOCOMOTION
+                const loco = this.locomotion;
+                const walkDuration = this.journeyLength / this.moveSpeed;
+                const walkProgress = Math.min(t / walkDuration, 1);
+
+                // Hop/walk cycle using type-specific speed
+                this.walkCycle += deltaTime * loco.hopSpeed;
+                const hopPhase = Math.sin(this.walkCycle * Math.PI);
+
+                // Apply hop based on style
+                if (loco.style === "hop") {
+                  // BUNNY/OWL: Distinct bouncy hops
+                  const discreteHop = Math.abs(
+                    Math.sin(this.walkCycle * Math.PI)
+                  );
+                  this.animal.position.y = discreteHop * loco.hopHeight;
+                } else if (loco.style === "leap") {
+                  // FROG: Big single leap with hang time
+                  const leapProgress = this.easeInOutQuad(
+                    Math.sin(walkProgress * Math.PI)
+                  );
+                  this.animal.position.y = leapProgress * loco.hopHeight;
+                } else if (loco.style === "stomp") {
+                  // ELEPHANT: Heavy stomp with ground impact
+                  this.animal.position.y = Math.max(
+                    0,
+                    Math.abs(hopPhase) * loco.hopHeight
+                  );
+                  // Add "weight" shake on landing
+                  if (Math.abs(hopPhase) < 0.1) {
+                    this.animal.rotation.x = Math.random() * 0.02;
+                  }
+                } else if (loco.style === "waddle") {
+                  // PENGUIN/DUCK/PANDA: Tiny bounces with strong side-to-side
+                  this.animal.position.y = Math.abs(hopPhase) * loco.hopHeight;
+                } else {
+                  // DEFAULT (trot, lumber, prowl): Standard hop
+                  this.animal.position.y = Math.max(
+                    0,
+                    Math.abs(hopPhase) * loco.hopHeight
+                  );
+                }
+
+                // Squash on landing, stretch in air (type-specific intensity)
+                if (hopPhase > 0) {
+                  // In air - stretch tall
+                  this.squash = 1 + loco.squashIntensity;
+                  this.stretch = 1 - loco.squashIntensity * 0.6;
+                } else {
+                  // Landing - squash wide
+                  this.squash = 1 - loco.squashIntensity;
+                  this.stretch = 1 + loco.squashIntensity * 0.6;
+                }
+                this.applySquashStretch();
+
+                // Move towards target with easing
+                const easedProgress = this.easeInOutQuad(walkProgress);
+                const newX =
+                  this.startPosition.x +
+                  (this.targetPosition.x - this.startPosition.x) *
+                    easedProgress;
+                const newZ =
+                  this.startPosition.z +
+                  (this.targetPosition.z - this.startPosition.z) *
+                    easedProgress;
+                this.animal.position.x = newX;
+                this.animal.position.z = newZ;
+
+                // Face movement direction - use start→target direction (not current→target)
+                const moveDirection = new THREE.Vector3().subVectors(
+                  this.targetPosition,
+                  this.startPosition
+                );
+                if (moveDirection.length() > 0.1) {
+                  const targetRot = Math.atan2(
+                    moveDirection.x,
+                    moveDirection.z
+                  );
+                  // Snap rotation faster for responsiveness
+                  let rotDiff = targetRot - this.animal.rotation.y;
+                  // Normalize angle
+                  while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+                  while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+                  this.animal.rotation.y += rotDiff * 0.5; // Faster rotation (was 0.2)
+                }
+
+                // Type-specific waddle side-to-side
+                const waddleAmount = Math.sin(this.walkCycle * 2) * loco.waddle;
+                this.animal.rotation.z = waddleAmount;
+
+                // Type-specific tilt based on locomotion style
+                if (loco.style === "prowl") {
+                  this.animal.rotation.x = 0.03; // Cat: sleek, low profile
+                } else if (loco.style === "lumber") {
+                  this.animal.rotation.x = 0.12; // Bear: heavy lean
+                } else if (loco.style === "leap") {
+                  this.animal.rotation.x = -0.1; // Frog: nose up during leap
+                } else {
+                  this.animal.rotation.x = 0.06; // Default forward tilt
+                }
+
+                // Animate body parts during walking
+                this.animateBodyParts(hopPhase, deltaTime);
+
+                // Check if arrived
+                if (walkProgress >= 1) {
+                  this.transitionTo("arriving");
+                }
+                break;
+
+              case "arriving":
+                // OVERSHOOT and settle with bounce
+                const arriveDuration = 0.5;
+                const arriveProgress = Math.min(t / arriveDuration, 1);
+
+                // Elastic overshoot bounce
+                const bounce = this.easeOutElastic(arriveProgress);
+                this.squash =
+                  1 +
+                  (1 - bounce) * 0.2 * Math.sin(arriveProgress * Math.PI * 4);
+                this.stretch = 1;
+                this.applySquashStretch();
+
+                // Settle rotation
+                this.animal.rotation.x *= 0.9;
+                this.animal.rotation.z *= 0.9;
+                this.animal.position.y *= 0.8;
+
+                if (t > arriveDuration) {
+                  const nextState = Math.random();
+                  if (nextState < 0.4) this.transitionTo("idle");
+                  else if (nextState < 0.7) this.transitionTo("sitting");
+                  else this.transitionTo("playing");
+                }
+                break;
+
+              case "sitting":
+                // Cute sit-down animation
+                const sitProgress = Math.min(t / 0.3, 1);
+                this.squash = 0.8; // Stay squashed
+                this.stretch = 1.1;
+                this.applySquashStretch();
+                this.animal.position.y = -0.08 * sitProgress;
+
+                // ===== SITTING PERSONALITY =====
+                const sitData = this.animal.userData.animationData;
+
+                // Sleepy slow breathing
+                const sleepyBreath = Math.sin(t * 1.2) * 0.03;
+                this.squash = 0.8 + sleepyBreath;
+
+                // Content head resting/looking around slowly
+                if (sitData && sitData.head) {
+                  sitData.head.rotation.y = Math.sin(t * 0.4) * 0.15;
+                  sitData.head.rotation.x = 0.1; // Looking down slightly
+                }
+
+                // Occasional grooming (look at side as if checking fur)
+                const groomPhase = t % 6;
+                if (
+                  groomPhase > 4.5 &&
+                  groomPhase < 5.5 &&
+                  sitData &&
+                  sitData.head
+                ) {
+                  sitData.head.rotation.y = 0.5; // Turn head to side
+                  sitData.head.rotation.z = 0.2; // Tilt
+                }
+
+                // Ears relaxed/droopy while sitting
+                if (sitData && sitData.ears) {
+                  sitData.ears.children.forEach((ear, i) => {
+                    if (ear.isMesh || ear.isGroup) {
+                      ear.rotation.z = (i === 0 ? -1 : 1) * 0.25; // Relaxed droopy
+                    }
+                  });
+                }
+
+                // Tail curled calmly
+                if (sitData && sitData.tail) {
+                  sitData.tail.rotation.z = Math.sin(t * 0.8) * 0.1;
+                  sitData.tail.rotation.x = 0.3; // Curled up
+                }
+
+                // Stretch when about to get up
+                if (
+                  t > this.stateDuration * 1.3 &&
+                  t < this.stateDuration * 1.5
+                ) {
+                  const stretchProgress =
+                    (t - this.stateDuration * 1.3) / (this.stateDuration * 0.2);
+                  this.squash = 0.8 + stretchProgress * 0.4; // Stretch tall!
+                  this.stretch = 1.1 - stretchProgress * 0.2;
+                  this.applySquashStretch();
+                }
+
+                if (t > this.stateDuration * 1.5) {
+                  this.transitionTo("idle");
+                }
+                break;
+
+              case "playing":
+                // Excited spinning and bouncing!
+                this.animal.rotation.y += deltaTime * 4;
+                this.bouncePhase += deltaTime * 8;
+                this.animal.position.y =
+                  Math.abs(Math.sin(this.bouncePhase)) * 0.15;
+
+                // Joyful squash-stretch
+                this.squash = 1 + Math.sin(this.bouncePhase * 2) * 0.1;
+                this.stretch = 1 - Math.sin(this.bouncePhase * 2) * 0.05;
+                this.applySquashStretch();
+
+                // ===== PLAYFUL EXPRESSIONS =====
+                const playData = this.animal.userData.animationData;
+
+                // Happy perked up ears
+                if (playData && playData.ears) {
+                  playData.ears.children.forEach((ear, i) => {
+                    if (ear.isMesh || ear.isGroup) {
+                      // Perky and bouncy
+                      ear.rotation.z =
+                        (i === 0 ? -1 : 1) *
+                        (0.1 + Math.sin(this.bouncePhase * 2 + i) * 0.1);
+                      ear.rotation.x = -0.1; // Forward alert position
+                    }
+                  });
+                }
+
+                // Excited tail wagging
+                if (playData && playData.tail) {
+                  playData.tail.rotation.z =
+                    Math.sin(this.bouncePhase * 3) * 0.4; // Fast wag!
+                  playData.tail.rotation.y =
+                    Math.sin(this.bouncePhase * 2) * 0.2;
+                }
+
+                // Happy head bobbing
+                if (playData && playData.head) {
+                  playData.head.rotation.x =
+                    Math.sin(this.bouncePhase * 2) * 0.1;
+                  playData.head.rotation.z = Math.sin(this.bouncePhase) * 0.1;
+                }
+
+                if (t > this.stateDuration * 0.8) {
+                  this.transitionTo("arriving");
+                }
+                break;
+            }
+
+            // Keep in bounds
+            this.animal.position.x = Math.max(
+              -this.roomBounds.x,
+              Math.min(this.roomBounds.x, this.animal.position.x)
+            );
+            this.animal.position.z = Math.max(
+              -this.roomBounds.z,
+              Math.min(this.roomBounds.z, this.animal.position.z)
+            );
+          }
+
+          applySquashStretch() {
+            this.animal.scale.y = this.squash;
+            this.animal.scale.x = this.stretch;
+            this.animal.scale.z = this.stretch;
+          }
+
+          animateBodyParts(hopPhase, deltaTime) {
+            const data = this.animal.userData.animationData;
+            if (!data) return;
+
+            const walkCycle = this.walkCycle;
+
+            // ===== EAR ANIMATION =====
+            if (data.ears) {
+              data.ears.children.forEach((ear, i) => {
+                if (ear.isMesh || ear.isGroup) {
+                  // Bounce ears with each hop (opposite phase for natural look)
+                  const earBounce =
+                    Math.sin(walkCycle * Math.PI + i * Math.PI) * 0.2;
+                  const earFlop = Math.abs(hopPhase) * 0.15;
+                  ear.rotation.z =
+                    (i === 0 ? -1 : 1) * (0.15 + earBounce + earFlop);
+                  // Slight forward/back with movement
+                  ear.rotation.x = hopPhase * 0.1;
+                }
+              });
+            }
+
+            // ===== TAIL ANIMATION =====
+            if (data.tail) {
+              // Tail waves with a delay (drag effect)
+              const tailPhase = walkCycle - 0.5; // Lags behind body
+              data.tail.rotation.z = Math.sin(tailPhase * 2) * 0.3;
+              data.tail.rotation.x = -0.2 + Math.sin(tailPhase) * 0.15;
+
+              // Animate tail segments if they exist
+              data.tail.children.forEach((seg, i) => {
+                if (seg.isMesh) {
+                  const delay = i * 0.3;
+                  seg.rotation.z = Math.sin(tailPhase * 2 - delay) * 0.15;
+                }
+              });
+            }
+
+            // ===== HEAD ANIMATION =====
+            if (data.head) {
+              // Head bobs with walking
+              data.head.rotation.x = Math.sin(walkCycle * 2 * Math.PI) * 0.05;
+              // Slight side tilt with waddle
+              data.head.rotation.z = Math.sin(walkCycle * Math.PI) * 0.03;
+            }
+
+            // ===== NOSE ANIMATION =====
+            if (data.nose) {
+              // Nose twitches faster during movement
+              data.nose.rotation.z = Math.sin(walkCycle * 4 * Math.PI) * 0.1;
+            }
+
+            // ===== TRUNK ANIMATION (Elephant) =====
+            if (data.trunk) {
+              // Trunk swings with walking
+              data.trunk.rotation.z = Math.sin(walkCycle * Math.PI) * 0.2;
+              data.trunk.rotation.x = Math.sin(walkCycle * 2 * Math.PI) * 0.1;
+            }
+
+            // ===== THROAT ANIMATION (Frog) =====
+            if (data.throat) {
+              // Throat pulses faster during hopping
+              const pulse = 1 + Math.abs(hopPhase) * 0.3;
+              data.throat.scale.set(1.1 * pulse, 0.6 * pulse, 0.8);
+            }
+          }
+
+          transitionTo(newState) {
+            // Reset animation properties for clean transitions
+            this.animal.rotation.x = 0;
+            this.animal.rotation.z = 0;
+            this.squash = 1;
+            this.stretch = 1;
+            this.applySquashStretch();
+            this.walkCycle = 0;
+            this.bouncePhase = 0;
+
+            // Special handling for state-specific resets
+            if (newState === "idle" || newState === "anticipation") {
+              this.animal.position.y = 0;
+            }
+
+            this.state = newState;
+            this.stateTimer = 0;
+            this.stateDuration = 2 + Math.random() * 3;
+
+            if (newState === "anticipation") {
+              this.pickNewTarget();
+            }
           }
         }
 
-        // Init
-        switchAnimal("bunny");
+        // Store AI instances
+        const animalAIs = [];
 
-        // Event listeners
-        document.querySelectorAll(".animal-btn").forEach((btn) => {
+        // Spawn animals in their rooms with AI
+        function spawnAnimalsInRooms() {
+          Object.entries(ROOM_CONFIG).forEach(([roomKey, config]) => {
+            const room = rooms[roomKey];
+            config.animals.forEach((animalType, index) => {
+              const animal = createAnimalModel(animalType);
+              // Position animals spread out in room
+              const angle = (index / config.animals.length) * Math.PI * 2;
+              const radius = 2;
+              animal.position.set(
+                Math.cos(angle) * radius,
+                0,
+                Math.sin(angle) * radius
+              );
+              animal.rotation.y = -angle + Math.PI; // Face center
+              room.addAnimal(animal);
+
+              // Create AI for this animal
+              const ai = new AnimalAI(animal, config);
+              ai.roomKey = roomKey; // Track which room
+              animalAIs.push(ai);
+            });
+          });
+        }
+
+        // Initialize rooms with animals
+        spawnAnimalsInRooms();
+
+        // Set initial camera for living room
+        camera.position.set(0, 3, 8);
+        controls.target.set(0, 1, 0);
+        controls.update();
+
+        // Event listeners - Room buttons
+        document.querySelectorAll(".room-btn").forEach((btn) => {
           btn.addEventListener("click", (e) => {
-            const type = e.currentTarget.dataset.type;
-            if (type) switchAnimal(type);
+            const roomKey = e.currentTarget.dataset.room;
+            if (roomKey) switchRoom(roomKey);
           });
         });
+
+        // Event listeners - Art Style buttons
+        document.querySelectorAll(".style-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const styleName = e.currentTarget.dataset.style;
+            if (styleName && ART_STYLES[styleName]) {
+              // Update active state
+              document.querySelectorAll(".style-btn").forEach(b => b.classList.remove("active"));
+              e.currentTarget.classList.add("active");
+              
+              // Set art style and update all animals
+              setArtStyle(styleName);
+              updateAllAnimalMaterials(styleName);
+            }
+          });
+        });
+
+        // Update all animal materials with new art style
+        function updateAllAnimalMaterials(styleName) {
+          Object.values(rooms).forEach(room => {
+            room.animals.forEach(animal => {
+              animal.traverse(child => {
+                if (child.isMesh && child.material && !child.userData.preserveMaterial) {
+                  const oldColor = child.material.color ? child.material.color.getHex() : 0x888888;
+                  child.material = createStyledMaterial(oldColor, styleName);
+                }
+              });
+            });
+          });
+        }
 
         document.querySelectorAll(".color-swatch").forEach((swatch) => {
           swatch.addEventListener("click", (e) => {
@@ -3433,321 +4396,300 @@ limits. Below is the code it gave:>
           // Update particles
           particleBurst.update(delta || 0.016);
 
-          // Floating island
-          island.position.y = -1.2 + Math.sin(t * 0.8) * 0.05;
-          island.rotation.y = Math.sin(t * 0.2) * 0.05;
-
-          // Animal animations
-          if (currentAnimal && !isTransitioning) {
-            const type = currentAnimal.userData.type;
-            const data = currentAnimal.userData.animationData;
-
-            // ===== ENHANCED BREATHING (localized to body) =====
-            const breathCycle = Math.sin(t * 1.8);
-            const breath = 1 + breathCycle * 0.015;
-            currentAnimal.scale.set(1, breath, 1 + breathCycle * 0.008);
-
-            // ===== ENHANCED BLINKING (asymmetric + expressive) =====
-            const blinkCycle = 4;
-            const blinkPhase = (t % blinkCycle) / blinkCycle;
-            // Add occasional slow "sleepy" blink
-            const slowBlink = Math.floor(t / 12) % 3 === 0;
-            const blinkSpeed = slowBlink ? 0.08 : 0.03;
-
-            let eyeScaleY = 1;
-            if (blinkPhase < blinkSpeed) {
-              eyeScaleY = 1 - blinkPhase / blinkSpeed; // Close
-            } else if (blinkPhase < blinkSpeed * 2) {
-              eyeScaleY = (blinkPhase - blinkSpeed) / blinkSpeed; // Open
+          // Update animal AI (only for current room)
+          const effectiveDelta = delta || 0.016;
+          animalAIs.forEach((ai) => {
+            if (ai.roomKey === currentRoom) {
+              ai.update(effectiveDelta);
             }
-            // Squash effect during blink (eyes widen slightly horizontally)
-            const eyeScaleX = 1 + (1 - eyeScaleY) * 0.15;
-            eyeScaleY = Math.max(0.1, eyeScaleY);
+          });
 
-            // ===== EYE DART - SMOOTH LOOK, HOLD, RETURN =====
-            // Look cycle: 8 seconds total
-            // 0-1s: smoothly look to side, 1-2.5s: hold, 2.5-3.5s: return, 3.5-8s: rest
-            const lookCycle = 8;
-            const lookPhase = t % lookCycle;
-            let eyeOffsetX = 0;
+          // Animate all animals in the current visible room
+          const room = rooms[currentRoom];
+          if (room && room.animals) {
+            room.animals.forEach((animal, animalIndex) => {
+              const type = animal.userData.type;
+              const data = animal.userData.animationData;
 
-            // Determine direction (alternate left/right each cycle)
-            const lookDir = Math.floor(t / lookCycle) % 2 === 0 ? 1 : -1;
-            const maxOffset = 0.012;
+              // Offset time per animal for variety
+              const at = t + animalIndex * 0.7;
 
-            if (lookPhase < 1.0) {
-              // Smooth ease-out to look position
-              const progress = lookPhase / 1.0;
-              const eased = 1 - Math.pow(1 - progress, 3); // Ease out cubic
-              eyeOffsetX = maxOffset * lookDir * eased;
-            } else if (lookPhase < 2.5) {
-              // Hold at look position
-              eyeOffsetX = maxOffset * lookDir;
-            } else if (lookPhase < 3.5) {
-              // Smooth ease-in-out return to center
-              const progress = (lookPhase - 2.5) / 1.0;
-              const eased =
-                progress < 0.5
-                  ? 2 * progress * progress
-                  : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-              eyeOffsetX = maxOffset * lookDir * (1 - eased);
-            }
-            // else: rest at center (eyeOffsetX = 0)
+              // ===== ENHANCED BREATHING (localized to body) =====
+              const breathCycle = Math.sin(at * 1.8);
+              const breath = 1 + breathCycle * 0.015;
+              animal.scale.set(1, breath, 1 + breathCycle * 0.008);
 
-            // Apply enhanced blink and eye dart to ALL eye parts
-            currentAnimal.traverse((child) => {
-              if (
-                child.isMesh &&
-                child.material === SPECIAL_MATERIALS.eyeWhite
-              ) {
-                if (child.userData.origScaleY === undefined) {
-                  child.userData.origScaleY = child.scale.y;
-                  child.userData.origScaleX = child.scale.x;
-                  child.userData.origPosX = child.position.x;
-                }
-                child.scale.y = child.userData.origScaleY * eyeScaleY;
-                child.scale.x = child.userData.origScaleX * eyeScaleX;
-                child.position.x = child.userData.origPosX + eyeOffsetX;
+              // ===== ENHANCED BLINKING (asymmetric + expressive) =====
+              const blinkCycle = 4;
+              const blinkPhase = (t % blinkCycle) / blinkCycle;
+              // Add occasional slow "sleepy" blink
+              const slowBlink = Math.floor(t / 12) % 3 === 0;
+              const blinkSpeed = slowBlink ? 0.08 : 0.03;
+
+              let eyeScaleY = 1;
+              if (blinkPhase < blinkSpeed) {
+                eyeScaleY = 1 - blinkPhase / blinkSpeed; // Close
+              } else if (blinkPhase < blinkSpeed * 2) {
+                eyeScaleY = (blinkPhase - blinkSpeed) / blinkSpeed; // Open
               }
-              // Move pupils with eye dart
-              if (
-                child.isMesh &&
-                child.material === SPECIAL_MATERIALS.eyeBlack
-              ) {
-                if (child.userData.origPosX === undefined) {
-                  child.userData.origPosX = child.position.x;
-                }
-                child.position.x = child.userData.origPosX + eyeOffsetX * 1.5;
+              // Squash effect during blink (eyes widen slightly horizontally)
+              const eyeScaleX = 1 + (1 - eyeScaleY) * 0.15;
+              eyeScaleY = Math.max(0.1, eyeScaleY);
+
+              // ===== EYE DART - SMOOTH LOOK, HOLD, RETURN =====
+              // Look cycle: 8 seconds total
+              // 0-1s: smoothly look to side, 1-2.5s: hold, 2.5-3.5s: return, 3.5-8s: rest
+              const lookCycle = 8;
+              const lookPhase = t % lookCycle;
+              let eyeOffsetX = 0;
+
+              // Determine direction (alternate left/right each cycle)
+              const lookDir = Math.floor(t / lookCycle) % 2 === 0 ? 1 : -1;
+              const maxOffset = 0.012;
+
+              if (lookPhase < 1.0) {
+                // Smooth ease-out to look position
+                const progress = lookPhase / 1.0;
+                const eased = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+                eyeOffsetX = maxOffset * lookDir * eased;
+              } else if (lookPhase < 2.5) {
+                // Hold at look position
+                eyeOffsetX = maxOffset * lookDir;
+              } else if (lookPhase < 3.5) {
+                // Smooth ease-in-out return to center
+                const progress = (lookPhase - 2.5) / 1.0;
+                const eased =
+                  progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                eyeOffsetX = maxOffset * lookDir * (1 - eased);
               }
-              // Move specular highlights with eye dart too!
-              if (
-                child.isMesh &&
-                child.material === SPECIAL_MATERIALS.specular
-              ) {
-                if (child.userData.origPosX === undefined) {
-                  child.userData.origPosX = child.position.x;
-                }
-                child.position.x = child.userData.origPosX + eyeOffsetX * 1.5;
-              }
-            });
+              // else: rest at center (eyeOffsetX = 0)
 
-            // ===== WEIGHT SHIFT (subtle body sway) =====
-            const swayPhase = Math.sin(t * 0.7) * 0.008;
-            currentAnimal.rotation.z = swayPhase;
-
-            // Type-specific animations
-            switch (type) {
-              case "bunny":
-                // Enhanced ear twitch with independent timing
-                if (data.ears) {
-                  data.ears.children.forEach((ear, i) => {
-                    const earPhase = t * 3 + i * 1.5;
-                    ear.rotation.z =
-                      (i === 0 ? -1 : 1) * (0.15 + Math.sin(earPhase) * 0.08);
-                    // Occasional alert perk
-                    if (Math.floor(t / 6) % 3 === i) {
-                      ear.rotation.z += (i === 0 ? -1 : 1) * 0.15;
-                    }
-                  });
-                }
-                // Faster nose wiggle (bunnies twitch a lot!)
-                if (data.nose) {
-                  data.nose.rotation.z = Math.sin(t * 10) * 0.12;
-                  data.nose.scale.x = 1 + Math.sin(t * 8) * 0.15;
-                }
-                // Occasional foot thump
-                const thumpPhase = t % 7;
-                if (thumpPhase > 6.7 && thumpPhase < 6.85) {
-                  currentAnimal.position.y = 0.02;
-                } else {
-                  currentAnimal.position.y = 0;
-                }
-                break;
-
-              case "bear":
-                // Enhanced head sway with occasional look around
-                if (data.head) {
-                  const lookAround = Math.floor(t / 8) % 2 === 0;
-                  const headSwayAmp = lookAround ? 0.08 : 0.03;
-                  data.head.rotation.z = Math.sin(t * 1.2) * headSwayAmp;
-                  data.head.rotation.y = Math.sin(t * 0.6) * headSwayAmp * 1.5;
-                  // Gentle head tilt
-                  data.head.rotation.x = Math.sin(t * 0.4) * 0.02;
-                }
-                // Shoulder roll motion
-                currentAnimal.rotation.x = Math.sin(t * 0.8) * 0.015;
-                break;
-
-              case "penguin":
-                // Enhanced waddle with happy flipper flutter
-                const waddleSpeed = 2.5;
-                currentAnimal.rotation.z = Math.sin(t * waddleSpeed) * 0.06;
-                currentAnimal.position.x = Math.sin(t * waddleSpeed) * 0.025;
-                // Occasional excited hop
-                const hopPhase = t % 10;
-                if (hopPhase > 9.5) {
-                  currentAnimal.position.y =
-                    Math.sin((hopPhase - 9.5) * Math.PI * 2) * 0.05;
-                }
-                break;
-
-              case "fox":
-                // Enhanced tail physics
-                if (data.tail) {
-                  data.tail.rotation.z = Math.sin(t * 3) * 0.22;
-                  data.tail.rotation.x = -0.25 + Math.sin(t * 1.5) * 0.1;
-                  data.tail.children.forEach((seg, i) => {
-                    if (seg.isMesh) {
-                      const delay = i * 0.15;
-                      seg.rotation.z = Math.sin(t * 4 - delay) * 0.12;
-                    }
-                  });
-                }
-                // Alert sniff motion (head bob)
-                if (data.head) {
-                  const sniffCycle = t % 4;
-                  if (sniffCycle > 3.5) {
-                    data.head.rotation.x =
-                      Math.sin((sniffCycle - 3.5) * Math.PI * 8) * 0.03;
+              // Apply enhanced blink and eye dart to ALL eye parts
+              animal.traverse((child) => {
+                if (
+                  child.isMesh &&
+                  child.material === SPECIAL_MATERIALS.eyeWhite
+                ) {
+                  if (child.userData.origScaleY === undefined) {
+                    child.userData.origScaleY = child.scale.y;
+                    child.userData.origScaleX = child.scale.x;
+                    child.userData.origPosX = child.position.x;
                   }
+                  child.scale.y = child.userData.origScaleY * eyeScaleY;
+                  child.scale.x = child.userData.origScaleX * eyeScaleX;
+                  child.position.x = child.userData.origPosX + eyeOffsetX;
                 }
-                break;
+                // Move pupils with eye dart
+                if (
+                  child.isMesh &&
+                  child.material === SPECIAL_MATERIALS.eyeBlack
+                ) {
+                  if (child.userData.origPosX === undefined) {
+                    child.userData.origPosX = child.position.x;
+                  }
+                  child.position.x = child.userData.origPosX + eyeOffsetX * 1.5;
+                }
+                // Move specular highlights with eye dart too!
+                if (
+                  child.isMesh &&
+                  child.material === SPECIAL_MATERIALS.specular
+                ) {
+                  if (child.userData.origPosX === undefined) {
+                    child.userData.origPosX = child.position.x;
+                  }
+                  child.position.x = child.userData.origPosX + eyeOffsetX * 1.5;
+                }
+              });
 
-              case "elephant":
-                // Trunk sway with curl
-                if (data.trunk) {
-                  data.trunk.rotation.z = Math.sin(t * 1.5) * 0.15;
-                  data.trunk.rotation.x = Math.sin(t * 0.8) * 0.1;
-                  // Wave through trunk segments
-                  data.trunk.children.forEach((seg, i) => {
-                    if (seg.isMesh) {
-                      const delay = i * 0.1;
-                      seg.position.x = Math.sin(t * 2 - delay) * 0.015;
-                    }
-                  });
-                }
-                break;
+              // ===== WEIGHT SHIFT (subtle body sway) =====
+              const swayPhase = Math.sin(at * 0.7) * 0.008;
+              animal.rotation.z = swayPhase;
 
-              case "cat":
-                // Enhanced tail swish with physics
-                if (data.tail) {
-                  const swishSpeed = 2.5;
-                  const swishAmp = 0.28;
-                  data.tail.rotation.z = Math.sin(t * swishSpeed) * swishAmp;
-                  data.tail.children.forEach((seg, i) => {
-                    if (seg.isMesh) {
-                      const delay = i * 0.12;
-                      seg.rotation.z = Math.sin(t * 3 - delay) * 0.1;
-                    }
-                  });
-                }
-                // Enhanced ear swivel (independent movement)
-                if (data.ears) {
-                  data.ears.children.forEach((ear, i) => {
-                    if (i % 2 === 0) {
-                      ear.rotation.y = Math.sin(t * 1.8 + i * 0.5) * 0.12;
+              // Type-specific animations
+              switch (type) {
+                case "bunny":
+                  // Enhanced ear twitch with independent timing
+                  if (data.ears) {
+                    data.ears.children.forEach((ear, i) => {
+                      const earPhase = t * 3 + i * 1.5;
+                      ear.rotation.z =
+                        (i === 0 ? -1 : 1) * (0.15 + Math.sin(earPhase) * 0.08);
                       // Occasional alert perk
-                      if (Math.floor(t / 5) % 4 === i) {
-                        ear.rotation.z = -0.1;
+                      if (Math.floor(t / 6) % 3 === i) {
+                        ear.rotation.z += (i === 0 ? -1 : 1) * 0.15;
                       }
-                    }
-                  });
-                }
-                // Subtle paw knead
-                const kneadPhase = t % 3;
-                if (kneadPhase < 0.5) {
-                  currentAnimal.position.y =
-                    Math.sin(kneadPhase * Math.PI * 4) * 0.008;
-                }
-                break;
-
-              case "owl":
-                // Enhanced head rotation with tilt
-                if (data.head) {
-                  const headRotation = Math.sin(t * 0.5) * 0.35;
-                  // Occasional dramatic turn (owls are known for this!)
-                  const dramaticTurn =
-                    Math.floor(t / 5) % 2 === 0
-                      ? Math.sin(((t % 5) * Math.PI) / 5) * 1.8
-                      : 0;
-                  data.head.rotation.y = headRotation + dramaticTurn * 0.35;
-                  // Head tilt (curious look)
-                  data.head.rotation.z = Math.sin(t * 0.7) * 0.15;
-                }
-                // Feather ruffle (body puff)
-                const rufflePhase = t % 12;
-                if (rufflePhase > 11.5) {
-                  currentAnimal.scale.x =
-                    1 + Math.sin((rufflePhase - 11.5) * Math.PI * 4) * 0.03;
-                }
-                break;
-
-              case "panda":
-                // Enhanced chewing motion (happy munching!)
-                if (data.muzzle) {
-                  const munchSpeed = 5;
-                  data.muzzle.scale.y =
-                    0.7 + Math.abs(Math.sin(t * munchSpeed)) * 0.12;
-                }
-                if (data.head) {
-                  data.head.rotation.x = Math.sin(t * 5) * 0.025;
-                  // Gentle side-to-side while eating
-                  data.head.rotation.y = Math.sin(t * 0.8) * 0.04;
-                }
-                // Occasional belly pat (happy panda!)
-                const patPhase = t % 8;
-                if (patPhase > 7.5) {
-                  currentAnimal.scale.z =
-                    1 + Math.sin((patPhase - 7.5) * Math.PI * 4) * 0.02;
-                }
-                break;
-
-              case "duck":
-                // Enhanced head rotation with occasional quack
-                if (data.head) {
-                  data.head.rotation.x = Math.sin(t * 2.2) * 0.06;
-                  data.head.rotation.y = Math.sin(t * 1.3) * 0.04;
-                  // Quack motion (head up!)
-                  const quackPhase = t % 6;
-                  if (quackPhase > 5.5 && quackPhase < 5.7) {
-                    data.head.rotation.x = -0.15;
+                    });
                   }
-                }
-                // Tail waggle
-                const tailWag = Math.sin(t * 4) * 0.03;
-                currentAnimal.rotation.y = tailWag;
-                break;
+                  // Faster nose wiggle (bunnies twitch a lot!)
+                  if (data.nose) {
+                    data.nose.rotation.z = Math.sin(t * 10) * 0.12;
+                    data.nose.scale.x = 1 + Math.sin(t * 8) * 0.15;
+                  }
+                  // Note: Foot thump removed - AI handles hopping now
+                  break;
 
-              case "frog":
-                // Enhanced throat pulse
-                if (data.throat) {
-                  const pulseSpeed = 2.5;
-                  const pulse =
-                    1 + Math.max(0, Math.sin(t * pulseSpeed)) * 0.35;
-                  data.throat.scale.set(1.1 * pulse, 0.6 * pulse, 0.8);
-                }
-                // Leg twitch (ready to jump!)
-                const legTwitch = t % 5;
-                if (legTwitch > 4.5 && legTwitch < 4.7) {
-                  currentAnimal.scale.y = 0.95;
-                } else {
-                  currentAnimal.scale.y = 1 + Math.sin(t * 1.8) * 0.015; // Breathing
-                }
-                // Occasional jump anticipation with crouch
-                const jumpPhase = t % 8;
-                if (jumpPhase > 7.3 && jumpPhase < 7.5) {
-                  currentAnimal.scale.y = 0.92; // Crouch
-                } else if (jumpPhase > 7.5) {
-                  currentAnimal.position.y = 0.05 + (jumpPhase - 7.5) * 0.12;
-                } else {
-                  currentAnimal.position.y = 0;
-                }
-                break;
-            }
+                case "bear":
+                  // Enhanced head sway with occasional look around
+                  if (data.head) {
+                    const lookAround = Math.floor(t / 8) % 2 === 0;
+                    const headSwayAmp = lookAround ? 0.08 : 0.03;
+                    data.head.rotation.z = Math.sin(t * 1.2) * headSwayAmp;
+                    data.head.rotation.y =
+                      Math.sin(t * 0.6) * headSwayAmp * 1.5;
+                    // Gentle head tilt
+                    data.head.rotation.x = Math.sin(t * 0.4) * 0.02;
+                  }
+                  // Shoulder roll motion
+                  animal.rotation.x = Math.sin(t * 0.8) * 0.015;
+                  break;
 
-            // Gentle idle sway for all
-            currentAnimal.rotation.z = Math.sin(t * 1.5) * 0.02;
-          }
+                case "penguin":
+                  // Enhanced waddle with happy flipper flutter
+                  const waddleSpeed = 2.5;
+                  animal.rotation.z = Math.sin(at * waddleSpeed) * 0.06;
+                  // Occasional excited hop
+                  const hopPhase = at % 10;
+                  if (hopPhase > 9.5) {
+                    animal.position.y =
+                      Math.sin((hopPhase - 9.5) * Math.PI * 2) * 0.05;
+                  }
+                  break;
+
+                case "fox":
+                  // Enhanced tail physics
+                  if (data.tail) {
+                    data.tail.rotation.z = Math.sin(at * 3) * 0.22;
+                    data.tail.rotation.x = -0.25 + Math.sin(at * 1.5) * 0.1;
+                    data.tail.children.forEach((seg, i) => {
+                      if (seg.isMesh) {
+                        const delay = i * 0.15;
+                        seg.rotation.z = Math.sin(at * 4 - delay) * 0.12;
+                      }
+                    });
+                  }
+                  // Alert sniff motion (head bob)
+                  if (data.head) {
+                    const sniffCycle = at % 4;
+                    if (sniffCycle > 3.5) {
+                      data.head.rotation.x =
+                        Math.sin((sniffCycle - 3.5) * Math.PI * 8) * 0.03;
+                    }
+                  }
+                  break;
+
+                case "elephant":
+                  // Trunk sway with curl
+                  if (data.trunk) {
+                    data.trunk.rotation.z = Math.sin(at * 1.5) * 0.15;
+                    data.trunk.rotation.x = Math.sin(at * 0.8) * 0.1;
+                    // Wave through trunk segments
+                    data.trunk.children.forEach((seg, i) => {
+                      if (seg.isMesh) {
+                        const delay = i * 0.1;
+                        seg.position.x = Math.sin(at * 2 - delay) * 0.015;
+                      }
+                    });
+                  }
+                  break;
+
+                case "cat":
+                  // Enhanced tail swish with physics
+                  if (data.tail) {
+                    const swishSpeed = 2.5;
+                    const swishAmp = 0.28;
+                    data.tail.rotation.z = Math.sin(at * swishSpeed) * swishAmp;
+                    data.tail.children.forEach((seg, i) => {
+                      if (seg.isMesh) {
+                        const delay = i * 0.12;
+                        seg.rotation.z = Math.sin(at * 3 - delay) * 0.1;
+                      }
+                    });
+                  }
+                  // Enhanced ear swivel (independent movement)
+                  if (data.ears) {
+                    data.ears.children.forEach((ear, i) => {
+                      if (i % 2 === 0) {
+                        ear.rotation.y = Math.sin(at * 1.8 + i * 0.5) * 0.12;
+                      }
+                    });
+                  }
+                  break;
+
+                case "owl":
+                  // Enhanced head rotation with tilt
+                  if (data.head) {
+                    const headRotation = Math.sin(at * 0.5) * 0.35;
+                    // Occasional dramatic turn (owls are known for this!)
+                    const dramaticTurn =
+                      Math.floor(at / 5) % 2 === 0
+                        ? Math.sin(((at % 5) * Math.PI) / 5) * 1.8
+                        : 0;
+                    data.head.rotation.y = headRotation + dramaticTurn * 0.35;
+                    // Head tilt (curious look)
+                    data.head.rotation.z = Math.sin(at * 0.7) * 0.15;
+                  }
+                  // Feather ruffle (body puff)
+                  const rufflePhase = at % 12;
+                  if (rufflePhase > 11.5) {
+                    animal.scale.x =
+                      1 + Math.sin((rufflePhase - 11.5) * Math.PI * 4) * 0.03;
+                  }
+                  break;
+
+                case "panda":
+                  // Enhanced chewing motion (happy munching!)
+                  if (data.muzzle) {
+                    const munchSpeed = 5;
+                    data.muzzle.scale.y =
+                      0.7 + Math.abs(Math.sin(at * munchSpeed)) * 0.12;
+                  }
+                  if (data.head) {
+                    data.head.rotation.x = Math.sin(at * 5) * 0.025;
+                    // Gentle side-to-side while eating
+                    data.head.rotation.y = Math.sin(at * 0.8) * 0.04;
+                  }
+                  break;
+
+                case "duck":
+                  // Enhanced head rotation with occasional quack
+                  if (data.head) {
+                    data.head.rotation.x = Math.sin(at * 2.2) * 0.06;
+                    data.head.rotation.y = Math.sin(at * 1.3) * 0.04;
+                    // Quack motion (head up!)
+                    const quackPhase = at % 6;
+                    if (quackPhase > 5.5 && quackPhase < 5.7) {
+                      data.head.rotation.x = -0.15;
+                    }
+                  }
+                  // Tail waggle
+                  const tailWag = Math.sin(at * 4) * 0.03;
+                  animal.rotation.z = tailWag;
+                  break;
+
+                case "frog":
+                  // Enhanced throat pulse
+                  if (data.throat) {
+                    const pulseSpeed = 2.5;
+                    const pulse =
+                      1 + Math.max(0, Math.sin(at * pulseSpeed)) * 0.35;
+                    data.throat.scale.set(1.1 * pulse, 0.6 * pulse, 0.8);
+                  }
+                  // Occasional jump anticipation with crouch
+                  const jumpPhase = at % 8;
+                  if (jumpPhase > 7.3 && jumpPhase < 7.5) {
+                    animal.scale.y = 0.92; // Crouch
+                  } else if (jumpPhase > 7.5) {
+                    animal.position.y = 0.05 + (jumpPhase - 7.5) * 0.12;
+                  }
+                  break;
+              }
+
+              // Gentle idle sway for all
+              animal.rotation.z += Math.sin(at * 1.5) * 0.01;
+            }); // End forEach animal
+          } // End if room
 
           controls.update();
           composer.render();
