@@ -30,7 +30,7 @@ limits. Below is the code it gave:
         overflow: hidden;
         font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
           "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        background: radial-gradient(circle at center, #f0f8ff 0%, #e6e6fa 100%);
+        background: radial-gradient(circle at center, #2a2a35 0%, #1a1a25 100%);
       }
       #canvas-container {
         width: 100vw;
@@ -54,18 +54,19 @@ limits. Below is the code it gave:
       }
 
       .glass {
-        background: rgba(255, 255, 255, 0.6);
+        background: rgba(30, 30, 40, 0.7);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(60, 60, 80, 0.5);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       }
 
       .animal-btn {
         transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         position: relative;
         overflow: hidden;
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(40, 40, 55, 0.6);
+        color: #b0b8c8;
       }
       .animal-btn::after {
         content: "";
@@ -73,20 +74,21 @@ limits. Below is the code it gave:
         inset: 0;
         background: linear-gradient(
           135deg,
-          rgba(255, 255, 255, 0.4),
-          rgba(255, 255, 255, 0)
+          rgba(80, 80, 100, 0.3),
+          rgba(40, 40, 55, 0)
         );
         opacity: 0;
         transition: opacity 0.3s;
       }
       .animal-btn:hover {
         transform: translateY(-2px);
-        background: rgba(255, 255, 255, 0.9);
-        box-shadow: 0 4px 12px rgba(139, 155, 180, 0.2);
+        background: rgba(60, 60, 80, 0.85);
+        color: #e0e4ec;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
       }
       .animal-btn.active {
-        background: #ffffff;
-        color: #6b7c93;
+        background: #4a5068;
+        color: #ffffff;
         font-weight: 700;
         box-shadow: 0 4px 12px rgba(139, 155, 180, 0.25);
         transform: scale(1.02);
@@ -457,8 +459,8 @@ limits. Below is the code it gave:
         // ==========================================
         const container = document.getElementById("canvas-container");
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf0f8ff);
-        scene.fog = new THREE.Fog(0xf0f8ff, 8, 25);
+        scene.background = new THREE.Color(0x1e2028);
+        scene.fog = new THREE.Fog(0x1e2028, 10, 30);
 
         const camera = new THREE.PerspectiveCamera(
           40,
@@ -482,38 +484,54 @@ limits. Below is the code it gave:
         container.appendChild(renderer.domElement);
 
         // ==========================================
-        // LIGHTING
+        // LIGHTING - ENHANCED FOR PREMIUM VINYL LOOK
         // ==========================================
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        // Warm ambient for soft vinyl appearance
+        const ambientLight = new THREE.AmbientLight(0xfff8f0, 0.75);
         scene.add(ambientLight);
 
-        const keyLight = new THREE.DirectionalLight(0xfff0dd, 2.0);
-        keyLight.position.set(5, 8, 4);
+        // Key light - warm, main illumination
+        const keyLight = new THREE.DirectionalLight(0xffeedd, 2.2);
+        keyLight.position.set(5, 10, 4);
         keyLight.castShadow = true;
         keyLight.shadow.mapSize.width = 2048;
         keyLight.shadow.mapSize.height = 2048;
         keyLight.shadow.bias = -0.0001;
-        keyLight.shadow.radius = 4;
+        keyLight.shadow.radius = 6;
+        keyLight.shadow.camera.near = 1;
+        keyLight.shadow.camera.far = 20;
         scene.add(keyLight);
 
-        const fillLight = new THREE.DirectionalLight(0xddeeff, 1.2);
-        fillLight.position.set(-5, 3, -2);
+        // Cool fill light - adds dimension
+        const fillLight = new THREE.DirectionalLight(0xddeeff, 1.4);
+        fillLight.position.set(-5, 4, -2);
         scene.add(fillLight);
 
-        const rimLight = new THREE.DirectionalLight(0xe6e6fa, 0.8);
-        rimLight.position.set(0, 4, -6);
+        // Strong rim light for silhouette definition
+        const rimLight = new THREE.DirectionalLight(0xffeeff, 1.2);
+        rimLight.position.set(0, 3, -7);
         scene.add(rimLight);
 
+        // Bottom fill for softer shadows (simulates ground bounce)
+        const bottomFill = new THREE.DirectionalLight(0xfff5ee, 0.4);
+        bottomFill.position.set(0, -2, 2);
+        scene.add(bottomFill);
+
+        // Subtle side accent light
+        const accentLight = new THREE.DirectionalLight(0xffe8d0, 0.6);
+        accentLight.position.set(-4, 2, 5);
+        scene.add(accentLight);
+
         // ==========================================
-        // POST-PROCESSING
+        // POST-PROCESSING - ENHANCED BLOOM
         // ==========================================
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
         const bloomPass = new UnrealBloomPass(
           new THREE.Vector2(window.innerWidth, window.innerHeight),
-          0.2,
-          0.5,
-          0.85
+          0.25, // Slightly increased bloom strength
+          0.4, // Lower radius for tighter glow
+          0.82 // Adjusted threshold
         );
         composer.addPass(bloomPass);
 
@@ -526,16 +544,42 @@ limits. Below is the code it gave:
         controls.maxPolarAngle = Math.PI / 1.9;
 
         // ==========================================
-        // MATERIAL FACTORY
+        // MATERIAL FACTORY - ENHANCED FOR PREMIUM VINYL LOOK
         // ==========================================
         function createVinylMaterial(color, options = {}) {
+          // Calculate sheen color based on primary color for subtle iridescence
+          const baseColor = new THREE.Color(color);
+          const sheenColor = baseColor.clone().offsetHSL(0.05, 0.1, 0.2);
+
           return new THREE.MeshPhysicalMaterial({
             color: color,
-            roughness: options.roughness ?? 0.25,
+            roughness: options.roughness ?? 0.22,
             metalness: options.metalness ?? 0.0,
-            clearcoat: options.clearcoat ?? 0.4,
-            clearcoatRoughness: options.clearcoatRoughness ?? 0.1,
-            reflectivity: options.reflectivity ?? 0.5,
+            clearcoat: options.clearcoat ?? 0.5,
+            clearcoatRoughness: options.clearcoatRoughness ?? 0.08,
+            reflectivity: options.reflectivity ?? 0.6,
+            // Enhanced sheen for soft vinyl subsurface simulation
+            sheen: options.sheen ?? 0.3,
+            sheenRoughness: options.sheenRoughness ?? 0.4,
+            sheenColor: options.sheenColor ?? sheenColor,
+            // Subtle iridescence for premium look
+            iridescence: options.iridescence ?? 0.15,
+            iridescenceIOR: options.iridescenceIOR ?? 1.3,
+            side: THREE.DoubleSide,
+            ...options,
+          });
+        }
+
+        // Matte material variant for softer areas
+        function createMatteMaterial(color, options = {}) {
+          return new THREE.MeshPhysicalMaterial({
+            color: color,
+            roughness: options.roughness ?? 0.6,
+            metalness: 0.0,
+            clearcoat: 0.1,
+            sheen: 0.5,
+            sheenRoughness: 0.8,
+            sheenColor: new THREE.Color(color).offsetHSL(0, -0.1, 0.3),
             side: THREE.DoubleSide,
             ...options,
           });
@@ -551,21 +595,48 @@ limits. Below is the code it gave:
           return materialCache.get(key);
         }
 
-        // Special materials
+        // Special materials - ENHANCED for premium look
         const SPECIAL_MATERIALS = {
+          // Ultra-glossy deep pupil with subtle blue undertone
           eyeBlack: new THREE.MeshPhysicalMaterial({
-            color: 0x000000,
+            color: 0x050510,
             roughness: 0.0,
             clearcoat: 1.0,
-            metalness: 0.1,
+            clearcoatRoughness: 0.0,
+            metalness: 0.05,
+            reflectivity: 1.0,
+            ior: 1.5,
           }),
+          // Creamy white sclera with subtle translucency
           eyeWhite: new THREE.MeshPhysicalMaterial({
-            color: 0xffffff,
-            roughness: 0.1,
-            clearcoat: 0.8,
+            color: 0xfffef8,
+            roughness: 0.08,
+            clearcoat: 0.9,
+            clearcoatRoughness: 0.05,
+            sheen: 0.2,
+            sheenColor: new THREE.Color(0xfff0f0),
+            transmission: 0.02,
+            thickness: 0.1,
           }),
-          specular: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-          pupilSlit: new THREE.MeshBasicMaterial({ color: 0x000000 }),
+          // Bright specular highlight with subtle bloom potential
+          specular: new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.95,
+          }),
+          // Deep black slit pupil
+          pupilSlit: new THREE.MeshBasicMaterial({ color: 0x000005 }),
+          // New: Iris material for colored eye details
+          iris: function (color) {
+            return new THREE.MeshPhysicalMaterial({
+              color: color,
+              roughness: 0.1,
+              clearcoat: 0.8,
+              metalness: 0.0,
+              sheen: 0.4,
+              sheenColor: new THREE.Color(color).offsetHSL(0.1, 0, 0.2),
+            });
+          },
         };
 
         // ==========================================
@@ -634,7 +705,7 @@ limits. Below is the code it gave:
           return group;
         }
 
-        // Eye with optional slit pupil - ENHANCED for cuter appearance
+        // Eye with optional slit pupil - PREMIUM ENHANCED VERSION
         function createEye(scale = 1, slitPupil = false, options = {}) {
           const group = new THREE.Group();
           const baseScale = scale * 1.25; // 25% larger eyes overall
@@ -658,21 +729,65 @@ limits. Below is the code it gave:
             group.add(lid);
           }
 
-          // Sclera (white) - slightly larger
+          // Ambient occlusion shadow ring around eye (subtle depth)
+          const aoRing = new THREE.Mesh(
+            new THREE.TorusGeometry(
+              0.078 * baseScale,
+              0.008 * baseScale,
+              8,
+              24
+            ),
+            new THREE.MeshBasicMaterial({
+              color: 0x2a2020,
+              transparent: true,
+              opacity: 0.15,
+            })
+          );
+          aoRing.position.z = -0.002;
+          group.add(aoRing);
+
+          // Sclera (white) - slightly larger with depth
           const scleraGeom = new THREE.SphereGeometry(
             0.075 * baseScale,
-            20,
-            20
+            24,
+            24
           );
           const sclera = new THREE.Mesh(scleraGeom, SPECIAL_MATERIALS.eyeWhite);
           group.add(sclera);
 
+          // Iris ring (colored ring around pupil for depth)
+          const irisColor = options.irisColor || 0x3a2510; // Deep brown default
+          const irisRing = new THREE.Mesh(
+            new THREE.TorusGeometry(
+              0.038 * baseScale,
+              0.015 * baseScale,
+              12,
+              24
+            ),
+            SPECIAL_MATERIALS.iris(irisColor)
+          );
+          irisRing.position.z = 0.04 * baseScale;
+          group.add(irisRing);
+
+          // Inner iris gradient (darker inner ring)
+          const innerIris = new THREE.Mesh(
+            new THREE.RingGeometry(0.025 * baseScale, 0.045 * baseScale, 24),
+            new THREE.MeshPhysicalMaterial({
+              color: new THREE.Color(irisColor).offsetHSL(0, 0, -0.3),
+              roughness: 0.15,
+              clearcoat: 0.6,
+              side: THREE.DoubleSide,
+            })
+          );
+          innerIris.position.z = 0.042 * baseScale;
+          group.add(innerIris);
+
           if (slitPupil) {
-            // Cat-style slit pupil
+            // Cat-style slit pupil with subtle glow edge
             const pupilGeom = new THREE.CylinderGeometry(
               0.012 * baseScale,
               0.012 * baseScale,
-              0.09 * baseScale,
+              0.095 * baseScale,
               8
             );
             const pupil = new THREE.Mesh(
@@ -682,89 +797,214 @@ limits. Below is the code it gave:
             pupil.rotation.x = Math.PI / 2;
             pupil.position.z = 0.055 * baseScale;
             group.add(pupil);
+
+            // Subtle glow around slit for ethereal look
+            const slitGlow = new THREE.Mesh(
+              new THREE.CylinderGeometry(
+                0.018 * baseScale,
+                0.018 * baseScale,
+                0.09 * baseScale,
+                8
+              ),
+              new THREE.MeshBasicMaterial({
+                color: irisColor,
+                transparent: true,
+                opacity: 0.25,
+              })
+            );
+            slitGlow.rotation.x = Math.PI / 2;
+            slitGlow.position.z = 0.054 * baseScale;
+            group.add(slitGlow);
           } else {
-            // Round pupil - larger for cuter look
+            // Round pupil - larger for cuter look with depth
             const pupilGeom = new THREE.SphereGeometry(
-              0.045 * baseScale,
-              16,
-              16
+              0.048 * baseScale,
+              20,
+              20
             );
             const pupil = new THREE.Mesh(pupilGeom, SPECIAL_MATERIALS.eyeBlack);
             pupil.position.z = 0.045 * baseScale;
             group.add(pupil);
           }
 
-          // Primary highlight (larger, more prominent)
+          // Primary highlight (larger, more prominent, positioned at 10 o'clock)
           const highlightGeom = new THREE.SphereGeometry(
-            0.02 * baseScale,
-            8,
-            8
+            0.022 * baseScale,
+            10,
+            10
           );
           const highlight = new THREE.Mesh(
             highlightGeom,
             SPECIAL_MATERIALS.specular
           );
           highlight.position.set(
-            0.022 * baseScale,
-            0.025 * baseScale,
-            0.065 * baseScale
+            0.018 * baseScale,
+            0.028 * baseScale,
+            0.068 * baseScale
           );
           group.add(highlight);
 
-          // Secondary highlight (smaller, adds life)
+          // Secondary highlight (smaller, at 4 o'clock for depth)
           const highlight2Geom = new THREE.SphereGeometry(
-            0.01 * baseScale,
-            6,
-            6
+            0.012 * baseScale,
+            8,
+            8
           );
           const highlight2 = new THREE.Mesh(
             highlight2Geom,
             SPECIAL_MATERIALS.specular
           );
           highlight2.position.set(
-            -0.015 * baseScale,
-            -0.02 * baseScale,
-            0.065 * baseScale
+            -0.012 * baseScale,
+            -0.018 * baseScale,
+            0.066 * baseScale
           );
           group.add(highlight2);
+
+          // Tertiary micro-highlight (adds sparkle)
+          const highlight3Geom = new THREE.SphereGeometry(
+            0.006 * baseScale,
+            6,
+            6
+          );
+          const highlight3 = new THREE.Mesh(
+            highlight3Geom,
+            SPECIAL_MATERIALS.specular
+          );
+          highlight3.position.set(
+            0.03 * baseScale,
+            0.008 * baseScale,
+            0.067 * baseScale
+          );
+          group.add(highlight3);
+
+          // Subtle lower eye shadow (adds dimension)
+          const lowerShadow = new THREE.Mesh(
+            new THREE.TorusGeometry(
+              0.065 * baseScale,
+              0.006 * baseScale,
+              8,
+              16,
+              Math.PI * 0.6
+            ),
+            new THREE.MeshBasicMaterial({
+              color: 0x1a1015,
+              transparent: true,
+              opacity: 0.08,
+            })
+          );
+          lowerShadow.rotation.x = Math.PI / 2;
+          lowerShadow.rotation.z = Math.PI * 0.7;
+          lowerShadow.position.set(0, -0.02 * baseScale, 0.03 * baseScale);
+          group.add(lowerShadow);
 
           return group;
         }
 
-        // Owl-style concentric eye
+        // Owl-style concentric eye - PREMIUM ENHANCED
         function createOwlEye(scale = 1) {
           const group = new THREE.Group();
 
-          // Outer ring (facial disc)
+          // Deep ambient shadow around eye socket
+          const eyeSocket = new THREE.Mesh(
+            new THREE.CircleGeometry(0.14 * scale, 32),
+            new THREE.MeshBasicMaterial({
+              color: 0x2a1a10,
+              transparent: true,
+              opacity: 0.2,
+            })
+          );
+          eyeSocket.position.z = -0.005;
+          group.add(eyeSocket);
+
+          // Outer ring (facial disc) - thicker and more prominent
           const outerRing = new THREE.Mesh(
-            new THREE.TorusGeometry(0.12 * scale, 0.02 * scale, 8, 24),
-            getMaterial(0xdeb887)
+            new THREE.TorusGeometry(0.125 * scale, 0.025 * scale, 12, 32),
+            getMaterial(0xdeb887, { roughness: 0.4 })
           );
           group.add(outerRing);
 
-          // Large eye
+          // Secondary inner ring for depth
+          const innerRing = new THREE.Mesh(
+            new THREE.TorusGeometry(0.105 * scale, 0.01 * scale, 8, 24),
+            getMaterial(0xc9a87a, { roughness: 0.5 })
+          );
+          innerRing.position.z = 0.003;
+          group.add(innerRing);
+
+          // Orange iris base - more vibrant
           const eyeBg = new THREE.Mesh(
-            new THREE.CircleGeometry(0.1 * scale, 24),
-            getMaterial(0xffa500)
+            new THREE.CircleGeometry(0.1 * scale, 32),
+            new THREE.MeshPhysicalMaterial({
+              color: 0xff9500,
+              roughness: 0.1,
+              clearcoat: 0.7,
+              sheen: 0.3,
+              sheenColor: new THREE.Color(0xffcc00),
+            })
           );
           eyeBg.position.z = 0.01;
           group.add(eyeBg);
 
-          // Pupil
+          // Iris ring pattern (owls have radiating patterns)
+          const irisPattern = new THREE.Mesh(
+            new THREE.RingGeometry(0.055 * scale, 0.095 * scale, 24, 3),
+            new THREE.MeshPhysicalMaterial({
+              color: 0xcc6600,
+              roughness: 0.2,
+              side: THREE.DoubleSide,
+              transparent: true,
+              opacity: 0.6,
+            })
+          );
+          irisPattern.position.z = 0.012;
+          group.add(irisPattern);
+
+          // Inner iris glow ring
+          const innerGlow = new THREE.Mesh(
+            new THREE.RingGeometry(0.05 * scale, 0.065 * scale, 24),
+            new THREE.MeshPhysicalMaterial({
+              color: 0xffaa00,
+              roughness: 0.05,
+              emissive: 0x331100,
+              emissiveIntensity: 0.1,
+              side: THREE.DoubleSide,
+            })
+          );
+          innerGlow.position.z = 0.015;
+          group.add(innerGlow);
+
+          // Large deep pupil
           const pupil = new THREE.Mesh(
-            new THREE.CircleGeometry(0.05 * scale, 16),
+            new THREE.CircleGeometry(0.05 * scale, 24),
             SPECIAL_MATERIALS.eyeBlack
           );
-          pupil.position.z = 0.02;
+          pupil.position.z = 0.018;
           group.add(pupil);
 
-          // Highlight
+          // Primary highlight - larger for owl
           const highlight = new THREE.Mesh(
-            new THREE.CircleGeometry(0.02 * scale, 8),
+            new THREE.CircleGeometry(0.025 * scale, 12),
             SPECIAL_MATERIALS.specular
           );
-          highlight.position.set(0.025 * scale, 0.025 * scale, 0.03);
+          highlight.position.set(0.028 * scale, 0.028 * scale, 0.025);
           group.add(highlight);
+
+          // Secondary highlight
+          const highlight2 = new THREE.Mesh(
+            new THREE.CircleGeometry(0.012 * scale, 8),
+            SPECIAL_MATERIALS.specular
+          );
+          highlight2.position.set(-0.015 * scale, -0.02 * scale, 0.024);
+          group.add(highlight2);
+
+          // Micro sparkle
+          const sparkle = new THREE.Mesh(
+            new THREE.CircleGeometry(0.006 * scale, 6),
+            SPECIAL_MATERIALS.specular
+          );
+          sparkle.position.set(0.04 * scale, 0.01 * scale, 0.024);
+          group.add(sparkle);
 
           return group;
         }
@@ -878,326 +1118,468 @@ limits. Below is the code it gave:
           const secondaryMat = getMaterial(secondaryColor);
           const accentMat = getMaterial(config.accentColor);
 
-          // ============ BUNNY ============
+          // ============ BUNNY - ENHANCED ============
           if (type === "bunny") {
-            // Pear-shaped body (larger hindquarters)
-            const bodyGeom = new THREE.SphereGeometry(0.4, 32, 32);
+            // Pear-shaped body (larger hindquarters) - slightly rounder
+            const bodyGeom = new THREE.SphereGeometry(0.42, 32, 32);
             const body = new THREE.Mesh(bodyGeom, primaryMat);
-            body.scale.set(0.9, 1.1, 1.0);
+            body.scale.set(0.88, 1.12, 1.02);
             body.position.y = 0.45;
             body.castShadow = true;
             animal.add(body);
 
-            // Hindquarters bump
+            // Hindquarters bump - more pronounced
             const hindquarters = new THREE.Mesh(
-              new THREE.SphereGeometry(0.35, 24, 24),
+              new THREE.SphereGeometry(0.38, 24, 24),
               primaryMat
             );
-            hindquarters.position.set(0, 0.3, -0.15);
+            hindquarters.position.set(0, 0.28, -0.18);
             hindquarters.castShadow = true;
             animal.add(hindquarters);
 
-            // Head (slightly oval, wider at cheeks)
-            const head = new THREE.Mesh(
-              new THREE.SphereGeometry(0.38, 32, 32),
+            // Smooth body transition
+            const bodyTransition = new THREE.Mesh(
+              new THREE.SphereGeometry(0.25, 16, 16),
               primaryMat
             );
-            head.scale.set(1.1, 1.0, 1.0);
-            head.position.y = 1.05;
+            bodyTransition.position.set(0, 0.75, 0);
+            animal.add(bodyTransition);
+
+            // Head (slightly oval, wider at cheeks)
+            const head = new THREE.Mesh(
+              new THREE.SphereGeometry(0.4, 32, 32),
+              primaryMat
+            );
+            head.scale.set(1.12, 1.0, 1.0);
+            head.position.y = 1.08;
             head.castShadow = true;
             animal.add(head);
 
-            // Cheeks
+            // Enhanced cheeks with subtle blush
             [-1, 1].forEach((side) => {
               const cheek = new THREE.Mesh(
-                new THREE.SphereGeometry(0.15, 16, 16),
+                new THREE.SphereGeometry(0.17, 20, 20),
                 primaryMat
               );
-              cheek.position.set(side * 0.28, 0.95, 0.15);
+              cheek.position.set(side * 0.3, 0.94, 0.16);
               animal.add(cheek);
+
+              // Blush spots
+              const blush = new THREE.Mesh(
+                new THREE.CircleGeometry(0.06, 16),
+                new THREE.MeshPhysicalMaterial({
+                  color: 0xffb6c1,
+                  transparent: true,
+                  opacity: 0.35,
+                  roughness: 0.6,
+                })
+              );
+              blush.position.set(side * 0.34, 0.92, 0.28);
+              blush.rotation.y = side * 0.3;
+              animal.add(blush);
             });
 
-            // Paddle-shaped ears (2.5-3x head height)
+            // Subtle eyebrow ridges
+            [-1, 1].forEach((side) => {
+              const brow = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.02, 0.08, 6, 8),
+                primaryMat
+              );
+              brow.position.set(side * 0.16, 1.2, 0.32);
+              brow.rotation.z = side * -0.3;
+              brow.rotation.x = 0.2;
+              animal.add(brow);
+            });
+
+            // Enhanced paddle-shaped ears (thicker, more teardrop)
             const earGroup = new THREE.Group();
             [-1, 1].forEach((side) => {
               const earOuter = new THREE.Group();
 
-              // Main ear body - elongated teardrop
-              const earGeom = new THREE.CapsuleGeometry(0.1, 0.7, 8, 16);
+              // Main ear body - thicker elliptical paddle
+              const earGeom = new THREE.CapsuleGeometry(0.12, 0.75, 12, 20);
               const ear = new THREE.Mesh(earGeom, primaryMat);
-              ear.scale.set(1.2, 1, 0.4);
+              ear.scale.set(1.15, 1, 0.45);
               earOuter.add(ear);
 
-              // Inner ear
-              const innerGeom = new THREE.CapsuleGeometry(0.06, 0.55, 8, 16);
-              const inner = new THREE.Mesh(innerGeom, secondaryMat);
-              inner.scale.set(1.2, 1, 0.3);
-              inner.position.z = 0.02;
-              earOuter.add(inner);
-
-              // Ear tip (rounded)
-              const tip = new THREE.Mesh(
-                new THREE.SphereGeometry(0.1, 12, 12),
+              // Ear edge rim for thickness
+              const earRim = new THREE.Mesh(
+                new THREE.TorusGeometry(0.085, 0.025, 8, 24, Math.PI * 1.6),
                 primaryMat
               );
-              tip.scale.set(1.2, 0.8, 0.4);
-              tip.position.y = 0.4;
+              earRim.position.set(0, 0.1, 0);
+              earRim.rotation.x = Math.PI / 2;
+              earRim.rotation.z = Math.PI * 0.7;
+              earOuter.add(earRim);
+
+              // Inner ear - softer pink
+              const innerGeom = new THREE.CapsuleGeometry(0.07, 0.58, 10, 16);
+              const inner = new THREE.Mesh(innerGeom, secondaryMat);
+              inner.scale.set(1.1, 1, 0.32);
+              inner.position.z = 0.025;
+              earOuter.add(inner);
+
+              // Ear tip (more rounded)
+              const tip = new THREE.Mesh(
+                new THREE.SphereGeometry(0.11, 16, 16),
+                primaryMat
+              );
+              tip.scale.set(1.15, 0.85, 0.45);
+              tip.position.y = 0.42;
               earOuter.add(tip);
 
-              earOuter.position.set(side * 0.18, 1.5, 0);
-              earOuter.rotation.z = side * -0.15; // Slight outward angle
-              earOuter.rotation.x = -0.1;
+              earOuter.position.set(side * 0.2, 1.55, -0.02);
+              earOuter.rotation.z = side * -0.18;
+              earOuter.rotation.x = -0.08;
               earGroup.add(earOuter);
             });
             animal.userData.animationData.ears = earGroup;
             animal.add(earGroup);
 
-            // Eyes
+            // Eyes with custom iris color
             [-1, 1].forEach((side) => {
-              const eye = createEye(0.9);
-              eye.position.set(side * 0.18, 1.1, 0.32);
+              const eye = createEye(0.9, false, { irisColor: 0x4a3020 });
+              eye.position.set(side * 0.19, 1.12, 0.34);
               animal.add(eye);
             });
 
             // Enhanced Y-shaped nose with nostrils
             const nose = new THREE.Group();
             const noseTop = new THREE.Mesh(
-              new THREE.SphereGeometry(0.045, 16, 16),
-              getMaterial(0xffb6c1) // Pink nose
+              new THREE.SphereGeometry(0.05, 20, 20),
+              getMaterial(0xffb6c1)
             );
-            noseTop.scale.set(1.3, 0.7, 1);
+            noseTop.scale.set(1.35, 0.72, 1);
             nose.add(noseTop);
 
             // Nostril indentations
             [-1, 1].forEach((side) => {
               const nostril = new THREE.Mesh(
-                new THREE.SphereGeometry(0.012, 8, 8),
-                getMaterial(0xd4849a) // Darker pink
+                new THREE.SphereGeometry(0.014, 10, 10),
+                getMaterial(0xc87090)
               );
-              nostril.position.set(side * 0.018, -0.005, 0.02);
+              nostril.position.set(side * 0.02, -0.006, 0.025);
               nose.add(nostril);
             });
 
             // Nose line going down (philtrum)
             const noseLine = new THREE.Mesh(
-              new THREE.CylinderGeometry(0.008, 0.012, 0.05, 8),
+              new THREE.CylinderGeometry(0.009, 0.014, 0.055, 10),
               getMaterial(0xffb6c1)
             );
-            noseLine.position.y = -0.035;
+            noseLine.position.y = -0.038;
             nose.add(noseLine);
 
-            nose.position.set(0, 1.0, 0.38);
+            nose.position.set(0, 1.02, 0.4);
             animal.userData.animationData.nose = nose;
             animal.add(nose);
 
-            // Whiskers (3 per side)
+            // Whiskers (3 per side) - slightly curved
             [-1, 1].forEach((side) => {
               for (let i = 0; i < 3; i++) {
                 const whisker = new THREE.Mesh(
-                  new THREE.CylinderGeometry(0.003, 0.001, 0.22, 4),
+                  new THREE.CylinderGeometry(0.003, 0.001, 0.25, 6),
                   getMaterial(0xffffff)
                 );
                 whisker.rotation.z = (Math.PI / 2) * side;
-                whisker.rotation.y = (i - 1) * 0.25;
-                whisker.rotation.x = (i - 1) * 0.1;
-                whisker.position.set(side * 0.18, 0.98 + (i - 1) * 0.025, 0.32);
+                whisker.rotation.y = (i - 1) * 0.28;
+                whisker.rotation.x = (i - 1) * 0.12;
+                whisker.position.set(side * 0.2, 1.0 + (i - 1) * 0.028, 0.34);
                 animal.add(whisker);
               }
             });
 
-            // Enhanced cotton-ball tail (fluffy pom-pom effect)
+            // Enhanced fluffy tail with color variation
             const tailGroup = new THREE.Group();
             // Core
             const tailCore = new THREE.Mesh(
-              new THREE.SphereGeometry(0.1, 16, 16),
+              new THREE.SphereGeometry(0.11, 20, 20),
               primaryMat
             );
             tailGroup.add(tailCore);
-            // Fluffy outer layers
-            for (let i = 0; i < 8; i++) {
+
+            // Fluffy outer layers with slight color variation
+            for (let i = 0; i < 12; i++) {
+              const puffSize = 0.055 + Math.random() * 0.025;
               const puff = new THREE.Mesh(
-                new THREE.SphereGeometry(0.06 + Math.random() * 0.02, 12, 12),
-                primaryMat
+                new THREE.SphereGeometry(puffSize, 12, 12),
+                i % 3 === 0 ? secondaryMat : primaryMat
               );
-              const angle = (i / 8) * Math.PI * 2;
+              const angle = (i / 12) * Math.PI * 2;
+              const radius = 0.065 + Math.random() * 0.02;
               puff.position.set(
-                Math.cos(angle) * 0.06,
-                Math.sin(angle * 0.5) * 0.04,
-                Math.sin(angle) * 0.06
+                Math.cos(angle) * radius,
+                Math.sin(angle * 0.6) * 0.05 + (Math.random() - 0.5) * 0.02,
+                Math.sin(angle) * radius
               );
               tailGroup.add(puff);
             }
-            tailGroup.position.set(0, 0.48, -0.38);
+            tailGroup.position.set(0, 0.5, -0.4);
             animal.add(tailGroup);
 
             // Legs - back legs larger than front
-            // Front legs
+            // Front legs with paw detail
             [-1, 1].forEach((side) => {
               const frontLeg = new THREE.Mesh(
-                new THREE.CapsuleGeometry(0.07, 0.15, 8, 12),
+                new THREE.CapsuleGeometry(0.075, 0.16, 10, 14),
                 primaryMat
               );
-              frontLeg.position.set(side * 0.2, 0.15, 0.2);
+              frontLeg.position.set(side * 0.22, 0.16, 0.22);
               animal.add(frontLeg);
+
+              // Front paw
+              const frontPaw = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 12, 12),
+                primaryMat
+              );
+              frontPaw.scale.set(1, 0.6, 1.3);
+              frontPaw.position.set(side * 0.22, 0.04, 0.28);
+              animal.add(frontPaw);
             });
 
-            // Back legs (much larger)
+            // Back legs (much larger) with better definition
             [-1, 1].forEach((side) => {
-              const backLeg = new THREE.Mesh(
-                new THREE.CapsuleGeometry(0.12, 0.25, 8, 12),
+              // Thigh
+              const thigh = new THREE.Mesh(
+                new THREE.SphereGeometry(0.14, 16, 16),
                 primaryMat
               );
-              backLeg.position.set(side * 0.22, 0.15, -0.15);
-              backLeg.rotation.x = 0.3;
+              thigh.scale.set(0.9, 1.1, 1);
+              thigh.position.set(side * 0.24, 0.25, -0.12);
+              animal.add(thigh);
+
+              const backLeg = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.11, 0.22, 10, 14),
+                primaryMat
+              );
+              backLeg.position.set(side * 0.24, 0.14, -0.08);
+              backLeg.rotation.x = 0.35;
               animal.add(backLeg);
 
-              // Back foot
+              // Back foot - elongated bunny foot
               const backFoot = new THREE.Mesh(
-                new THREE.CapsuleGeometry(0.08, 0.18, 8, 12),
+                new THREE.CapsuleGeometry(0.085, 0.2, 10, 14),
                 primaryMat
               );
               backFoot.rotation.x = Math.PI / 2;
-              backFoot.position.set(side * 0.22, 0.05, 0.05);
+              backFoot.position.set(side * 0.24, 0.05, 0.08);
               animal.add(backFoot);
+
+              // Foot pad hint
+              const footPad = new THREE.Mesh(
+                new THREE.SphereGeometry(0.04, 10, 10),
+                secondaryMat
+              );
+              footPad.scale.set(1.2, 0.5, 1.5);
+              footPad.position.set(side * 0.24, 0.02, 0.12);
+              animal.add(footPad);
             });
           }
 
-          // ============ BEAR ============
+          // ============ BEAR - ENHANCED ============
           else if (type === "bear") {
             // Barrel-shaped torso (1.5x wider than tall)
             const body = new THREE.Mesh(
-              new THREE.SphereGeometry(0.55, 32, 32),
+              new THREE.SphereGeometry(0.58, 32, 32),
               primaryMat
             );
-            body.scale.set(1.3, 1.0, 1.1);
+            body.scale.set(1.32, 1.0, 1.15);
             body.position.y = 0.55;
             body.castShadow = true;
             animal.add(body);
 
-            // Shoulder hump
+            // Enhanced shoulder hump - more prominent (30% larger)
             const hump = new THREE.Mesh(
-              new THREE.SphereGeometry(0.25, 16, 16),
+              new THREE.SphereGeometry(0.32, 20, 20),
               primaryMat
             );
-            hump.position.set(0, 0.9, -0.1);
+            hump.scale.set(1.2, 0.9, 1);
+            hump.position.set(0, 0.92, -0.12);
             animal.add(hump);
 
-            // Belly patch
+            // Secondary hump for smooth transition
+            const hump2 = new THREE.Mesh(
+              new THREE.SphereGeometry(0.22, 16, 16),
+              primaryMat
+            );
+            hump2.position.set(0, 1.02, -0.05);
+            animal.add(hump2);
+
+            // Belly patch - rounder
             const belly = new THREE.Mesh(
-              new THREE.SphereGeometry(0.4, 24, 24),
+              new THREE.SphereGeometry(0.42, 24, 24),
               secondaryMat
             );
-            belly.scale.set(1.0, 1.1, 0.5);
-            belly.position.set(0, 0.5, 0.25);
+            belly.scale.set(1.0, 1.15, 0.52);
+            belly.position.set(0, 0.48, 0.28);
             animal.add(belly);
 
             // Wide, round head with pronounced forehead
             const head = new THREE.Mesh(
-              new THREE.SphereGeometry(0.45, 32, 32),
+              new THREE.SphereGeometry(0.48, 32, 32),
               primaryMat
             );
-            head.scale.set(1.1, 1.0, 1.0);
-            head.position.y = 1.2;
+            head.scale.set(1.12, 1.0, 1.0);
+            head.position.y = 1.22;
             head.castShadow = true;
             animal.add(head);
 
-            // Forehead bulge
-            const forehead = new THREE.Mesh(
-              new THREE.SphereGeometry(0.2, 16, 16),
-              primaryMat
-            );
-            forehead.position.set(0, 1.45, 0.1);
-            animal.add(forehead);
-
-            // Box-like muzzle
-            const snout = new THREE.Mesh(
-              new THREE.BoxGeometry(0.3, 0.2, 0.2),
-              secondaryMat
-            );
-            snout.position.set(0, 1.1, 0.4);
-            // Round the edges by scaling a sphere overlay
-            animal.add(snout);
-
-            const snoutRound = new THREE.Mesh(
-              new THREE.SphereGeometry(0.15, 16, 16),
-              secondaryMat
-            );
-            snoutRound.scale.set(1.0, 0.8, 0.8);
-            snoutRound.position.set(0, 1.1, 0.45);
-            animal.add(snoutRound);
-
-            // Nose
-            const nose = new THREE.Mesh(
-              new THREE.SphereGeometry(0.08, 12, 12),
-              accentMat
-            );
-            nose.scale.set(1.3, 0.9, 1.0);
-            nose.position.set(0, 1.15, 0.52);
-            animal.add(nose);
-
-            // Small round ears at 10 and 2 o'clock
+            // Cheek puffs for rounder face
             [-1, 1].forEach((side) => {
-              const angle = (side * Math.PI) / 4; // 45 degrees
-              const earRadius = 0.45;
-
-              const ear = new THREE.Mesh(
+              const cheek = new THREE.Mesh(
                 new THREE.SphereGeometry(0.15, 16, 16),
                 primaryMat
               );
-              ear.position.set(
-                side * Math.sin(angle) * earRadius,
-                1.2 + Math.cos(angle) * earRadius * 0.8,
-                0
-              );
-              animal.add(ear);
-
-              const innerEar = new THREE.Mesh(
-                new THREE.SphereGeometry(0.08, 12, 12),
-                secondaryMat
-              );
-              innerEar.position.copy(ear.position);
-              innerEar.position.z = 0.08;
-              animal.add(innerEar);
+              cheek.position.set(side * 0.32, 1.12, 0.22);
+              animal.add(cheek);
             });
 
-            // Eyes
+            // Forehead bulge - more subtle
+            const forehead = new THREE.Mesh(
+              new THREE.SphereGeometry(0.22, 18, 18),
+              primaryMat
+            );
+            forehead.position.set(0, 1.48, 0.12);
+            animal.add(forehead);
+
+            // Smooth blended muzzle (no box geometry)
+            const muzzleBase = new THREE.Mesh(
+              new THREE.SphereGeometry(0.18, 20, 20),
+              secondaryMat
+            );
+            muzzleBase.scale.set(1.1, 0.85, 0.9);
+            muzzleBase.position.set(0, 1.1, 0.42);
+            animal.add(muzzleBase);
+
+            const muzzleFront = new THREE.Mesh(
+              new THREE.SphereGeometry(0.14, 18, 18),
+              secondaryMat
+            );
+            muzzleFront.scale.set(1.0, 0.78, 0.85);
+            muzzleFront.position.set(0, 1.1, 0.52);
+            animal.add(muzzleFront);
+
+            // Muzzle bridge for smooth transition
+            const muzzleBridge = new THREE.Mesh(
+              new THREE.CapsuleGeometry(0.08, 0.12, 10, 12),
+              secondaryMat
+            );
+            muzzleBridge.rotation.x = Math.PI / 2;
+            muzzleBridge.scale.set(1.2, 1, 0.8);
+            muzzleBridge.position.set(0, 1.12, 0.38);
+            animal.add(muzzleBridge);
+
+            // Enhanced nose with nostrils
+            const nose = new THREE.Group();
+            const noseMain = new THREE.Mesh(
+              new THREE.SphereGeometry(0.09, 14, 14),
+              accentMat
+            );
+            noseMain.scale.set(1.35, 0.88, 1.0);
+            nose.add(noseMain);
+
+            // Nostril indentations
             [-1, 1].forEach((side) => {
-              const eye = createEye(0.7);
-              eye.position.set(side * 0.2, 1.28, 0.38);
+              const nostril = new THREE.Mesh(
+                new THREE.SphereGeometry(0.025, 8, 8),
+                getMaterial(0x0a0a0a)
+              );
+              nostril.position.set(side * 0.04, -0.01, 0.04);
+              nose.add(nostril);
+            });
+            nose.position.set(0, 1.16, 0.58);
+            animal.add(nose);
+
+            // Enhanced ears at 10 and 2 o'clock with depth
+            [-1, 1].forEach((side) => {
+              const earGroup = new THREE.Group();
+              const angle = (side * Math.PI) / 4.2;
+              const earRadius = 0.48;
+
+              // Main ear
+              const ear = new THREE.Mesh(
+                new THREE.SphereGeometry(0.16, 18, 18),
+                primaryMat
+              );
+              earGroup.add(ear);
+
+              // Ear inner recess (darker)
+              const innerEar = new THREE.Mesh(
+                new THREE.SphereGeometry(0.09, 14, 14),
+                secondaryMat
+              );
+              innerEar.position.z = 0.08;
+              earGroup.add(innerEar);
+
+              // Ear cavity shadow
+              const earCavity = new THREE.Mesh(
+                new THREE.CircleGeometry(0.06, 12),
+                new THREE.MeshBasicMaterial({
+                  color: 0x3a2a20,
+                  transparent: true,
+                  opacity: 0.3,
+                })
+              );
+              earCavity.position.z = 0.085;
+              earGroup.add(earCavity);
+              // FIXED: Simple ear position at 10 and 2 o'clock
+              earGroup.position.set(side * 0.32, 1.52, 0.05);
+              earGroup.rotation.z = side * 0.15;
+              animal.add(earGroup);
+            });
+
+            // Eyes - slightly lower and forward
+            [-1, 1].forEach((side) => {
+              const eye = createEye(0.7, false, { irisColor: 0x2a1810 });
+              eye.position.set(side * 0.22, 1.26, 0.4);
               animal.add(eye);
             });
 
-            // Thick plantigrade legs with paw pads and CLAWS
+            // Thick plantigrade legs with enhanced paw pads and curved claws
             const legPositions = [
-              { x: -0.35, z: 0.2 },
-              { x: 0.35, z: 0.2 },
-              { x: -0.3, z: -0.25 },
-              { x: 0.3, z: -0.25 },
+              { x: -0.38, z: 0.22, front: true },
+              { x: 0.38, z: 0.22, front: true },
+              { x: -0.32, z: -0.28, front: false },
+              { x: 0.32, z: -0.28, front: false },
             ];
 
-            legPositions.forEach((pos, i) => {
-              // Thicker legs (20% increase)
+            legPositions.forEach((pos) => {
+              // Thicker legs with slight curve
               const leg = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.14, 0.17, 0.38, 16),
+                new THREE.CylinderGeometry(0.15, 0.18, 0.4, 18),
                 primaryMat
               );
-              leg.position.set(pos.x, 0.19, pos.z);
+              leg.position.set(pos.x, 0.2, pos.z);
               animal.add(leg);
 
-              // Paw
-              const paw = createPaw(0.14, primaryMat, secondaryMat);
-              paw.position.set(pos.x, 0.02, pos.z + 0.05);
+              // Knee/joint bulge
+              const knee = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 12, 12),
+                primaryMat
+              );
+              knee.position.set(pos.x, 0.32, pos.z);
+              animal.add(knee);
+
+              // Enhanced paw
+              const paw = createPaw(0.15, primaryMat, secondaryMat);
+              paw.position.set(pos.x, 0.02, pos.z + 0.06);
               animal.add(paw);
 
-              // 5 Claws per paw
+              // 5 Curved claws per paw
               for (let c = -2; c <= 2; c++) {
+                const clawGroup = new THREE.Group();
                 const claw = new THREE.Mesh(
-                  new THREE.ConeGeometry(0.018, 0.06, 8),
+                  new THREE.ConeGeometry(0.02, 0.07, 10),
                   accentMat
                 );
-                claw.rotation.x = -Math.PI / 2 - 0.3;
-                claw.position.set(pos.x + c * 0.035, 0.01, pos.z + 0.18);
-                animal.add(claw);
+                claw.position.y = 0.035;
+                clawGroup.add(claw);
+
+                // Claw curve
+                clawGroup.rotation.x = -Math.PI / 2 - 0.35;
+                clawGroup.rotation.z = c * 0.08;
+                clawGroup.position.set(pos.x + c * 0.038, 0.01, pos.z + 0.2);
+                animal.add(clawGroup);
               }
             });
 
@@ -1205,278 +1587,428 @@ limits. Below is the code it gave:
             animal.userData.animationData.head = head;
           }
 
-          // ============ PENGUIN ============
+          // ============ PENGUIN - CARTOON REDESIGN ============
           else if (type === "penguin") {
-            // Bowling-pin shaped body
-            const bodyLower = new THREE.Mesh(
-              new THREE.SphereGeometry(0.45, 32, 32),
-              primaryMat
-            );
-            bodyLower.scale.set(1, 0.9, 0.9);
-            bodyLower.position.y = 0.4;
-            bodyLower.castShadow = true;
-            animal.add(bodyLower);
-
-            const bodyUpper = new THREE.Mesh(
-              new THREE.SphereGeometry(0.35, 32, 32),
-              primaryMat
-            );
-            bodyUpper.position.y = 0.85;
-            bodyUpper.castShadow = true;
-            animal.add(bodyUpper);
-
-            // Tuxedo belly - improved shape
-            const belly = new THREE.Mesh(
-              new THREE.SphereGeometry(0.35, 32, 32),
-              secondaryMat
-            );
-            belly.scale.set(0.8, 0.9, 0.45);
-            belly.position.set(0, 0.48, 0.18);
-            animal.add(belly);
-
-            const bellyUpper = new THREE.Mesh(
-              new THREE.SphereGeometry(0.26, 24, 24),
-              secondaryMat
-            );
-            bellyUpper.scale.set(0.85, 0.85, 0.45);
-            bellyUpper.position.set(0, 0.78, 0.16);
-            animal.add(bellyUpper);
-
-            // Small head with smooth neck transition
-            const head = new THREE.Mesh(
-              new THREE.SphereGeometry(0.25, 32, 32),
-              primaryMat
-            );
-            head.position.y = 1.15;
-            animal.add(head);
-
-            // Short, slightly downturned beak
-            const beak = new THREE.Group();
-            const beakTop = new THREE.Mesh(
-              new THREE.ConeGeometry(0.06, 0.18, 12),
-              getMaterial(config.accentColor)
-            );
-            beakTop.rotation.x = Math.PI / 2 + 0.2;
-            beak.add(beakTop);
-
-            const beakBottom = new THREE.Mesh(
-              new THREE.ConeGeometry(0.04, 0.12, 12),
-              getMaterial(config.accentColor)
-            );
-            beakBottom.rotation.x = Math.PI / 2 + 0.4;
-            beakBottom.position.y = -0.03;
-            beakBottom.position.z = 0.02;
-            beak.add(beakBottom);
-
-            beak.position.set(0, 1.12, 0.25);
-            animal.add(beak);
-
-            // Eyes with distinctive white rings (key penguin feature!)
-            [-1, 1].forEach((side) => {
-              // White eye ring first
-              const eyeRing = new THREE.Mesh(
-                new THREE.TorusGeometry(0.09, 0.025, 8, 24),
-                secondaryMat
-              );
-              eyeRing.position.set(side * 0.12, 1.2, 0.18);
-              animal.add(eyeRing);
-
-              // Eye itself
-              const eye = createEye(0.65);
-              eye.position.set(side * 0.12, 1.2, 0.2);
-              animal.add(eye);
-            });
-
-            // Flat paddle flippers angled backward
-            [-1, 1].forEach((side) => {
-              const flipper = new THREE.Mesh(
-                new THREE.BoxGeometry(0.08, 0.35, 0.2),
-                primaryMat
-              );
-              flipper.position.set(side * 0.4, 0.6, -0.05);
-              flipper.rotation.z = side * 0.4;
-              flipper.rotation.y = side * -0.2;
-              animal.add(flipper);
-            });
-
-            // Webbed feet (positioned far back)
-            [-1, 1].forEach((side) => {
-              const footGroup = new THREE.Group();
-
-              const footBase = new THREE.Mesh(
-                new THREE.BoxGeometry(0.12, 0.03, 0.2),
-                getMaterial(config.accentColor)
-              );
-              footGroup.add(footBase);
-
-              // Webbed toes
-              for (let i = -1; i <= 1; i++) {
-                const toe = new THREE.Mesh(
-                  new THREE.ConeGeometry(0.03, 0.1, 8),
-                  getMaterial(config.accentColor)
-                );
-                toe.rotation.x = -Math.PI / 2;
-                toe.position.set(i * 0.04, 0, 0.12);
-                footGroup.add(toe);
-              }
-
-              footGroup.position.set(side * 0.15, 0.02, 0.15);
-              animal.add(footGroup);
-            });
-
-            // Body for waddle animation
-            animal.userData.animationData.body = animal;
-          }
-
-          // ============ FOX ============
-          else if (type === "fox") {
-            // Slender, agile body
+            // Rounded egg-shaped body (black outer shell)
             const body = new THREE.Mesh(
-              new THREE.CapsuleGeometry(0.28, 0.5, 12, 20),
+              new THREE.SphereGeometry(0.52, 32, 32),
               primaryMat
             );
-            body.scale.set(1, 1, 0.85);
-            body.position.y = 0.5;
+            body.scale.set(1.0, 1.1, 0.95);
+            body.position.y = 0.55;
             body.castShadow = true;
             animal.add(body);
 
-            // Chest fluff
-            const chest = new THREE.Mesh(
-              new THREE.SphereGeometry(0.22, 16, 16),
+            // LARGE WHITE CIRCULAR BELLY (Center of body - like reference!)
+            const belly = new THREE.Mesh(
+              new THREE.SphereGeometry(0.44, 32, 32),
               secondaryMat
             );
-            chest.scale.set(0.9, 1.1, 0.6);
-            chest.position.set(0, 0.55, 0.18);
-            animal.add(chest);
+            // distinct circular shape centered on body
+            belly.scale.set(0.95, 1.0, 0.5);
+            belly.position.set(0, 0.55, 0.22);
+            animal.add(belly);
 
-            // Diamond/triangular head
+            // White chest connector (smooth blend to face)
+            const chestTop = new THREE.Mesh(
+              new THREE.SphereGeometry(0.28, 24, 24),
+              secondaryMat
+            );
+            chestTop.scale.set(0.9, 0.7, 0.4);
+            chestTop.position.set(0, 0.88, 0.24);
+            animal.add(chestTop);
+
+            // Round head attached to body (black)
             const head = new THREE.Mesh(
-              new THREE.SphereGeometry(0.32, 32, 32),
+              new THREE.SphereGeometry(0.4, 32, 32),
               primaryMat
             );
-            head.scale.set(1.0, 0.9, 0.95);
-            head.position.y = 1.0;
+            head.position.y = 1.1;
             animal.add(head);
 
-            // Long pointed snout
-            const snout = new THREE.Mesh(
-              new THREE.ConeGeometry(0.12, 0.35, 16),
+            // HEART-SHAPED WHITE FACE PATCH (key feature from reference!)
+            // Create heart shape using two overlapping circles and a triangle bottom
+            const faceGroup = new THREE.Group();
+
+            // Left circle of heart
+            const heartLeft = new THREE.Mesh(
+              new THREE.SphereGeometry(0.18, 20, 20),
               secondaryMat
             );
-            snout.rotation.x = Math.PI / 2;
-            snout.position.set(0, 0.92, 0.38);
-            animal.add(snout);
+            heartLeft.scale.set(1, 1, 0.4);
+            heartLeft.position.set(-0.1, 0.08, 0);
+            faceGroup.add(heartLeft);
 
+            // Right circle of heart
+            const heartRight = new THREE.Mesh(
+              new THREE.SphereGeometry(0.18, 20, 20),
+              secondaryMat
+            );
+            heartRight.scale.set(1, 1, 0.4);
+            heartRight.position.set(0.1, 0.08, 0);
+            faceGroup.add(heartRight);
+
+            // Center fill for heart
+            const heartCenter = new THREE.Mesh(
+              new THREE.SphereGeometry(0.15, 18, 18),
+              secondaryMat
+            );
+            heartCenter.scale.set(1.4, 1, 0.4);
+            heartCenter.position.set(0, 0.02, 0);
+            faceGroup.add(heartCenter);
+
+            // Bottom point of heart (chin area)
+            const heartBottom = new THREE.Mesh(
+              new THREE.ConeGeometry(0.16, 0.22, 16),
+              secondaryMat
+            );
+            heartBottom.scale.set(1, 1, 0.4);
+            heartBottom.rotation.x = Math.PI;
+            heartBottom.position.set(0, -0.1, 0);
+            faceGroup.add(heartBottom);
+
+            faceGroup.position.set(0, 1.08, 0.28);
+            animal.add(faceGroup);
+
+            // LARGE CARTOON EYES (like reference image)
+            [-1, 1].forEach((side) => {
+              const eyeGroup = new THREE.Group();
+
+              // Large white sclera
+              const sclera = new THREE.Mesh(
+                new THREE.SphereGeometry(0.11, 20, 20),
+                SPECIAL_MATERIALS.eyeWhite
+              );
+              sclera.scale.set(1, 1.1, 0.6);
+              eyeGroup.add(sclera);
+
+              // Large black pupil (cartoon style - fills most of eye)
+              const pupil = new THREE.Mesh(
+                new THREE.SphereGeometry(0.075, 18, 18),
+                SPECIAL_MATERIALS.eyeBlack
+              );
+              pupil.scale.set(1, 1.1, 0.8);
+              pupil.position.z = 0.04;
+              eyeGroup.add(pupil);
+
+              // Large white highlight (cartoon shine)
+              const highlight = new THREE.Mesh(
+                new THREE.SphereGeometry(0.035, 10, 10),
+                SPECIAL_MATERIALS.specular
+              );
+              highlight.position.set(0.025 * side, 0.03, 0.08);
+              eyeGroup.add(highlight);
+
+              // Smaller secondary highlight
+              const highlight2 = new THREE.Mesh(
+                new THREE.SphereGeometry(0.015, 8, 8),
+                SPECIAL_MATERIALS.specular
+              );
+              highlight2.position.set(-0.02 * side, -0.02, 0.08);
+              eyeGroup.add(highlight2);
+
+              eyeGroup.position.set(side * 0.12, 1.15, 0.32);
+              animal.add(eyeGroup);
+            });
+
+            // PINK BLUSH MARKS (like reference image!)
+            [-1, 1].forEach((side) => {
+              const blush = new THREE.Mesh(
+                new THREE.CircleGeometry(0.05, 16),
+                new THREE.MeshPhysicalMaterial({
+                  color: 0xffb6c1,
+                  transparent: true,
+                  opacity: 0.6,
+                  roughness: 0.8,
+                })
+              );
+              blush.position.set(side * 0.18, 1.02, 0.35);
+              animal.add(blush);
+            });
+
+            // CUTE ROUNDED ORANGE BEAK (like reference)
+            const beakGroup = new THREE.Group();
+
+            // Main beak body - rounded capsule shape
+            const beakMain = new THREE.Mesh(
+              new THREE.SphereGeometry(0.06, 16, 16),
+              getMaterial(0xf5a623)
+            );
+            beakMain.scale.set(1.3, 0.8, 1.0);
+            beakGroup.add(beakMain);
+
+            // Slight bump on top for cute look
+            const beakTop = new THREE.Mesh(
+              new THREE.SphereGeometry(0.035, 12, 12),
+              getMaterial(0xf5a623)
+            );
+            beakTop.position.set(0, 0.02, -0.02);
+            beakGroup.add(beakTop);
+
+            beakGroup.position.set(0, 0.98, 0.4);
+            animal.add(beakGroup);
+
+            // Small flipper wings (like reference - held out slightly)
+            [-1, 1].forEach((side) => {
+              const flipperGroup = new THREE.Group();
+
+              // Main flipper shape
+              const flipper = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.06, 0.28, 12, 18),
+                primaryMat
+              );
+              flipper.scale.set(1.1, 1, 0.4);
+              flipperGroup.add(flipper);
+
+              // Flipper tip
+              const flipperTip = new THREE.Mesh(
+                new THREE.SphereGeometry(0.055, 12, 12),
+                primaryMat
+              );
+              flipperTip.scale.set(1, 0.8, 0.4);
+              flipperTip.position.y = -0.16;
+              flipperGroup.add(flipperTip);
+
+              flipperGroup.position.set(side * 0.48, 0.55, 0.05);
+              flipperGroup.rotation.z = side * 0.45;
+              animal.add(flipperGroup);
+            });
+
+            // Cute orange webbed feet
+            [-1, 1].forEach((side) => {
+              const footGroup = new THREE.Group();
+
+              // Main foot oval
+              const footBase = new THREE.Mesh(
+                new THREE.SphereGeometry(0.09, 14, 14),
+                getMaterial(0xf5a623)
+              );
+              footBase.scale.set(1.3, 0.3, 1.6);
+              footGroup.add(footBase);
+
+              // Three rounded toes
+              for (let i = -1; i <= 1; i++) {
+                const toe = new THREE.Mesh(
+                  new THREE.SphereGeometry(0.035, 10, 10),
+                  getMaterial(0xf5a623)
+                );
+                toe.scale.set(1, 0.5, 1.5);
+                toe.position.set(i * 0.05, 0, 0.1);
+                footGroup.add(toe);
+              }
+
+              footGroup.position.set(side * 0.18, 0.02, 0.12);
+              animal.add(footGroup);
+            });
+
+            // Animation reference
+            animal.userData.animationData.body = animal;
+          }
+
+          // ============ FOX - ENHANCED ============
+          else if (type === "fox") {
+            // Slender, agile body
+            const body = new THREE.Mesh(
+              new THREE.CapsuleGeometry(0.3, 0.52, 14, 22),
+              primaryMat
+            );
+            body.scale.set(1, 1, 0.88);
+            body.position.y = 0.52;
+            body.castShadow = true;
+            animal.add(body);
+
+            // Enhanced chest fluff - more prominent
+            const chest = new THREE.Mesh(
+              new THREE.SphereGeometry(0.24, 18, 18),
+              secondaryMat
+            );
+            chest.scale.set(0.92, 1.15, 0.65);
+            chest.position.set(0, 0.58, 0.2);
+            animal.add(chest);
+
+            // Additional chest fluff layers
+            const chestFluff = new THREE.Mesh(
+              new THREE.SphereGeometry(0.15, 14, 14),
+              secondaryMat
+            );
+            chestFluff.position.set(0, 0.72, 0.18);
+            animal.add(chestFluff);
+
+            // Diamond/triangular head - slightly larger
+            const head = new THREE.Mesh(
+              new THREE.SphereGeometry(0.34, 32, 32),
+              primaryMat
+            );
+            head.scale.set(1.02, 0.92, 0.96);
+            head.position.y = 1.02;
+            animal.add(head);
+
+            // White cheek patches (fox marking)
+            [-1, 1].forEach((side) => {
+              const cheekPatch = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 14, 14),
+                secondaryMat
+              );
+              cheekPatch.scale.set(1.2, 0.9, 0.5);
+              cheekPatch.position.set(side * 0.18, 0.95, 0.22);
+              animal.add(cheekPatch);
+            });
+
+            // Enhanced long pointed snout with gradient
+            const snoutBase = new THREE.Mesh(
+              new THREE.ConeGeometry(0.14, 0.25, 18),
+              primaryMat
+            );
+            snoutBase.rotation.x = Math.PI / 2;
+            snoutBase.position.set(0, 0.94, 0.32);
+            animal.add(snoutBase);
+
+            const snoutTip = new THREE.Mesh(
+              new THREE.ConeGeometry(0.1, 0.2, 16),
+              secondaryMat
+            );
+            snoutTip.rotation.x = Math.PI / 2;
+            snoutTip.position.set(0, 0.92, 0.45);
+            animal.add(snoutTip);
+
+            // Nose with nostrils
+            const noseGroup = new THREE.Group();
             const nose = new THREE.Mesh(
-              new THREE.SphereGeometry(0.04, 12, 12),
+              new THREE.SphereGeometry(0.045, 14, 14),
               accentMat
             );
-            nose.position.set(0, 0.92, 0.55);
-            animal.add(nose);
+            noseGroup.add(nose);
 
-            // Large triangular ears (1.5x head height)
+            [-1, 1].forEach((side) => {
+              const nostril = new THREE.Mesh(
+                new THREE.SphereGeometry(0.012, 8, 8),
+                getMaterial(0x0a0a0a)
+              );
+              nostril.position.set(side * 0.02, -0.01, 0.02);
+              noseGroup.add(nostril);
+            });
+            noseGroup.position.set(0, 0.92, 0.58);
+            animal.add(noseGroup);
+
+            // Facial tear lines (dark markings from eye to snout)
+            [-1, 1].forEach((side) => {
+              const tearLine = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.012, 0.15, 6, 10),
+                getMaterial(0x2a1810)
+              );
+              tearLine.rotation.x = 0.8;
+              tearLine.rotation.z = side * 0.25;
+              tearLine.position.set(side * 0.1, 0.98, 0.32);
+              animal.add(tearLine);
+            });
+
+            // Enhanced triangular ears with fur tufts
             [-1, 1].forEach((side) => {
               const earGroup = new THREE.Group();
 
               const ear = new THREE.Mesh(
-                new THREE.ConeGeometry(0.12, 0.4, 4),
+                new THREE.ConeGeometry(0.13, 0.42, 5),
                 primaryMat
               );
-              ear.position.y = 0.15;
+              ear.position.y = 0.16;
               earGroup.add(ear);
 
               const innerEar = new THREE.Mesh(
-                new THREE.ConeGeometry(0.07, 0.3, 4),
+                new THREE.ConeGeometry(0.08, 0.32, 5),
                 secondaryMat
               );
-              innerEar.position.set(0, 0.12, 0.03);
+              innerEar.position.set(0, 0.13, 0.035);
               earGroup.add(innerEar);
 
-              // Fixed: ears attached to head position
-              earGroup.position.set(side * 0.18, 1.25, -0.02);
-              earGroup.rotation.z = side * -0.12;
+              // Black ear tips
+              const earTip = new THREE.Mesh(
+                new THREE.ConeGeometry(0.06, 0.1, 5),
+                accentMat
+              );
+              earTip.position.y = 0.35;
+              earGroup.add(earTip);
+
+              earGroup.position.set(side * 0.2, 1.28, -0.02);
+              earGroup.rotation.z = side * -0.15;
               animal.add(earGroup);
             });
 
-            // Eyes
+            // Slit pupil eyes for fox
             [-1, 1].forEach((side) => {
-              const eye = createEye(0.8);
-              eye.position.set(side * 0.14, 1.05, 0.28);
+              const eye = createEye(0.82, true, { irisColor: 0xc4a040 });
+              eye.position.set(side * 0.15, 1.06, 0.3);
               animal.add(eye);
             });
 
             // Enhanced bushy tail (12 segments + fur overlays)
             const tailGroup = new THREE.Group();
 
-            // Main tail spine - 12 segments for smoother curve
             const tailSegments = 12;
             for (let i = 0; i < tailSegments; i++) {
               const t = i / (tailSegments - 1);
-              const baseSize = 0.14 - t * 0.06;
-              const isWhiteTip = t >= 0.7;
+              const baseSize = 0.15 - t * 0.07;
+              const isWhiteTip = t >= 0.72;
 
               const segment = new THREE.Mesh(
                 new THREE.SphereGeometry(baseSize, 14, 12),
                 isWhiteTip ? secondaryMat : primaryMat
               );
 
-              // Natural S-curve
-              const curve = Math.sin(t * Math.PI * 0.6) * 0.35;
-              segment.position.y = i * 0.08;
-              segment.position.z = -0.1 - curve;
-              segment.position.x = Math.sin(t * Math.PI * 0.3) * 0.05;
+              const curve = Math.sin(t * Math.PI * 0.6) * 0.38;
+              segment.position.y = i * 0.085;
+              segment.position.z = -0.12 - curve;
+              segment.position.x = Math.sin(t * Math.PI * 0.3) * 0.055;
               tailGroup.add(segment);
 
-              // Add fluffy fur overlays every other segment
               if (i % 2 === 0 && i < tailSegments - 2) {
-                for (let f = 0; f < 4; f++) {
+                for (let f = 0; f < 5; f++) {
                   const fur = new THREE.Mesh(
                     new THREE.SphereGeometry(
-                      baseSize * 0.6 + Math.random() * 0.02,
+                      baseSize * 0.55 + Math.random() * 0.02,
                       8,
                       8
                     ),
                     isWhiteTip ? secondaryMat : primaryMat
                   );
-                  const angle = (f / 4) * Math.PI * 2 + Math.random() * 0.3;
+                  const angle = (f / 5) * Math.PI * 2 + Math.random() * 0.3;
                   fur.position.set(
-                    segment.position.x + Math.cos(angle) * baseSize * 0.7,
-                    segment.position.y + (Math.random() - 0.5) * 0.03,
-                    segment.position.z + Math.sin(angle) * baseSize * 0.5
+                    segment.position.x + Math.cos(angle) * baseSize * 0.72,
+                    segment.position.y + (Math.random() - 0.5) * 0.035,
+                    segment.position.z + Math.sin(angle) * baseSize * 0.52
                   );
                   tailGroup.add(fur);
                 }
               }
             }
 
-            tailGroup.position.set(0, 0.38, -0.18);
-            tailGroup.rotation.x = -0.25;
+            tailGroup.position.set(0, 0.4, -0.2);
+            tailGroup.rotation.x = -0.28;
             animal.userData.animationData.tail = tailGroup;
             animal.add(tailGroup);
 
-            // Thin black "sock" legs
+            // Thin black "sock" legs with better definition
             const legPositions = [
-              { x: -0.15, z: 0.15 },
-              { x: 0.15, z: 0.15 },
-              { x: -0.12, z: -0.18 },
-              { x: 0.12, z: -0.18 },
+              { x: -0.16, z: 0.16 },
+              { x: 0.16, z: 0.16 },
+              { x: -0.13, z: -0.2 },
+              { x: 0.13, z: -0.2 },
             ];
 
             legPositions.forEach((pos) => {
               const leg = new THREE.Mesh(
-                new THREE.CapsuleGeometry(0.06, 0.3, 8, 12),
+                new THREE.CapsuleGeometry(0.065, 0.32, 10, 14),
                 accentMat
               );
-              leg.position.set(pos.x, 0.15, pos.z);
+              leg.position.set(pos.x, 0.16, pos.z);
               animal.add(leg);
 
-              // Dainty paw
+              // Dainty paw with toe details
               const paw = new THREE.Mesh(
-                new THREE.SphereGeometry(0.05, 12, 12),
+                new THREE.SphereGeometry(0.055, 14, 14),
                 accentMat
               );
-              paw.scale.set(1, 0.6, 1.3);
-              paw.position.set(pos.x, 0.03, pos.z + 0.03);
+              paw.scale.set(1, 0.58, 1.35);
+              paw.position.set(pos.x, 0.03, pos.z + 0.04);
               animal.add(paw);
             });
           }
@@ -1641,10 +2173,29 @@ limits. Below is the code it gave:
               animal.add(tuskGroup);
             });
 
-            // Eyes
+            // Enhanced visible eyes with eyelid ridges
             [-1, 1].forEach((side) => {
-              const eye = createEye(0.6);
-              eye.position.set(side * 0.25, 1.35, 0.5);
+              // Eyelid ridge/brow for definition
+              const browRidge = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.06, 0.1, 8, 12),
+                primaryMat
+              );
+              browRidge.position.set(side * 0.28, 1.42, 0.48);
+              browRidge.rotation.z = side * 0.3;
+              animal.add(browRidge);
+
+              // Eye socket depression
+              const eyeSocket = new THREE.Mesh(
+                new THREE.SphereGeometry(0.08, 12, 12),
+                getMaterial(0x5a6a7a)
+              );
+              eyeSocket.scale.set(1.2, 1, 0.6);
+              eyeSocket.position.set(side * 0.28, 1.35, 0.48);
+              animal.add(eyeSocket);
+
+              // Larger, more visible eye
+              const eye = createEye(0.75, false, { irisColor: 0x3a2a20 });
+              eye.position.set(side * 0.28, 1.35, 0.52);
               animal.add(eye);
             });
 
@@ -1706,154 +2257,187 @@ limits. Below is the code it gave:
             animal.add(tailGroup);
           }
 
-          // ============ CAT ============
+          // ============ CAT - ENHANCED ============
           else if (type === "cat") {
-            // Sleek body
+            // Sleek body - slightly more elegant
             const body = new THREE.Mesh(
-              new THREE.CapsuleGeometry(0.3, 0.45, 12, 20),
+              new THREE.CapsuleGeometry(0.32, 0.48, 14, 22),
               primaryMat
             );
-            body.scale.set(1, 1, 0.9);
-            body.position.y = 0.5;
+            body.scale.set(1, 1, 0.92);
+            body.position.y = 0.52;
             body.castShadow = true;
             animal.add(body);
 
-            // Chest
+            // Fluffy chest
             const chest = new THREE.Mesh(
-              new THREE.SphereGeometry(0.22, 16, 16),
+              new THREE.SphereGeometry(0.24, 18, 18),
               secondaryMat
             );
-            chest.position.set(0, 0.55, 0.15);
+            chest.scale.set(0.95, 1.1, 0.65);
+            chest.position.set(0, 0.58, 0.17);
             animal.add(chest);
 
-            // Head
+            // Head with better cheekbone structure
             const head = new THREE.Mesh(
-              new THREE.SphereGeometry(0.3, 32, 32),
+              new THREE.SphereGeometry(0.32, 32, 32),
               primaryMat
             );
-            head.scale.set(1.05, 1.0, 0.95);
-            head.position.y = 1.0;
+            head.scale.set(1.08, 1.0, 0.96);
+            head.position.y = 1.02;
             animal.add(head);
 
-            // Muzzle
+            // Cheekbones for cat-like face
+            [-1, 1].forEach((side) => {
+              const cheekbone = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 14, 14),
+                primaryMat
+              );
+              cheekbone.scale.set(1.2, 0.8, 0.6);
+              cheekbone.position.set(side * 0.2, 0.95, 0.18);
+              animal.add(cheekbone);
+            });
+
+            // Enhanced muzzle with whisker pads
             const muzzle = new THREE.Mesh(
-              new THREE.SphereGeometry(0.12, 16, 16),
+              new THREE.SphereGeometry(0.13, 18, 18),
               secondaryMat
             );
-            muzzle.scale.set(1, 0.7, 0.8);
-            muzzle.position.set(0, 0.92, 0.25);
+            muzzle.scale.set(1, 0.72, 0.82);
+            muzzle.position.set(0, 0.93, 0.27);
             animal.add(muzzle);
 
-            // Nose
+            // Whisker pads (puffy areas on either side of nose)
+            [-1, 1].forEach((side) => {
+              const whiskerPad = new THREE.Mesh(
+                new THREE.SphereGeometry(0.055, 14, 14),
+                secondaryMat
+              );
+              whiskerPad.scale.set(1.2, 0.9, 1);
+              whiskerPad.position.set(side * 0.07, 0.91, 0.32);
+              animal.add(whiskerPad);
+            });
+
+            // Pink nose
             const nose = new THREE.Mesh(
-              new THREE.SphereGeometry(0.03, 12, 12),
+              new THREE.SphereGeometry(0.035, 14, 14),
               getMaterial(0xffb6c1)
             );
-            nose.position.set(0, 0.95, 0.32);
+            nose.scale.set(1.1, 0.85, 1);
+            nose.position.set(0, 0.96, 0.35);
             animal.add(nose);
 
-            // Whiskers
+            // Enhanced whiskers (curved)
             [-1, 1].forEach((side) => {
               for (let i = 0; i < 3; i++) {
                 const whisker = new THREE.Mesh(
-                  new THREE.CylinderGeometry(0.003, 0.003, 0.2, 4),
+                  new THREE.CylinderGeometry(0.003, 0.002, 0.22, 6),
                   secondaryMat
                 );
-                whisker.rotation.z = Math.PI / 2;
-                whisker.rotation.y = (i - 1) * 0.2;
-                whisker.position.set(side * 0.2, 0.92 + (i - 1) * 0.03, 0.25);
+                whisker.rotation.z = (Math.PI / 2) * side;
+                whisker.rotation.y = (i - 1) * 0.22;
+                whisker.rotation.x = (i - 1) * 0.08;
+                whisker.position.set(side * 0.18, 0.93 + (i - 1) * 0.032, 0.28);
                 animal.add(whisker);
               }
             });
 
-            // Pointed ears with inner pink
+            // Enhanced pointed ears with fur tufts
             const earGroup = new THREE.Group();
             [-1, 1].forEach((side) => {
+              // Main ear
               const ear = new THREE.Mesh(
-                new THREE.ConeGeometry(0.1, 0.22, 4),
+                new THREE.ConeGeometry(0.11, 0.24, 5),
                 primaryMat
               );
-              ear.position.set(side * 0.18, 1.3, 0);
-              ear.rotation.z = side * -0.15;
+              ear.position.set(side * 0.2, 1.32, 0);
+              ear.rotation.z = side * -0.18;
               earGroup.add(ear);
 
+              // Inner pink ear
               const innerEar = new THREE.Mesh(
-                new THREE.ConeGeometry(0.06, 0.15, 4),
+                new THREE.ConeGeometry(0.065, 0.17, 5),
                 getMaterial(0xffb6c1)
               );
-              innerEar.position.set(side * 0.18, 1.28, 0.03);
-              innerEar.rotation.z = side * -0.15;
+              innerEar.position.set(side * 0.2, 1.3, 0.035);
+              innerEar.rotation.z = side * -0.18;
               earGroup.add(innerEar);
+
+              // Fur tuft at ear tip
+              const earTuft = new THREE.Mesh(
+                new THREE.ConeGeometry(0.025, 0.06, 4),
+                primaryMat
+              );
+              earTuft.position.set(side * 0.2, 1.45, 0);
+              earTuft.rotation.z = side * -0.2;
+              earGroup.add(earTuft);
             });
             animal.userData.animationData.ears = earGroup;
             animal.add(earGroup);
 
-            // Slit pupil eyes
+            // Enhanced slit pupil eyes with green/amber iris
             [-1, 1].forEach((side) => {
-              const eye = createEye(0.9, true);
-              eye.position.set(side * 0.13, 1.05, 0.25);
+              const eye = createEye(0.92, true, { irisColor: 0x7cb342 });
+              eye.position.set(side * 0.14, 1.06, 0.27);
               animal.add(eye);
             });
 
             // Enhanced long curved tail (12 segments + fur)
             const tailGroup = new THREE.Group();
-            const tailSegments = 12;
+            const tailSegments = 14;
 
             for (let i = 0; i < tailSegments; i++) {
               const t = i / (tailSegments - 1);
-              const baseRadius = 0.055 - t * 0.025;
+              const baseRadius = 0.058 - t * 0.028;
               const segment = new THREE.Mesh(
                 new THREE.SphereGeometry(baseRadius, 12, 10),
                 primaryMat
               );
-              // Elegant S-curve
-              segment.position.y = i * 0.075;
-              segment.position.z = -Math.sin(t * Math.PI) * 0.18;
-              segment.position.x = Math.sin(t * Math.PI * 0.6) * 0.12;
+              segment.position.y = i * 0.072;
+              segment.position.z = -Math.sin(t * Math.PI) * 0.2;
+              segment.position.x = Math.sin(t * Math.PI * 0.55) * 0.13;
               tailGroup.add(segment);
 
-              // Add fur puffs for fluffiness
               if (i % 3 === 0 && i < tailSegments - 1) {
                 for (let f = 0; f < 3; f++) {
                   const fur = new THREE.Mesh(
-                    new THREE.SphereGeometry(baseRadius * 0.5, 6, 6),
+                    new THREE.SphereGeometry(baseRadius * 0.52, 6, 6),
                     primaryMat
                   );
                   const angle = (f / 3) * Math.PI * 2;
                   fur.position.set(
-                    segment.position.x + Math.cos(angle) * baseRadius * 0.8,
+                    segment.position.x + Math.cos(angle) * baseRadius * 0.82,
                     segment.position.y,
-                    segment.position.z + Math.sin(angle) * baseRadius * 0.6
+                    segment.position.z + Math.sin(angle) * baseRadius * 0.62
                   );
                   tailGroup.add(fur);
                 }
               }
             }
 
-            // Fixed: tail attached to body at proper point
-            tailGroup.position.set(0, 0.48, -0.22);
-            tailGroup.rotation.x = -0.6;
+            tailGroup.position.set(0, 0.5, -0.24);
+            tailGroup.rotation.x = -0.58;
             animal.userData.animationData.tail = tailGroup;
             animal.add(tailGroup);
 
-            // Legs with paw pads
+            // Enhanced legs with paw pads
             const legPositions = [
-              { x: -0.15, z: 0.12 },
-              { x: 0.15, z: 0.12 },
-              { x: -0.12, z: -0.15 },
-              { x: 0.12, z: -0.15 },
+              { x: -0.16, z: 0.14 },
+              { x: 0.16, z: 0.14 },
+              { x: -0.13, z: -0.16 },
+              { x: 0.13, z: -0.16 },
             ];
 
             legPositions.forEach((pos) => {
               const leg = new THREE.Mesh(
-                new THREE.CapsuleGeometry(0.06, 0.25, 8, 12),
+                new THREE.CapsuleGeometry(0.065, 0.27, 10, 14),
                 primaryMat
               );
-              leg.position.set(pos.x, 0.15, pos.z);
+              leg.position.set(pos.x, 0.16, pos.z);
               animal.add(leg);
 
-              const paw = createPaw(0.06, primaryMat, getMaterial(0xffb6c1));
-              paw.position.set(pos.x, 0.02, pos.z + 0.02);
+              const paw = createPaw(0.065, primaryMat, getMaterial(0xffb6c1));
+              paw.position.set(pos.x, 0.02, pos.z + 0.025);
               animal.add(paw);
             });
           }
@@ -1897,10 +2481,10 @@ limits. Below is the code it gave:
             facialDisc.position.set(0, 1.05, 0.2);
             animal.add(facialDisc);
 
-            // HUGE forward-facing eyes with concentric circles
+            // HUGE forward-facing eyes - FIXED position forward
             [-1, 1].forEach((side) => {
-              const eye = createOwlEye(1.2);
-              eye.position.set(side * 0.14, 1.1, 0.25);
+              const eye = createOwlEye(1.5);
+              eye.position.set(side * 0.14, 1.1, 0.38);
               animal.add(eye);
             });
 
@@ -2010,127 +2594,203 @@ limits. Below is the code it gave:
             });
           }
 
-          // ============ PANDA ============
+          // ============ PANDA - CARTOON REDESIGN ============
           else if (type === "panda") {
-            // Rotund body
+            // Rounded white body (upright standing pose)
             const body = new THREE.Mesh(
-              new THREE.SphereGeometry(0.5, 32, 32),
+              new THREE.SphereGeometry(0.48, 32, 32),
               primaryMat
             );
-            body.scale.set(1, 0.95, 1);
+            body.scale.set(1.0, 1.1, 0.9);
             body.position.y = 0.55;
             body.castShadow = true;
             animal.add(body);
 
-            // Round head
+            // Large round white head
             const head = new THREE.Mesh(
-              new THREE.SphereGeometry(0.4, 32, 32),
+              new THREE.SphereGeometry(0.42, 32, 32),
               primaryMat
             );
-            head.position.y = 1.15;
+            head.position.y = 1.18;
             animal.add(head);
 
-            // Black ears
+            // BLACK EARS WITH PINK INNER EAR (like reference!)
             [-1, 1].forEach((side) => {
+              // Main black ear
               const ear = new THREE.Mesh(
-                new THREE.SphereGeometry(0.12, 16, 16),
+                new THREE.SphereGeometry(0.14, 18, 18),
                 secondaryMat
               );
-              ear.position.set(side * 0.3, 1.45, 0);
+              ear.position.set(side * 0.32, 1.52, -0.02);
               animal.add(ear);
+
+              // Pink inner ear (key feature from reference!)
+              const innerEar = new THREE.Mesh(
+                new THREE.SphereGeometry(0.065, 14, 14),
+                getMaterial(0xffb6c1)
+              );
+              innerEar.position.set(side * 0.32, 1.52, 0.06);
+              animal.add(innerEar);
             });
 
-            // Black eye patches - FIXED diagonal orientation (tilted outward)
+            // TILTED BLACK EYE PATCHES (like reference - diagonal orientation)
             [-1, 1].forEach((side) => {
+              // Main black eye patch - larger and tilted
               const patch = new THREE.Mesh(
-                new THREE.SphereGeometry(0.13, 16, 16),
+                new THREE.SphereGeometry(0.16, 20, 20),
                 secondaryMat
               );
-              patch.scale.set(1.3, 1.5, 0.5);
-              patch.position.set(side * 0.16, 1.18, 0.24);
-              // Key fix: rotate patches so outer corners point UP (panda signature look)
+              patch.scale.set(1.4, 1.7, 0.4);
+              patch.position.set(side * 0.18, 1.2, 0.26);
+              // Tilt outer corners upward (panda signature look)
               patch.rotation.z = side * 0.4;
               animal.add(patch);
 
-              // Eye inside patch (larger)
-              const eye = createEye(0.7);
-              eye.position.set(side * 0.15, 1.2, 0.32);
-              animal.add(eye);
+              // LARGE EXPRESSIVE BLUE EYES (like reference!)
+              const eyeGroup = new THREE.Group();
+
+              // Large white sclera
+              const sclera = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 20, 20),
+                SPECIAL_MATERIALS.eyeWhite
+              );
+              sclera.scale.set(1, 1.15, 0.55);
+              eyeGroup.add(sclera);
+
+              // Blue iris (like reference image!)
+              const iris = new THREE.Mesh(
+                new THREE.SphereGeometry(0.065, 18, 18),
+                new THREE.MeshPhysicalMaterial({
+                  color: 0x4a90d9,
+                  roughness: 0.1,
+                  clearcoat: 0.5,
+                })
+              );
+              iris.scale.set(1, 1.1, 0.6);
+              iris.position.z = 0.03;
+              eyeGroup.add(iris);
+
+              // Black pupil
+              const pupil = new THREE.Mesh(
+                new THREE.SphereGeometry(0.04, 14, 14),
+                SPECIAL_MATERIALS.eyeBlack
+              );
+              pupil.scale.set(1, 1.1, 0.8);
+              pupil.position.z = 0.05;
+              eyeGroup.add(pupil);
+
+              // Large white highlight
+              const highlight = new THREE.Mesh(
+                new THREE.SphereGeometry(0.03, 10, 10),
+                SPECIAL_MATERIALS.specular
+              );
+              highlight.position.set(0.02 * side, 0.02, 0.065);
+              eyeGroup.add(highlight);
+
+              // Smaller secondary highlight
+              const highlight2 = new THREE.Mesh(
+                new THREE.SphereGeometry(0.012, 8, 8),
+                SPECIAL_MATERIALS.specular
+              );
+              highlight2.position.set(-0.015 * side, -0.015, 0.065);
+              eyeGroup.add(highlight2);
+
+              eyeGroup.position.set(side * 0.17, 1.22, 0.36);
+              animal.add(eyeGroup);
             });
 
-            // Nose - 50% larger, flattened
-            const nose = new THREE.Mesh(
-              new THREE.SphereGeometry(0.075, 16, 16),
-              secondaryMat
-            );
-            nose.scale.set(1.2, 0.8, 0.9);
-            nose.position.set(0, 1.06, 0.4);
-            animal.add(nose);
-
-            // Muzzle
+            // White muzzle area
             const muzzle = new THREE.Mesh(
-              new THREE.SphereGeometry(0.14, 16, 16),
+              new THREE.SphereGeometry(0.15, 18, 18),
               primaryMat
             );
-            muzzle.scale.set(1, 0.7, 0.7);
-            muzzle.position.set(0, 1.02, 0.32);
+            muzzle.scale.set(1, 0.75, 0.65);
+            muzzle.position.set(0, 1.02, 0.35);
             animal.add(muzzle);
 
-            // Smile line
-            const smile = new THREE.Mesh(
-              new THREE.TorusGeometry(0.06, 0.008, 8, 16, Math.PI),
+            // Small black nose
+            const nose = new THREE.Mesh(
+              new THREE.SphereGeometry(0.05, 14, 14),
               secondaryMat
             );
-            smile.rotation.x = Math.PI;
-            smile.position.set(0, 0.98, 0.38);
-            animal.add(smile);
+            nose.scale.set(1.3, 0.9, 0.9);
+            nose.position.set(0, 1.04, 0.44);
+            animal.add(nose);
 
-            // Black limbs
-            // Front legs
+            // OPEN SMILING MOUTH (like reference with visible tongue!)
+            const mouthGroup = new THREE.Group();
+
+            // Mouth opening (dark inside)
+            const mouthOpen = new THREE.Mesh(
+              new THREE.SphereGeometry(0.06, 16, 16),
+              getMaterial(0x2a1a1a)
+            );
+            mouthOpen.scale.set(1.5, 0.8, 0.5);
+            mouthGroup.add(mouthOpen);
+
+            // Pink tongue inside mouth
+            const tongue = new THREE.Mesh(
+              new THREE.SphereGeometry(0.035, 12, 12),
+              getMaterial(0xff6b8a)
+            );
+            tongue.scale.set(1.3, 0.7, 0.8);
+            tongue.position.set(0, -0.015, 0.015);
+            mouthGroup.add(tongue);
+
+            mouthGroup.position.set(0, 0.93, 0.42);
+            animal.add(mouthGroup);
+
+            // BLACK ARMS (like reference - holding down at sides)
             [-1, 1].forEach((side) => {
-              const arm = new THREE.Mesh(
-                new THREE.CapsuleGeometry(0.1, 0.3, 8, 12),
-                secondaryMat
-              );
-              arm.position.set(side * 0.4, 0.5, 0.15);
-              arm.rotation.z = side * 0.3;
-              animal.add(arm);
+              const armGroup = new THREE.Group();
 
-              const paw = new THREE.Mesh(
-                new THREE.SphereGeometry(0.1, 12, 12),
+              // Upper arm
+              const arm = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.11, 0.28, 10, 14),
                 secondaryMat
               );
-              paw.position.set(side * 0.5, 0.35, 0.2);
-              animal.add(paw);
+              armGroup.add(arm);
+
+              // Paw at end
+              const paw = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 14, 14),
+                secondaryMat
+              );
+              paw.position.y = -0.18;
+              armGroup.add(paw);
+
+              armGroup.position.set(side * 0.48, 0.48, 0.08);
+              armGroup.rotation.z = side * 0.15;
+              animal.add(armGroup);
             });
 
-            // Back legs
+            // BLACK LEGS (like reference - standing upright)
             [-1, 1].forEach((side) => {
               const leg = new THREE.Mesh(
-                new THREE.CapsuleGeometry(0.12, 0.25, 8, 12),
+                new THREE.CapsuleGeometry(0.13, 0.22, 10, 14),
                 secondaryMat
               );
-              leg.position.set(side * 0.28, 0.2, -0.1);
+              leg.position.set(side * 0.22, 0.18, 0.02);
               animal.add(leg);
 
               const foot = new THREE.Mesh(
-                new THREE.SphereGeometry(0.1, 12, 12),
+                new THREE.SphereGeometry(0.12, 14, 14),
                 secondaryMat
               );
-              foot.scale.set(1, 0.6, 1.3);
-              foot.position.set(side * 0.28, 0.08, 0.05);
+              foot.scale.set(1.1, 0.55, 1.35);
+              foot.position.set(side * 0.22, 0.06, 0.08);
               animal.add(foot);
             });
 
-            // Small white fluffy tail (previously missing!)
+            // Small white fluffy tail
             const pandaTail = new THREE.Mesh(
               new THREE.SphereGeometry(0.08, 12, 12),
               primaryMat
             );
-            pandaTail.position.set(0, 0.45, -0.45);
+            pandaTail.position.set(0, 0.5, -0.42);
             animal.add(pandaTail);
 
-            // Head for animation (chewing)
+            // Animation references
             animal.userData.animationData.head = head;
             animal.userData.animationData.muzzle = muzzle;
           }
@@ -2218,11 +2878,38 @@ limits. Below is the code it gave:
             beakGroup.position.set(0, 0.92, 0.32);
             animal.add(beakGroup);
 
-            // Eyes
+            // FIXED: Larger, more visible eyes on head
             [-1, 1].forEach((side) => {
-              const eye = createEye(0.5);
-              eye.position.set(side * 0.15, 1.0, 0.35);
-              animal.add(eye);
+              const eyeGroup = new THREE.Group();
+
+              // White sclera
+              const sclera = new THREE.Mesh(
+                new THREE.SphereGeometry(0.065, 16, 16),
+                SPECIAL_MATERIALS.eyeWhite
+              );
+              sclera.scale.set(1, 1.1, 0.6);
+              eyeGroup.add(sclera);
+
+              // Black pupil (large for cartoon look)
+              const pupil = new THREE.Mesh(
+                new THREE.SphereGeometry(0.045, 14, 14),
+                SPECIAL_MATERIALS.eyeBlack
+              );
+              pupil.scale.set(1, 1.1, 0.75);
+              pupil.position.z = 0.025;
+              eyeGroup.add(pupil);
+
+              // White highlight
+              const highlight = new THREE.Mesh(
+                new THREE.SphereGeometry(0.018, 8, 8),
+                SPECIAL_MATERIALS.specular
+              );
+              highlight.position.set(0.015 * side, 0.018, 0.05);
+              eyeGroup.add(highlight);
+
+              // Position on head - forward facing
+              eyeGroup.position.set(side * 0.12, 0.98, 0.42);
+              animal.add(eyeGroup);
             });
 
             // Wings tucked at sides
@@ -2369,32 +3056,57 @@ limits. Below is the code it gave:
             head.position.set(0, 0.55, 0.25);
             animal.add(head);
 
-            // HUGE bulging eyes on top
+            // HUGE bulging eyes on top - ENHANCED
             [-1, 1].forEach((side) => {
-              // Eye bulge
+              // Larger eye bulge
               const eyeBulge = new THREE.Mesh(
-                new THREE.SphereGeometry(0.14, 16, 16),
+                new THREE.SphereGeometry(0.17, 18, 18),
                 primaryMat
               );
-              eyeBulge.position.set(side * 0.2, 0.8, 0.2);
+              eyeBulge.position.set(side * 0.22, 0.82, 0.22);
               animal.add(eyeBulge);
 
-              // Eye itself
+              // Eye shadow ring
+              const eyeShadow = new THREE.Mesh(
+                new THREE.TorusGeometry(0.1, 0.015, 8, 20),
+                getMaterial(0x228b22)
+              );
+              eyeShadow.position.set(side * 0.22, 0.88, 0.32);
+              animal.add(eyeShadow);
+
+              // Larger eye group
               const eyeGroup = new THREE.Group();
               const sclera = new THREE.Mesh(
-                new THREE.SphereGeometry(0.1, 16, 16),
+                new THREE.SphereGeometry(0.12, 18, 18),
                 SPECIAL_MATERIALS.eyeWhite
               );
               eyeGroup.add(sclera);
 
+              // Golden iris ring (frog style)
+              const irisRing = new THREE.Mesh(
+                new THREE.TorusGeometry(0.05, 0.025, 10, 20),
+                getMaterial(0xc4a020)
+              );
+              irisRing.position.z = 0.06;
+              eyeGroup.add(irisRing);
+
+              // Larger black pupil
               const pupil = new THREE.Mesh(
-                new THREE.SphereGeometry(0.05, 12, 12),
+                new THREE.SphereGeometry(0.045, 14, 14),
                 SPECIAL_MATERIALS.eyeBlack
               );
-              pupil.position.z = 0.06;
+              pupil.position.z = 0.075;
               eyeGroup.add(pupil);
 
-              eyeGroup.position.set(side * 0.2, 0.85, 0.28);
+              // Specular highlight
+              const highlight = new THREE.Mesh(
+                new THREE.SphereGeometry(0.025, 8, 8),
+                SPECIAL_MATERIALS.specular
+              );
+              highlight.position.set(0.025, 0.03, 0.1);
+              eyeGroup.add(highlight);
+
+              eyeGroup.position.set(side * 0.22, 0.88, 0.32);
               animal.add(eyeGroup);
             });
 
@@ -2506,8 +3218,12 @@ limits. Below is the code it gave:
         const pedestal = new THREE.Group();
 
         const pedCyl = new THREE.Mesh(
-          new THREE.CylinderGeometry(1, 1.1, 0.4, 64),
-          new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.8 })
+          new THREE.CylinderGeometry(0.6, 0.7, 0.4, 24),
+          new THREE.MeshPhysicalMaterial({
+            color: 0x3a3a45,
+            roughness: 0.6,
+            metalness: 0.1,
+          })
         );
         pedCyl.position.y = -0.2;
         pedCyl.receiveShadow = true;
@@ -2523,7 +3239,7 @@ limits. Below is the code it gave:
         islandGeom.computeVertexNormals();
         const island = new THREE.Mesh(
           islandGeom,
-          new THREE.MeshStandardMaterial({ color: 0xaaddaa, flatShading: true })
+          new THREE.MeshStandardMaterial({ color: 0x2a3a2a, flatShading: true })
         );
         island.position.y = -1.2;
         island.receiveShadow = true;
@@ -2837,10 +3553,10 @@ limits. Below is the code it gave:
                 break;
 
               case "duck":
-                // Head bob
+                // Subtle head rotation only (no position changes to avoid beak glitch)
                 if (data.head) {
-                  data.head.position.y = 0.95 + Math.sin(t * 3) * 0.03;
-                  data.head.position.z = 0.2 + Math.sin(t * 3) * 0.02;
+                  data.head.rotation.x = Math.sin(t * 2) * 0.05;
+                  data.head.rotation.y = Math.sin(t * 1.5) * 0.03;
                 }
                 break;
 
