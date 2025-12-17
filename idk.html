@@ -1661,78 +1661,140 @@ limits. Below is the code it gave:>
           const secondaryMat = createStyledMaterial(secondaryColor);
           const accentMat = createStyledMaterial(accentColor);
 
-          // Egg-shaped body
+          // Egg-shaped body with better proportions
           const body = new THREE.Mesh(
             new THREE.SphereGeometry(0.52, 32, 32),
             primaryMat
           );
-          body.scale.set(1.0, 1.1, 0.95);
+          body.scale.set(1.0, 1.15, 0.95);
           body.position.y = 0.55;
           body.castShadow = true;
           animal.add(body);
 
-          // White belly
+          // Rounder white belly with better coverage
           const belly = new THREE.Mesh(
-            new THREE.SphereGeometry(0.44, 32, 32),
+            new THREE.SphereGeometry(0.46, 32, 32),
             secondaryMat
           );
-          belly.scale.set(0.95, 1.0, 0.5);
-          belly.position.set(0, 0.55, 0.22);
+          belly.scale.set(0.92, 1.05, 0.52);
+          belly.position.set(0, 0.52, 0.2);
           animal.add(belly);
+
+          // Belly highlight for premium feel
+          const bellyHighlight = new THREE.Mesh(
+            new THREE.SphereGeometry(0.3, 24, 24),
+            secondaryMat
+          );
+          bellyHighlight.scale.set(0.8, 0.6, 0.3);
+          bellyHighlight.position.set(0, 0.65, 0.28);
+          animal.add(bellyHighlight);
 
           // Head
           const head = new THREE.Mesh(
-            new THREE.SphereGeometry(0.4, 32, 32),
+            new THREE.SphereGeometry(0.42, 32, 32),
             primaryMat
           );
-          head.position.y = 1.1;
+          head.scale.set(1.02, 0.98, 1.0);
+          head.position.y = 1.12;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Face patch
+          // Face patch with better shape
           const facePatch = new THREE.Mesh(
-            new THREE.SphereGeometry(0.25, 20, 20),
+            new THREE.SphereGeometry(0.28, 24, 24),
             secondaryMat
           );
-          facePatch.scale.set(1, 1, 0.4);
-          facePatch.position.set(0, 1.08, 0.28);
+          facePatch.scale.set(1.05, 1.0, 0.42);
+          facePatch.position.set(0, 1.1, 0.28);
           animal.add(facePatch);
 
-          // Eyes
+          // Cheek patches for character
           [-1, 1].forEach((side) => {
-            const eye = createEye(0.8, false, { irisColor: 0x1a1a1a });
-            eye.position.set(side * 0.14, 1.12, 0.32);
+            const cheek = new THREE.Mesh(
+              new THREE.SphereGeometry(0.08, 16, 16),
+              new THREE.MeshPhysicalMaterial({
+                color: 0xffccaa,
+                roughness: 0.5,
+                transparent: true,
+                opacity: 0.4,
+              })
+            );
+            cheek.scale.set(1.2, 0.8, 0.5);
+            cheek.position.set(side * 0.25, 1.02, 0.28);
+            animal.add(cheek);
+          });
+
+          // Eyes with better size
+          [-1, 1].forEach((side) => {
+            const eye = createEye(0.9, false, { irisColor: 0x1a1a1a });
+            eye.position.set(side * 0.14, 1.14, 0.34);
             animal.add(eye);
           });
 
-          // Beak
-          const beak = new THREE.Mesh(
-            new THREE.ConeGeometry(0.08, 0.18, 12),
+          // Improved beak with two parts
+          const beakTop = new THREE.Mesh(
+            new THREE.ConeGeometry(0.08, 0.16, 16),
             accentMat
           );
-          beak.rotation.x = -Math.PI / 2 - 0.3;
-          beak.position.set(0, 1.02, 0.42);
-          animal.add(beak);
+          beakTop.rotation.x = -Math.PI / 2 - 0.25;
+          beakTop.position.set(0, 1.04, 0.42);
+          animal.add(beakTop);
 
-          // Flippers
+          const beakBottom = new THREE.Mesh(
+            new THREE.ConeGeometry(0.06, 0.1, 12),
+            accentMat
+          );
+          beakBottom.rotation.x = -Math.PI / 2 - 0.5;
+          beakBottom.position.set(0, 0.98, 0.4);
+          animal.add(beakBottom);
+
+          // Flippers with feather edge detail
           [-1, 1].forEach((side) => {
+            const flipperGroup = new THREE.Group();
+
             const flipper = new THREE.Mesh(
-              new THREE.CapsuleGeometry(0.08, 0.35, 8, 12),
+              new THREE.CapsuleGeometry(0.085, 0.38, 10, 16),
               primaryMat
             );
-            flipper.rotation.z = side * 0.4;
-            flipper.position.set(side * 0.48, 0.55, 0);
-            animal.add(flipper);
+            flipper.scale.set(0.5, 1, 1);
+            flipperGroup.add(flipper);
+
+            // Feather edge hints
+            for (let i = 0; i < 4; i++) {
+              const featherEdge = new THREE.Mesh(
+                new THREE.SphereGeometry(0.025, 8, 8),
+                primaryMat
+              );
+              featherEdge.scale.set(0.8, 1.2, 0.6);
+              featherEdge.position.set(side * 0.02, -0.12 - i * 0.06, 0.02);
+              flipperGroup.add(featherEdge);
+            }
+
+            flipperGroup.rotation.z = side * 0.35;
+            flipperGroup.position.set(side * 0.48, 0.55, 0);
+            animal.add(flipperGroup);
           });
 
-          // Feet
+          // Improved feet with webbing detail
           [-1, 1].forEach((side) => {
             const foot = new THREE.Mesh(
-              new THREE.SphereGeometry(0.1, 12, 12),
+              new THREE.SphereGeometry(0.11, 16, 16),
               accentMat
             );
-            foot.scale.set(1.2, 0.4, 1.5);
-            foot.position.set(side * 0.18, 0.04, 0.1);
+            foot.scale.set(1.25, 0.38, 1.6);
+            foot.position.set(side * 0.17, 0.04, 0.1);
             animal.add(foot);
+
+            // Toe webbing hints
+            for (let t = 0; t < 3; t++) {
+              const toe = new THREE.Mesh(
+                new THREE.SphereGeometry(0.03, 8, 8),
+                accentMat
+              );
+              toe.scale.set(0.8, 0.4, 1.8);
+              toe.position.set(side * 0.17 + (t - 1) * 0.04, 0.03, 0.18);
+              animal.add(toe);
+            }
           });
 
           return animal;
@@ -1999,97 +2061,171 @@ limits. Below is the code it gave:>
           const secondaryMat = createStyledMaterial(secondaryColor);
           const accentMat = createStyledMaterial(accentColor);
 
-          // Round body
+          // Round fluffy body
           const body = new THREE.Mesh(
-            new THREE.SphereGeometry(0.4, 32, 32),
+            new THREE.SphereGeometry(0.42, 32, 32),
             primaryMat
           );
-          body.scale.set(1.0, 1.1, 0.9);
-          body.position.y = 0.45;
+          body.scale.set(1.0, 1.12, 0.92);
+          body.position.y = 0.46;
           body.castShadow = true;
           animal.add(body);
 
-          // Chest feathers
+          // Layered chest feathers
           const chest = new THREE.Mesh(
-            new THREE.SphereGeometry(0.3, 24, 24),
+            new THREE.SphereGeometry(0.32, 24, 24),
             secondaryMat
           );
-          chest.scale.set(0.9, 1.0, 0.5);
-          chest.position.set(0, 0.4, 0.2);
+          chest.scale.set(0.92, 1.05, 0.52);
+          chest.position.set(0, 0.42, 0.2);
           animal.add(chest);
 
-          // Large head
+          // Feather layer detail
+          for (let i = 0; i < 3; i++) {
+            const featherRow = new THREE.Mesh(
+              new THREE.SphereGeometry(0.22 - i * 0.04, 16, 16),
+              i % 2 === 0 ? secondaryMat : primaryMat
+            );
+            featherRow.scale.set(1.1, 0.35, 0.4);
+            featherRow.position.set(0, 0.28 + i * 0.12, 0.22);
+            animal.add(featherRow);
+          }
+
+          // Large round head
           const head = new THREE.Mesh(
-            new THREE.SphereGeometry(0.38, 32, 32),
+            new THREE.SphereGeometry(0.4, 32, 32),
             primaryMat
           );
-          head.position.y = 0.95;
+          head.scale.set(1.02, 1.0, 0.98);
+          head.position.y = 0.98;
           head.castShadow = true;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Facial disc
+          // Enhanced facial disc
           const facialDisc = new THREE.Mesh(
-            new THREE.SphereGeometry(0.28, 24, 24),
+            new THREE.SphereGeometry(0.32, 28, 28),
             secondaryMat
           );
-          facialDisc.scale.set(1, 1, 0.4);
-          facialDisc.position.set(0, 0.95, 0.22);
+          facialDisc.scale.set(1.05, 1.0, 0.42);
+          facialDisc.position.set(0, 0.96, 0.24);
           animal.add(facialDisc);
 
-          // Large eyes
+          // Heart-shaped face outline
+          const faceOutline = new THREE.Mesh(
+            new THREE.TorusGeometry(0.22, 0.025, 8, 24),
+            primaryMat
+          );
+          faceOutline.position.set(0, 0.96, 0.32);
+          animal.add(faceOutline);
+
+          // LARGER dramatic eyes with rings
           [-1, 1].forEach((side) => {
-            const eyeRing = new THREE.Mesh(
-              new THREE.TorusGeometry(0.1, 0.02, 8, 24),
+            // Outer eye ring
+            const outerRing = new THREE.Mesh(
+              new THREE.TorusGeometry(0.13, 0.025, 10, 28),
               primaryMat
             );
-            eyeRing.position.set(side * 0.14, 0.98, 0.3);
-            animal.add(eyeRing);
+            outerRing.position.set(side * 0.14, 1.0, 0.32);
+            animal.add(outerRing);
 
-            const eye = createEye(1.0, false, { irisColor: 0xffa500 });
-            eye.position.set(side * 0.14, 0.98, 0.32);
+            // Inner eye ring
+            const innerRing = new THREE.Mesh(
+              new THREE.TorusGeometry(0.1, 0.018, 8, 24),
+              secondaryMat
+            );
+            innerRing.position.set(side * 0.14, 1.0, 0.34);
+            animal.add(innerRing);
+
+            // Larger eye
+            const eye = createEye(1.2, false, { irisColor: 0xffa500 });
+            eye.position.set(side * 0.14, 1.0, 0.36);
             animal.add(eye);
           });
 
-          // Beak
-          const beak = new THREE.Mesh(
-            new THREE.ConeGeometry(0.05, 0.1, 10),
+          // Detailed beak
+          const beakTop = new THREE.Mesh(
+            new THREE.ConeGeometry(0.055, 0.1, 12),
             accentMat
           );
-          beak.rotation.x = -Math.PI / 2 - 0.4;
-          beak.position.set(0, 0.88, 0.35);
-          animal.add(beak);
+          beakTop.rotation.x = -Math.PI / 2 - 0.35;
+          beakTop.position.set(0, 0.88, 0.38);
+          animal.add(beakTop);
 
-          // Ear tufts
+          const beakHook = new THREE.Mesh(
+            new THREE.SphereGeometry(0.025, 10, 10),
+            accentMat
+          );
+          beakHook.position.set(0, 0.85, 0.42);
+          animal.add(beakHook);
+
+          // Enhanced ear tufts with multiple feathers
           [-1, 1].forEach((side) => {
-            const tuft = new THREE.Mesh(
-              new THREE.ConeGeometry(0.06, 0.15, 8),
-              primaryMat
-            );
-            tuft.position.set(side * 0.25, 1.25, -0.05);
-            tuft.rotation.z = side * -0.3;
-            animal.add(tuft);
+            const tuftGroup = new THREE.Group();
+
+            for (let i = 0; i < 3; i++) {
+              const tuft = new THREE.Mesh(
+                new THREE.ConeGeometry(0.04 - i * 0.01, 0.14 - i * 0.02, 10),
+                primaryMat
+              );
+              tuft.position.set((i - 1) * side * 0.025, i * 0.03, 0);
+              tuft.rotation.z = side * -0.25;
+              tuftGroup.add(tuft);
+            }
+
+            tuftGroup.position.set(side * 0.26, 1.28, -0.02);
+            animal.add(tuftGroup);
           });
 
-          // Wings
+          // Layered wings with feather tips
           [-1, 1].forEach((side) => {
-            const wing = new THREE.Mesh(
-              new THREE.SphereGeometry(0.2, 16, 16),
+            const wingGroup = new THREE.Group();
+
+            const wingBase = new THREE.Mesh(
+              new THREE.SphereGeometry(0.22, 18, 18),
               primaryMat
             );
-            wing.scale.set(0.4, 1.0, 0.8);
-            wing.position.set(side * 0.38, 0.45, -0.05);
-            animal.add(wing);
+            wingBase.scale.set(0.42, 1.1, 0.85);
+            wingGroup.add(wingBase);
+
+            // Feather tips
+            for (let f = 0; f < 4; f++) {
+              const featherTip = new THREE.Mesh(
+                new THREE.ConeGeometry(0.035, 0.1, 8),
+                primaryMat
+              );
+              featherTip.position.set(0, -0.15 - f * 0.06, 0.02);
+              featherTip.rotation.x = 0.4;
+              wingGroup.add(featherTip);
+            }
+
+            wingGroup.position.set(side * 0.4, 0.46, -0.04);
+            animal.add(wingGroup);
           });
 
-          // Talons
+          // Detailed talons with claws
           [-1, 1].forEach((side) => {
-            const foot = new THREE.Mesh(
-              new THREE.SphereGeometry(0.06, 10, 10),
+            const footBase = new THREE.Mesh(
+              new THREE.SphereGeometry(0.065, 12, 12),
               accentMat
             );
-            foot.scale.set(1.2, 0.5, 1.5);
-            foot.position.set(side * 0.12, 0.04, 0.05);
-            animal.add(foot);
+            footBase.scale.set(1.2, 0.55, 1.4);
+            footBase.position.set(side * 0.12, 0.045, 0.05);
+            animal.add(footBase);
+
+            // Individual claws
+            for (let c = 0; c < 3; c++) {
+              const claw = new THREE.Mesh(
+                new THREE.ConeGeometry(0.015, 0.05, 8),
+                new THREE.MeshPhysicalMaterial({
+                  color: 0x2a2a2a,
+                  roughness: 0.4,
+                })
+              );
+              claw.rotation.x = Math.PI / 2;
+              claw.position.set(side * 0.12 + (c - 1) * 0.025, 0.02, 0.1);
+              animal.add(claw);
+            }
           });
 
           return animal;
@@ -2283,85 +2419,134 @@ limits. Below is the code it gave:>
           const primaryMat = createStyledMaterial(primaryColor);
           const secondaryMat = createStyledMaterial(secondaryColor);
 
-          // Squat body
+          // Wide squat body
           const body = new THREE.Mesh(
-            new THREE.SphereGeometry(0.4, 32, 32),
+            new THREE.SphereGeometry(0.42, 32, 32),
             primaryMat
           );
-          body.scale.set(1.2, 0.7, 1.0);
-          body.position.y = 0.3;
+          body.scale.set(1.25, 0.72, 1.05);
+          body.position.y = 0.32;
           body.castShadow = true;
           animal.add(body);
 
-          // Belly
+          // Belly with detail
           const belly = new THREE.Mesh(
-            new THREE.SphereGeometry(0.32, 24, 24),
+            new THREE.SphereGeometry(0.34, 28, 28),
             secondaryMat
           );
-          belly.scale.set(1.0, 0.6, 0.6);
-          belly.position.set(0, 0.25, 0.18);
+          belly.scale.set(1.05, 0.62, 0.58);
+          belly.position.set(0, 0.26, 0.2);
           animal.add(belly);
 
-          // Head (merge with body)
+          // Wide head
           const head = new THREE.Mesh(
-            new THREE.SphereGeometry(0.3, 32, 32),
+            new THREE.SphereGeometry(0.32, 32, 32),
             primaryMat
           );
-          head.scale.set(1.3, 0.8, 1.0);
-          head.position.set(0, 0.45, 0.15);
+          head.scale.set(1.35, 0.82, 1.02);
+          head.position.set(0, 0.48, 0.15);
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Bulging eyes
+          // LARGER bulging eyes
           [-1, 1].forEach((side) => {
             const eyeBulge = new THREE.Mesh(
-              new THREE.SphereGeometry(0.12, 16, 16),
+              new THREE.SphereGeometry(0.14, 20, 20),
               primaryMat
             );
-            eyeBulge.position.set(side * 0.2, 0.6, 0.18);
+            eyeBulge.position.set(side * 0.22, 0.65, 0.18);
             animal.add(eyeBulge);
 
-            const eye = createEye(1.0, false, { irisColor: 0xffd700 });
-            eye.position.set(side * 0.2, 0.62, 0.25);
+            const eye = createEye(1.15, false, { irisColor: 0xffd700 });
+            eye.position.set(side * 0.22, 0.68, 0.28);
             animal.add(eye);
           });
 
-          // Wide mouth
+          // Nostril hints
+          [-1, 1].forEach((side) => {
+            const nostril = new THREE.Mesh(
+              new THREE.SphereGeometry(0.018, 8, 8),
+              new THREE.MeshPhysicalMaterial({
+                color: 0x2a3a2a,
+                roughness: 0.8,
+              })
+            );
+            nostril.position.set(side * 0.08, 0.52, 0.38);
+            animal.add(nostril);
+          });
+
+          // Wide happy mouth
           const mouth = new THREE.Mesh(
-            new THREE.TorusGeometry(0.15, 0.02, 8, 24, Math.PI),
+            new THREE.TorusGeometry(0.18, 0.022, 10, 28, Math.PI),
             secondaryMat
           );
           mouth.rotation.x = -Math.PI / 2;
-          mouth.position.set(0, 0.35, 0.3);
+          mouth.position.set(0, 0.38, 0.32);
           animal.add(mouth);
 
-          // Front legs
+          // Front legs with fingers
           [-1, 1].forEach((side) => {
+            const armGroup = new THREE.Group();
+
             const arm = new THREE.Mesh(
-              new THREE.CapsuleGeometry(0.05, 0.15, 8, 10),
+              new THREE.CapsuleGeometry(0.055, 0.16, 10, 12),
               primaryMat
             );
-            arm.rotation.z = side * 0.8;
-            arm.position.set(side * 0.35, 0.15, 0.15);
-            animal.add(arm);
+            armGroup.add(arm);
+
+            // Fingers
+            for (let f = 0; f < 4; f++) {
+              const finger = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.015, 0.05, 6, 8),
+                primaryMat
+              );
+              finger.position.set((f - 1.5) * 0.022, -0.1, 0.02);
+              finger.rotation.x = 0.25;
+              armGroup.add(finger);
+            }
+
+            armGroup.rotation.z = side * 0.75;
+            armGroup.position.set(side * 0.38, 0.16, 0.16);
+            animal.add(armGroup);
           });
 
-          // Back legs (powerful)
+          // Powerful back legs with webbed feet
           [-1, 1].forEach((side) => {
             const thigh = new THREE.Mesh(
-              new THREE.SphereGeometry(0.12, 12, 12),
+              new THREE.SphereGeometry(0.13, 14, 14),
               primaryMat
             );
-            thigh.scale.set(0.8, 1.2, 1.0);
-            thigh.position.set(side * 0.35, 0.2, -0.15);
+            thigh.scale.set(0.85, 1.25, 1.0);
+            thigh.position.set(side * 0.38, 0.22, -0.14);
             animal.add(thigh);
 
             const calf = new THREE.Mesh(
-              new THREE.CapsuleGeometry(0.06, 0.2, 8, 10),
+              new THREE.CapsuleGeometry(0.065, 0.22, 10, 12),
               primaryMat
             );
-            calf.rotation.x = 0.8;
-            calf.position.set(side * 0.4, 0.08, -0.25);
+            calf.rotation.x = 0.75;
+            calf.position.set(side * 0.42, 0.09, -0.26);
             animal.add(calf);
+
+            // Webbed foot
+            const foot = new THREE.Mesh(
+              new THREE.SphereGeometry(0.08, 14, 14),
+              primaryMat
+            );
+            foot.scale.set(1.3, 0.45, 1.8);
+            foot.position.set(side * 0.45, 0.04, -0.32);
+            animal.add(foot);
+
+            // Toe webbing
+            for (let t = 0; t < 3; t++) {
+              const toe = new THREE.Mesh(
+                new THREE.SphereGeometry(0.022, 8, 8),
+                primaryMat
+              );
+              toe.scale.set(0.8, 0.45, 2.0);
+              toe.position.set(side * 0.45 + (t - 1) * 0.028, 0.03, -0.4);
+              animal.add(toe);
+            }
           });
 
           return animal;
@@ -2383,78 +2568,93 @@ limits. Below is the code it gave:>
 
           // Large barrel body
           const body = new THREE.Mesh(
-            new THREE.SphereGeometry(0.55, 32, 32),
+            new THREE.SphereGeometry(0.56, 36, 36),
             primaryMat
           );
-          body.scale.set(1.2, 0.9, 1.0);
-          body.position.y = 0.6;
+          body.scale.set(1.22, 0.92, 1.02);
+          body.position.y = 0.62;
           body.castShadow = true;
           animal.add(body);
 
-          // Head
+          // Round head
           const head = new THREE.Mesh(
-            new THREE.SphereGeometry(0.4, 32, 32),
+            new THREE.SphereGeometry(0.42, 32, 32),
             primaryMat
           );
-          head.position.y = 1.1;
+          head.scale.set(1.02, 1.0, 0.98);
+          head.position.y = 1.12;
           head.castShadow = true;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Trunk
-          const trunk = new THREE.Mesh(
-            new THREE.CapsuleGeometry(0.1, 0.5, 12, 16),
-            primaryMat
-          );
-          trunk.rotation.x = 0.5;
-          trunk.position.set(0, 0.85, 0.45);
-          animal.add(trunk);
-
-          const trunkTip = new THREE.Mesh(
-            new THREE.SphereGeometry(0.08, 12, 12),
-            secondaryMat
-          );
-          trunkTip.position.set(0, 0.6, 0.65);
-          animal.add(trunkTip);
-
-          // Large ears
-          [-1, 1].forEach((side) => {
-            const ear = new THREE.Mesh(
-              new THREE.SphereGeometry(0.35, 20, 20),
+          // SEGMENTED trunk
+          const trunkGroup = new THREE.Group();
+          for (let s = 0; s < 5; s++) {
+            const segSize = 0.1 - s * 0.012;
+            const seg = new THREE.Mesh(
+              new THREE.SphereGeometry(segSize, 14, 14),
               primaryMat
             );
-            ear.scale.set(0.15, 1.0, 0.8);
-            ear.position.set(side * 0.4, 1.0, -0.05);
-            animal.add(ear);
+            seg.scale.set(1.0, 0.85, 1.0);
+            seg.position.y = -s * 0.08;
+            trunkGroup.add(seg);
+          }
+          const trunkTip = new THREE.Mesh(
+            new THREE.SphereGeometry(0.05, 12, 12),
+            secondaryMat
+          );
+          trunkTip.position.set(0, -0.42, 0.04);
+          trunkGroup.add(trunkTip);
+
+          trunkGroup.position.set(0, 0.95, 0.42);
+          trunkGroup.rotation.x = 0.35;
+          animal.add(trunkGroup);
+          animal.userData.animationData.trunk = trunkGroup;
+
+          // Enhanced fan-shaped ears
+          [-1, 1].forEach((side) => {
+            const earGroup = new THREE.Group();
+
+            const ear = new THREE.Mesh(
+              new THREE.SphereGeometry(0.38, 24, 24),
+              primaryMat
+            );
+            ear.scale.set(0.16, 1.05, 0.85);
+            earGroup.add(ear);
 
             const innerEar = new THREE.Mesh(
-              new THREE.SphereGeometry(0.25, 16, 16),
+              new THREE.SphereGeometry(0.28, 20, 20),
               secondaryMat
             );
-            innerEar.scale.set(0.15, 0.8, 0.6);
-            innerEar.position.set(side * 0.42, 1.0, 0);
-            animal.add(innerEar);
+            innerEar.scale.set(0.14, 0.82, 0.65);
+            innerEar.position.z = 0.02;
+            earGroup.add(innerEar);
+
+            earGroup.position.set(side * 0.42, 1.02, -0.04);
+            earGroup.rotation.y = side * 0.12;
+            animal.add(earGroup);
           });
 
-          // Eyes
+          // Eyes with expressiveness
           [-1, 1].forEach((side) => {
-            const eye = createEye(0.6, false, { irisColor: 0x4a3020 });
-            eye.position.set(side * 0.2, 1.15, 0.32);
+            const eye = createEye(0.7, false, { irisColor: 0x4a3020 });
+            eye.position.set(side * 0.2, 1.18, 0.34);
             animal.add(eye);
           });
 
-          // Tusks
+          // Curved tusks
           [-1, 1].forEach((side) => {
             const tusk = new THREE.Mesh(
-              new THREE.CylinderGeometry(0.03, 0.02, 0.25, 10),
+              new THREE.CapsuleGeometry(0.032, 0.2, 10, 14),
               getMaterial(0xfffff0)
             );
-            tusk.rotation.z = side * 0.3;
-            tusk.rotation.x = -0.3;
-            tusk.position.set(side * 0.18, 0.85, 0.38);
+            tusk.rotation.z = side * 0.28;
+            tusk.rotation.x = -0.25;
+            tusk.position.set(side * 0.18, 0.88, 0.4);
             animal.add(tusk);
           });
 
-          // Thick legs
+          // Thick legs with toenails
           const legPositions = [
             { x: -0.32, z: 0.2 },
             { x: 0.32, z: 0.2 },
@@ -2464,29 +2664,51 @@ limits. Below is the code it gave:>
 
           legPositions.forEach((pos) => {
             const leg = new THREE.Mesh(
-              new THREE.CylinderGeometry(0.14, 0.16, 0.45, 16),
+              new THREE.CylinderGeometry(0.14, 0.16, 0.46, 18),
               primaryMat
             );
-            leg.position.set(pos.x, 0.22, pos.z);
+            leg.position.set(pos.x, 0.23, pos.z);
             animal.add(leg);
 
             const foot = new THREE.Mesh(
-              new THREE.SphereGeometry(0.12, 12, 12),
+              new THREE.SphereGeometry(0.13, 14, 14),
               secondaryMat
             );
-            foot.scale.set(1.2, 0.4, 1.2);
-            foot.position.set(pos.x, 0.04, pos.z);
+            foot.scale.set(1.22, 0.42, 1.25);
+            foot.position.set(pos.x, 0.045, pos.z);
             animal.add(foot);
+
+            // Toenails
+            for (let t = 0; t < 3; t++) {
+              const nail = new THREE.Mesh(
+                new THREE.SphereGeometry(0.022, 8, 8),
+                getMaterial(0xe8e8d8)
+              );
+              nail.scale.set(0.85, 0.6, 1.1);
+              nail.position.set(pos.x + (t - 1) * 0.038, 0.04, pos.z + 0.1);
+              animal.add(nail);
+            }
           });
 
-          // Tail
-          const tail = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.02, 0.03, 0.3, 8),
+          // Tail with tuft
+          const tailGroup = new THREE.Group();
+          const tailBody = new THREE.Mesh(
+            new THREE.CapsuleGeometry(0.025, 0.22, 10, 12),
             primaryMat
           );
-          tail.rotation.x = 0.8;
-          tail.position.set(0, 0.5, -0.55);
-          animal.add(tail);
+          tailGroup.add(tailBody);
+
+          const tailTuft = new THREE.Mesh(
+            new THREE.SphereGeometry(0.04, 10, 10),
+            new THREE.MeshPhysicalMaterial({ color: 0x3a3a3a, roughness: 0.8 })
+          );
+          tailTuft.scale.set(1.0, 1.5, 1.0);
+          tailTuft.position.y = -0.14;
+          tailGroup.add(tailTuft);
+
+          tailGroup.rotation.x = 0.75;
+          tailGroup.position.set(0, 0.52, -0.56);
+          animal.add(tailGroup);
 
           return animal;
         }
@@ -2869,91 +3091,139 @@ limits. Below is the code it gave:>
           animal.userData.variant = variantKey;
 
           // Sleek angular body
-          const body = createComicMesh(comicSphere(0.4), primaryColor);
-          body.scale.set(1, 0.85, 1.3);
-          body.position.y = 0.45;
+          const body = createComicMesh(comicSphere(0.42), primaryColor);
+          body.scale.set(1, 0.88, 1.32);
+          body.position.y = 0.46;
           animal.add(body);
 
-          // White chest
-          const chest = createComicMesh(comicSphere(0.28), secondaryColor);
-          chest.scale.set(0.8, 1, 0.6);
-          chest.position.set(0, 0.5, 0.22);
+          // White chest bib
+          const chest = createComicMesh(comicSphere(0.3), secondaryColor);
+          chest.scale.set(0.82, 1.05, 0.58);
+          chest.position.set(0, 0.52, 0.24);
           animal.add(chest);
 
-          // Pointed head
-          const head = createComicMesh(comicSphere(0.32), primaryColor);
-          head.scale.set(1.1, 0.95, 1);
-          head.position.y = 0.95;
+          // Pointed angular head
+          const head = createComicMesh(comicSphere(0.34), primaryColor);
+          head.scale.set(1.12, 0.98, 1.02);
+          head.position.y = 0.98;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Sharp snout
+          // Sharp snout (more angular)
           const snout = createComicMesh(
-            new THREE.ConeGeometry(0.12, 0.32, 6),
+            new THREE.ConeGeometry(0.12, 0.35, 4),
             secondaryColor
           );
           snout.rotation.x = -Math.PI / 2;
-          snout.position.set(0, 0.88, 0.38);
+          snout.position.set(0, 0.9, 0.4);
           animal.add(snout);
 
           // Black nose
-          const nose = createComicMesh(comicSphere(0.05), accentColor);
-          nose.position.set(0, 0.88, 0.52);
+          const nose = createComicMesh(comicSphere(0.055), accentColor);
+          nose.position.set(0, 0.9, 0.56);
           animal.add(nose);
 
-          // Big triangular ears
+          // Big triangular ears with BLACK TIPS
           [-1, 1].forEach((side) => {
+            const earGroup = new THREE.Group();
+
             const ear = createComicMesh(
-              new THREE.ConeGeometry(0.14, 0.3, 4),
+              new THREE.ConeGeometry(0.14, 0.32, 4),
               primaryColor
             );
-            ear.position.set(side * 0.22, 1.28, -0.05);
-            ear.rotation.z = side * -0.2;
-            animal.add(ear);
+            earGroup.add(ear);
+
+            // Black ear tip
+            const tip = createComicMesh(
+              new THREE.ConeGeometry(0.07, 0.12, 4),
+              0x1a1a1a
+            );
+            tip.position.y = 0.12;
+            earGroup.add(tip);
+
+            // Inner ear
+            const inner = new THREE.Mesh(
+              new THREE.ConeGeometry(0.07, 0.2, 4),
+              createToonMaterial(secondaryColor)
+            );
+            inner.position.set(0, -0.04, 0.02);
+            earGroup.add(inner);
+
+            earGroup.position.set(side * 0.24, 1.32, -0.04);
+            earGroup.rotation.z = side * -0.22;
+            animal.add(earGroup);
           });
 
-          // Sly eyes
+          // Sharp sly eyes with highlight
           [-1, 1].forEach((side) => {
-            const eyeWhite = createComicMesh(comicSphere(0.09), 0xffffff);
-            eyeWhite.scale.set(1.2, 0.8, 0.7);
-            eyeWhite.position.set(side * 0.16, 0.98, 0.28);
+            const eyeWhite = createComicMesh(comicSphere(0.1), 0xffffff);
+            eyeWhite.scale.set(1.25, 0.82, 0.72);
+            eyeWhite.position.set(side * 0.17, 1.0, 0.3);
             animal.add(eyeWhite);
 
             const pupil = new THREE.Mesh(
-              comicSphere(0.04),
+              comicSphere(0.045),
               new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
-            pupil.position.set(side * 0.16, 0.98, 0.34);
+            pupil.position.set(side * 0.17, 1.0, 0.36);
             animal.add(pupil);
+
+            // Highlight
+            const highlight = new THREE.Mesh(
+              comicSphere(0.018),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            highlight.position.set(side * 0.155, 1.03, 0.37);
+            animal.add(highlight);
           });
 
-          // Dramatic fluffy tail
-          const tail = createComicMesh(
-            new THREE.ConeGeometry(0.15, 0.7, 6),
-            primaryColor
-          );
-          tail.rotation.x = 0.8;
-          tail.position.set(0, 0.4, -0.65);
-          animal.add(tail);
+          // SEGMENTED dramatic fluffy tail (more angular)
+          const tailGroup = new THREE.Group();
+          for (let s = 0; s < 4; s++) {
+            const segSize = 0.14 - s * 0.02;
+            const tailSeg = createComicMesh(
+              new THREE.ConeGeometry(segSize, 0.18, 4),
+              primaryColor
+            );
+            tailSeg.position.y = s * 0.14;
+            tailSeg.rotation.x = Math.PI;
+            tailGroup.add(tailSeg);
+          }
 
-          const tailTip = createComicMesh(comicSphere(0.12), secondaryColor);
-          tailTip.position.set(0, 0.6, -0.95);
-          animal.add(tailTip);
+          // White tail tip
+          const tailTip = createComicMesh(comicSphere(0.13), secondaryColor);
+          tailTip.position.y = 0.55;
+          tailGroup.add(tailTip);
 
-          // Slim legs
+          tailGroup.rotation.x = 0.7;
+          tailGroup.position.set(0, 0.42, -0.52);
+          animal.add(tailGroup);
+
+          // Slim angular legs
           [-1, 1].forEach((side) => {
             const frontLeg = createComicMesh(
-              comicCylinder(0.06, 0.05, 0.22),
+              comicCylinder(0.065, 0.055, 0.24),
               primaryColor
             );
-            frontLeg.position.set(side * 0.18, 0.11, 0.2);
+            frontLeg.position.set(side * 0.18, 0.12, 0.22);
             animal.add(frontLeg);
 
+            const frontPaw = createComicMesh(comicSphere(0.055), accentColor);
+            frontPaw.scale.set(0.9, 0.55, 1.1);
+            frontPaw.position.set(side * 0.18, 0.04, 0.24);
+            animal.add(frontPaw);
+
             const backLeg = createComicMesh(
-              comicCylinder(0.07, 0.06, 0.24),
+              comicCylinder(0.072, 0.062, 0.26),
               primaryColor
             );
-            backLeg.position.set(side * 0.18, 0.12, -0.2);
+            backLeg.position.set(side * 0.18, 0.13, -0.2);
             animal.add(backLeg);
+
+            const backPaw = createComicMesh(comicSphere(0.055), accentColor);
+            backPaw.scale.set(0.85, 0.52, 1.05);
+            backPaw.position.set(side * 0.18, 0.04, -0.18);
+            animal.add(backPaw);
           });
 
           return animal;
@@ -3061,84 +3331,145 @@ limits. Below is the code it gave:>
             getBuilderColors("owl", colorOverride, options);
           animal.userData.variant = variantKey;
 
-          // Round body
-          const body = createComicMesh(comicSphere(0.42), primaryColor);
-          body.scale.set(1, 1.1, 0.9);
-          body.position.y = 0.48;
+          // Round angular body
+          const body = createComicMesh(comicSphere(0.44), primaryColor);
+          body.scale.set(1.02, 1.12, 0.92);
+          body.position.y = 0.5;
           animal.add(body);
 
-          // Chest
-          const chest = createComicMesh(comicSphere(0.32), secondaryColor);
-          chest.scale.set(0.9, 1, 0.5);
-          chest.position.set(0, 0.42, 0.22);
+          // Layered chest feathers
+          const chest = createComicMesh(comicSphere(0.34), secondaryColor);
+          chest.scale.set(0.92, 1.05, 0.52);
+          chest.position.set(0, 0.44, 0.24);
           animal.add(chest);
 
-          // Big round head
-          const head = createComicMesh(comicSphere(0.4), primaryColor);
-          head.position.y = 1.0;
-          animal.add(head);
+          // Feather rows
+          for (let r = 0; r < 3; r++) {
+            const row = createComicMesh(
+              comicSphere(0.2 - r * 0.04),
+              r % 2 === 0 ? secondaryColor : primaryColor
+            );
+            row.scale.set(1.1, 0.32, 0.38);
+            row.position.set(0, 0.3 + r * 0.1, 0.24);
+            animal.add(row);
+          }
 
-          // Facial disc
-          const disc = createComicMesh(comicSphere(0.3), secondaryColor);
-          disc.scale.set(1, 1, 0.4);
-          disc.position.set(0, 0.98, 0.25);
+          // Big round head
+          const head = createComicMesh(comicSphere(0.42), primaryColor);
+          head.position.y = 1.02;
+          animal.add(head);
+          animal.userData.animationData.head = head;
+
+          // Enhanced facial disc
+          const disc = createComicMesh(comicSphere(0.34), secondaryColor);
+          disc.scale.set(1.02, 1.0, 0.42);
+          disc.position.set(0, 1.0, 0.26);
           animal.add(disc);
 
-          // HUGE owl eyes
+          // HUGE owl eyes with BOLDER double rings
           [-1, 1].forEach((side) => {
-            const eyeRing = createComicMesh(
-              new THREE.TorusGeometry(0.12, 0.03, 6, 12),
+            // Outer bold ring
+            const outerRing = createComicMesh(
+              new THREE.TorusGeometry(0.15, 0.035, 6, 14),
               primaryColor
             );
-            eyeRing.position.set(side * 0.15, 1.0, 0.32);
-            animal.add(eyeRing);
+            outerRing.position.set(side * 0.16, 1.02, 0.34);
+            animal.add(outerRing);
 
-            const eyeWhite = createComicMesh(comicSphere(0.1), 0xffffff);
-            eyeWhite.position.set(side * 0.15, 1.0, 0.35);
+            // Inner ring
+            const innerRing = createComicMesh(
+              new THREE.TorusGeometry(0.11, 0.025, 6, 12),
+              secondaryColor
+            );
+            innerRing.position.set(side * 0.16, 1.02, 0.38);
+            animal.add(innerRing);
+
+            // Bigger eye white
+            const eyeWhite = createComicMesh(comicSphere(0.12), 0xffffff);
+            eyeWhite.position.set(side * 0.16, 1.02, 0.4);
             animal.add(eyeWhite);
 
             const pupil = new THREE.Mesh(
-              comicSphere(0.05),
+              comicSphere(0.06),
               new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
-            pupil.position.set(side * 0.15, 1.0, 0.42);
+            pupil.position.set(side * 0.16, 1.02, 0.48);
             animal.add(pupil);
+
+            // Highlight
+            const highlight = new THREE.Mesh(
+              comicSphere(0.022),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            highlight.position.set(side * 0.14, 1.05, 0.49);
+            animal.add(highlight);
           });
 
-          // Sharp beak
+          // Sharp angular beak
           const beak = createComicMesh(
-            new THREE.ConeGeometry(0.06, 0.12, 4),
+            new THREE.ConeGeometry(0.065, 0.14, 4),
             accentColor
           );
-          beak.rotation.x = -Math.PI / 2 - 0.4;
-          beak.position.set(0, 0.9, 0.38);
+          beak.rotation.x = -Math.PI / 2 - 0.45;
+          beak.position.set(0, 0.9, 0.42);
           animal.add(beak);
 
-          // Ear tufts
+          // Enhanced multi-feather ear tufts
           [-1, 1].forEach((side) => {
-            const tuft = createComicMesh(
-              new THREE.ConeGeometry(0.08, 0.18, 4),
-              primaryColor
-            );
-            tuft.position.set(side * 0.28, 1.3, -0.05);
-            tuft.rotation.z = side * -0.3;
-            animal.add(tuft);
+            const tuftGroup = new THREE.Group();
+            for (let i = 0; i < 3; i++) {
+              const tuft = createComicMesh(
+                new THREE.ConeGeometry(0.055 - i * 0.012, 0.16 - i * 0.02, 4),
+                primaryColor
+              );
+              tuft.position.set((i - 1) * side * 0.02, i * 0.025, 0);
+              tuftGroup.add(tuft);
+            }
+            tuftGroup.position.set(side * 0.3, 1.35, -0.04);
+            tuftGroup.rotation.z = side * -0.28;
+            animal.add(tuftGroup);
           });
 
-          // Wings
+          // Layered angular wings
           [-1, 1].forEach((side) => {
-            const wing = createComicMesh(comicSphere(0.22), primaryColor);
-            wing.scale.set(0.4, 1, 0.8);
-            wing.position.set(side * 0.4, 0.48, -0.05);
-            animal.add(wing);
+            const wingGroup = new THREE.Group();
+
+            const wingBase = createComicMesh(comicSphere(0.24), primaryColor);
+            wingBase.scale.set(0.42, 1.08, 0.88);
+            wingGroup.add(wingBase);
+
+            // Feather tips
+            for (let f = 0; f < 4; f++) {
+              const feather = createComicMesh(
+                new THREE.ConeGeometry(0.04, 0.12, 4),
+                primaryColor
+              );
+              feather.position.set(0, -0.16 - f * 0.065, 0.02);
+              feather.rotation.x = 0.45;
+              wingGroup.add(feather);
+            }
+
+            wingGroup.position.set(side * 0.42, 0.5, -0.04);
+            animal.add(wingGroup);
           });
 
-          // Talons
+          // Detailed talons with claws
           [-1, 1].forEach((side) => {
-            const foot = createComicMesh(comicSphere(0.07), accentColor);
-            foot.scale.set(1.2, 0.5, 1.5);
-            foot.position.set(side * 0.12, 0.04, 0.05);
-            animal.add(foot);
+            const footBase = createComicMesh(comicSphere(0.075), accentColor);
+            footBase.scale.set(1.22, 0.55, 1.45);
+            footBase.position.set(side * 0.12, 0.045, 0.06);
+            animal.add(footBase);
+
+            // Claws
+            for (let c = 0; c < 3; c++) {
+              const claw = createComicMesh(
+                new THREE.ConeGeometry(0.018, 0.055, 4),
+                0x2a2a2a
+              );
+              claw.rotation.x = Math.PI / 2;
+              claw.position.set(side * 0.12 + (c - 1) * 0.028, 0.02, 0.12);
+              animal.add(claw);
+            }
           });
 
           return animal;
@@ -3395,84 +3726,135 @@ limits. Below is the code it gave:>
             getBuilderColors("elephant", colorOverride, options);
           animal.userData.variant = variantKey;
 
-          // Massive body
-          const body = createComicMesh(comicSphere(0.58), primaryColor);
-          body.scale.set(1.2, 0.9, 1);
-          body.position.y = 0.62;
+          // Massive angular body
+          const body = createComicMesh(comicSphere(0.6), primaryColor);
+          body.scale.set(1.22, 0.92, 1.02);
+          body.position.y = 0.64;
           animal.add(body);
 
           // Head
-          const head = createComicMesh(comicSphere(0.42), primaryColor);
-          head.position.y = 1.12;
+          const head = createComicMesh(comicSphere(0.44), primaryColor);
+          head.scale.set(1.02, 1.0, 0.98);
+          head.position.y = 1.15;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Angular trunk
-          const trunk = createComicMesh(
-            comicCylinder(0.1, 0.08, 0.55),
-            primaryColor
-          );
-          trunk.rotation.x = 0.5;
-          trunk.position.set(0, 0.88, 0.48);
-          animal.add(trunk);
+          // SEGMENTED angular trunk
+          const trunkGroup = new THREE.Group();
+          for (let s = 0; s < 5; s++) {
+            const seg = createComicMesh(
+              comicCylinder(0.1 - s * 0.012, 0.09 - s * 0.012, 0.1),
+              primaryColor
+            );
+            seg.position.y = -s * 0.09;
+            trunkGroup.add(seg);
+          }
+          const trunkTip = createComicMesh(comicSphere(0.05), secondaryColor);
+          trunkTip.position.set(0, -0.48, 0.04);
+          trunkGroup.add(trunkTip);
 
-          // HUGE flapping ears
+          trunkGroup.rotation.x = 0.4;
+          trunkGroup.position.set(0, 0.98, 0.48);
+          animal.add(trunkGroup);
+          animal.userData.animationData.trunk = trunkGroup;
+
+          // HUGE angular flapping ears
           [-1, 1].forEach((side) => {
-            const ear = createComicMesh(comicSphere(0.38), primaryColor);
-            ear.scale.set(0.15, 1, 0.85);
-            ear.position.set(side * 0.42, 1.02, -0.05);
-            animal.add(ear);
+            const earGroup = new THREE.Group();
+
+            const ear = createComicMesh(comicSphere(0.42), primaryColor);
+            ear.scale.set(0.16, 1.08, 0.88);
+            earGroup.add(ear);
+
+            const innerEar = createComicMesh(comicSphere(0.32), secondaryColor);
+            innerEar.scale.set(0.14, 0.85, 0.68);
+            innerEar.position.z = 0.02;
+            earGroup.add(innerEar);
+
+            earGroup.position.set(side * 0.45, 1.05, -0.04);
+            earGroup.rotation.y = side * 0.12;
+            animal.add(earGroup);
           });
 
-          // Eyes
+          // Bigger expressive eyes
           [-1, 1].forEach((side) => {
-            const eyeWhite = createComicMesh(comicSphere(0.08), 0xffffff);
-            eyeWhite.position.set(side * 0.2, 1.15, 0.35);
+            const eyeWhite = createComicMesh(comicSphere(0.095), 0xffffff);
+            eyeWhite.position.set(side * 0.2, 1.2, 0.38);
             animal.add(eyeWhite);
 
             const pupil = new THREE.Mesh(
-              comicSphere(0.04),
+              comicSphere(0.048),
               new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
-            pupil.position.set(side * 0.2, 1.15, 0.4);
+            pupil.position.set(side * 0.2, 1.2, 0.44);
             animal.add(pupil);
+
+            // Highlight
+            const highlight = new THREE.Mesh(
+              comicSphere(0.018),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            highlight.position.set(side * 0.18, 1.23, 0.45);
+            animal.add(highlight);
           });
 
-          // Tusks
+          // Curved tusks
           [-1, 1].forEach((side) => {
             const tusk = createComicMesh(
-              comicCylinder(0.04, 0.02, 0.28),
+              comicCylinder(0.045, 0.025, 0.3),
               0xfffff0
             );
-            tusk.rotation.z = side * 0.3;
-            tusk.rotation.x = -0.3;
-            tusk.position.set(side * 0.2, 0.88, 0.4);
+            tusk.rotation.z = side * 0.28;
+            tusk.rotation.x = -0.28;
+            tusk.position.set(side * 0.22, 0.92, 0.44);
             animal.add(tusk);
           });
 
-          // Chunky legs
+          // Chunky legs with toenails
           const legPositions = [
-            { x: -0.35, z: 0.2 },
-            { x: 0.35, z: 0.2 },
-            { x: -0.3, z: -0.22 },
-            { x: 0.3, z: -0.22 },
+            { x: -0.36, z: 0.2 },
+            { x: 0.36, z: 0.2 },
+            { x: -0.32, z: -0.22 },
+            { x: 0.32, z: -0.22 },
           ];
           legPositions.forEach((pos) => {
             const leg = createComicMesh(
-              comicCylinder(0.15, 0.17, 0.48),
+              comicCylinder(0.16, 0.18, 0.5),
               primaryColor
             );
-            leg.position.set(pos.x, 0.24, pos.z);
+            leg.position.set(pos.x, 0.26, pos.z);
             animal.add(leg);
+
+            const foot = createComicMesh(comicSphere(0.14), secondaryColor);
+            foot.scale.set(1.2, 0.42, 1.25);
+            foot.position.set(pos.x, 0.048, pos.z);
+            animal.add(foot);
+
+            // Toenails
+            for (let t = 0; t < 3; t++) {
+              const nail = createComicMesh(comicSphere(0.025), 0xe8e8d8);
+              nail.scale.set(0.85, 0.58, 1.1);
+              nail.position.set(pos.x + (t - 1) * 0.042, 0.045, pos.z + 0.11);
+              animal.add(nail);
+            }
           });
 
-          // Tail
-          const tail = createComicMesh(
-            comicCylinder(0.03, 0.04, 0.32),
+          // Tail with tuft
+          const tailGroup = new THREE.Group();
+          const tailBody = createComicMesh(
+            comicCylinder(0.035, 0.045, 0.34),
             primaryColor
           );
-          tail.rotation.x = 0.8;
-          tail.position.set(0, 0.52, -0.58);
-          animal.add(tail);
+          tailGroup.add(tailBody);
+
+          const tailTuft = createComicMesh(comicSphere(0.045), 0x3a3a3a);
+          tailTuft.scale.set(1.0, 1.5, 1.0);
+          tailTuft.position.y = -0.2;
+          tailGroup.add(tailTuft);
+
+          tailGroup.rotation.x = 0.75;
+          tailGroup.position.set(0, 0.55, -0.6);
+          animal.add(tailGroup);
 
           return animal;
         }
@@ -3781,82 +4163,116 @@ limits. Below is the code it gave:>
             getBuilderColors("fox", colorOverride, options);
           animal.userData.variant = variantKey;
 
-          // Sleek body
-          const body = createLowPolyMesh(lowPolySphere(0.35), primaryColor);
-          body.scale.set(1.0, 0.85, 1.3);
-          body.position.y = 0.42;
+          // Sleek angular body (lower segments for more facets)
+          const body = createLowPolyMesh(lowPolySphere(0.36), primaryColor);
+          body.scale.set(1.02, 0.88, 1.32);
+          body.position.y = 0.44;
           animal.add(body);
 
-          // Chest
-          const chest = createLowPolyMesh(lowPolySphere(0.25), secondaryColor);
-          chest.scale.set(0.8, 0.9, 0.5);
-          chest.position.set(0, 0.45, 0.18);
+          // Chest (faceted)
+          const chest = createLowPolyMesh(lowPolySphere(0.26), secondaryColor);
+          chest.scale.set(0.82, 0.92, 0.52);
+          chest.position.set(0, 0.48, 0.2);
           animal.add(chest);
 
-          // Pointed head
-          const head = createLowPolyMesh(lowPolySphere(0.28), primaryColor);
-          head.position.y = 0.9;
+          // Pointed angular head
+          const head = createLowPolyMesh(lowPolySphere(0.3), primaryColor);
+          head.scale.set(1.05, 0.95, 1.0);
+          head.position.y = 0.92;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Sharp snout
+          // Sharp angular snout (tetrahedron-like)
           const snout = createLowPolyMesh(
-            new THREE.ConeGeometry(0.1, 0.25, 4),
+            new THREE.ConeGeometry(0.11, 0.28, 4),
             secondaryColor
           );
           snout.rotation.x = -Math.PI / 2;
-          snout.position.set(0, 0.85, 0.32);
+          snout.position.set(0, 0.88, 0.35);
           animal.add(snout);
 
-          // Nose
+          // Faceted nose
           const nose = createLowPolyMesh(
-            new THREE.TetrahedronGeometry(0.04),
+            new THREE.TetrahedronGeometry(0.045),
             accentColor
           );
-          nose.position.set(0, 0.85, 0.45);
+          nose.position.set(0, 0.88, 0.5);
           animal.add(nose);
 
-          // Big triangular ears
+          // Big triangular ears with BLACK TIPS
           [-1, 1].forEach((side) => {
+            const earGroup = new THREE.Group();
+
             const ear = createLowPolyMesh(
-              new THREE.ConeGeometry(0.1, 0.25, 3),
+              new THREE.ConeGeometry(0.11, 0.28, 3),
               primaryColor
             );
-            ear.position.set(side * 0.2, 1.18, -0.05);
-            ear.rotation.z = side * -0.2;
-            animal.add(ear);
+            earGroup.add(ear);
+
+            // Black ear tip
+            const tip = createLowPolyMesh(
+              new THREE.ConeGeometry(0.06, 0.1, 3),
+              0x1a1a1a
+            );
+            tip.position.y = 0.1;
+            earGroup.add(tip);
+
+            earGroup.position.set(side * 0.22, 1.22, -0.04);
+            earGroup.rotation.z = side * -0.2;
+            animal.add(earGroup);
           });
 
-          // Eyes
+          // Faceted gem-like eyes
           [-1, 1].forEach((side) => {
             const eye = new THREE.Mesh(
-              lowPolySphere(0.05),
+              new THREE.OctahedronGeometry(0.045),
               new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
-            eye.position.set(side * 0.14, 0.92, 0.24);
+            eye.position.set(side * 0.15, 0.95, 0.26);
             animal.add(eye);
           });
 
-          // Fluffy tail
-          const tail = createLowPolyMesh(
-            new THREE.ConeGeometry(0.12, 0.5, 5),
-            primaryColor
-          );
-          tail.rotation.x = 0.8;
-          tail.position.set(0, 0.38, -0.55);
-          animal.add(tail);
-
-          const tailTip = createLowPolyMesh(lowPolySphere(0.1), secondaryColor);
-          tailTip.position.set(0, 0.55, -0.82);
-          animal.add(tailTip);
-
-          // Legs
-          [-1, 1].forEach((side) => {
-            const leg = createLowPolyMesh(
-              lowPolyCylinder(0.05, 0.04, 0.18),
+          // Segmented fluffy tail
+          const tailGroup = new THREE.Group();
+          for (let s = 0; s < 3; s++) {
+            const tailSeg = createLowPolyMesh(
+              new THREE.ConeGeometry(0.11 - s * 0.025, 0.18, 4),
               primaryColor
             );
-            leg.position.set(side * 0.15, 0.09, 0.15);
-            animal.add(leg);
+            tailSeg.position.y = s * 0.14;
+            tailSeg.rotation.x = Math.PI;
+            tailGroup.add(tailSeg);
+          }
+          const tailTip = createLowPolyMesh(lowPolySphere(0.1), secondaryColor);
+          tailTip.position.y = 0.42;
+          tailGroup.add(tailTip);
+
+          tailGroup.rotation.x = 0.7;
+          tailGroup.position.set(0, 0.4, -0.48);
+          animal.add(tailGroup);
+
+          // Angular legs with paws
+          [-1, 1].forEach((side) => {
+            const frontLeg = createLowPolyMesh(
+              lowPolyCylinder(0.055, 0.045, 0.2),
+              primaryColor
+            );
+            frontLeg.position.set(side * 0.16, 0.1, 0.18);
+            animal.add(frontLeg);
+
+            const frontPaw = createLowPolyMesh(
+              new THREE.TetrahedronGeometry(0.04),
+              accentColor
+            );
+            frontPaw.position.set(side * 0.16, 0.03, 0.2);
+            animal.add(frontPaw);
+
+            const backLeg = createLowPolyMesh(
+              lowPolyCylinder(0.06, 0.05, 0.22),
+              primaryColor
+            );
+            backLeg.position.set(side * 0.16, 0.11, -0.18);
+            animal.add(backLeg);
           });
 
           return animal;
@@ -3934,14 +4350,21 @@ limits. Below is the code it gave:>
           tail.position.set(0, 0.4, -0.42);
           animal.add(tail);
 
-          // Legs
+          // Legs (front and back)
           [-1, 1].forEach((side) => {
-            const leg = createLowPolyMesh(
+            const frontLeg = createLowPolyMesh(
               lowPolyCylinder(0.04, 0.035, 0.16),
               primaryColor
             );
-            leg.position.set(side * 0.12, 0.08, 0.12);
-            animal.add(leg);
+            frontLeg.position.set(side * 0.12, 0.08, 0.12);
+            animal.add(frontLeg);
+
+            const backLeg = createLowPolyMesh(
+              lowPolyCylinder(0.045, 0.04, 0.18),
+              primaryColor
+            );
+            backLeg.position.set(side * 0.11, 0.09, -0.14);
+            animal.add(backLeg);
           });
 
           return animal;
@@ -3958,79 +4381,117 @@ limits. Below is the code it gave:>
             getBuilderColors("owl", colorOverride, options);
           animal.userData.variant = variantKey;
 
-          // Round body
-          const body = createLowPolyMesh(lowPolySphere(0.38), primaryColor);
-          body.scale.set(1.0, 1.1, 0.9);
-          body.position.y = 0.45;
+          // Round faceted body
+          const body = createLowPolyMesh(lowPolySphere(0.4), primaryColor);
+          body.scale.set(1.02, 1.12, 0.92);
+          body.position.y = 0.48;
           animal.add(body);
 
-          // Chest
-          const chest = createLowPolyMesh(lowPolySphere(0.28), secondaryColor);
-          chest.scale.set(0.8, 0.9, 0.5);
-          chest.position.set(0, 0.4, 0.18);
+          // Layered chest (faceted feather rows)
+          const chest = createLowPolyMesh(lowPolySphere(0.3), secondaryColor);
+          chest.scale.set(0.82, 0.95, 0.52);
+          chest.position.set(0, 0.42, 0.2);
           animal.add(chest);
 
-          // Large head
-          const head = createLowPolyMesh(lowPolySphere(0.35), primaryColor);
-          head.position.y = 0.95;
+          // Feather facet rows
+          for (let r = 0; r < 2; r++) {
+            const row = createLowPolyMesh(
+              new THREE.OctahedronGeometry(0.12 - r * 0.03),
+              r % 2 === 0 ? secondaryColor : primaryColor
+            );
+            row.scale.set(1.5, 0.5, 0.6);
+            row.position.set(0, 0.28 + r * 0.12, 0.22);
+            animal.add(row);
+          }
+
+          // Large faceted head
+          const head = createLowPolyMesh(lowPolySphere(0.38), primaryColor);
+          head.position.y = 0.98;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
           // Facial disc
-          const disc = createLowPolyMesh(lowPolySphere(0.26), secondaryColor);
-          disc.scale.set(1, 1, 0.4);
-          disc.position.set(0, 0.93, 0.2);
+          const disc = createLowPolyMesh(lowPolySphere(0.28), secondaryColor);
+          disc.scale.set(1.02, 1.0, 0.42);
+          disc.position.set(0, 0.96, 0.22);
           animal.add(disc);
 
-          // Big eyes
+          // Big gem-like eyes
           [-1, 1].forEach((side) => {
             const eye = new THREE.Mesh(
-              lowPolySphere(0.08),
+              new THREE.OctahedronGeometry(0.08),
               new THREE.MeshBasicMaterial({ color: 0xffa500 })
             );
-            eye.position.set(side * 0.12, 0.95, 0.3);
+            eye.position.set(side * 0.13, 0.98, 0.34);
             animal.add(eye);
 
             const pupil = new THREE.Mesh(
-              lowPolySphere(0.04),
+              new THREE.TetrahedronGeometry(0.04),
               new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
-            pupil.position.set(side * 0.12, 0.95, 0.36);
+            pupil.position.set(side * 0.13, 0.98, 0.42);
             animal.add(pupil);
           });
 
-          // Beak
+          // Sharp angular beak
           const beak = createLowPolyMesh(
-            new THREE.ConeGeometry(0.05, 0.1, 4),
+            new THREE.ConeGeometry(0.055, 0.12, 4),
             accentColor
           );
-          beak.rotation.x = -Math.PI / 2 - 0.4;
-          beak.position.set(0, 0.88, 0.32);
+          beak.rotation.x = -Math.PI / 2 - 0.42;
+          beak.position.set(0, 0.9, 0.36);
           animal.add(beak);
 
-          // Ear tufts
+          // Multi-spike ear tufts
           [-1, 1].forEach((side) => {
-            const tuft = createLowPolyMesh(
-              new THREE.ConeGeometry(0.06, 0.15, 3),
+            const tuftGroup = new THREE.Group();
+            for (let i = 0; i < 2; i++) {
+              const tuft = createLowPolyMesh(
+                new THREE.ConeGeometry(0.05 - i * 0.012, 0.14 - i * 0.02, 3),
+                primaryColor
+              );
+              tuft.position.set(i * side * 0.02, i * 0.02, 0);
+              tuftGroup.add(tuft);
+            }
+            tuftGroup.position.set(side * 0.27, 1.28, -0.04);
+            tuftGroup.rotation.z = side * -0.28;
+            animal.add(tuftGroup);
+          });
+
+          // Faceted wings with feather tips
+          [-1, 1].forEach((side) => {
+            const wingGroup = new THREE.Group();
+
+            const wingBase = createLowPolyMesh(
+              lowPolySphere(0.2),
               primaryColor
             );
-            tuft.position.set(side * 0.25, 1.22, -0.05);
-            tuft.rotation.z = side * -0.3;
-            animal.add(tuft);
+            wingBase.scale.set(0.42, 1.0, 0.78);
+            wingGroup.add(wingBase);
+
+            // Feather tips (triangles)
+            for (let f = 0; f < 3; f++) {
+              const feather = createLowPolyMesh(
+                new THREE.ConeGeometry(0.035, 0.1, 3),
+                primaryColor
+              );
+              feather.position.set(0, -0.14 - f * 0.06, 0.02);
+              feather.rotation.x = 0.4;
+              wingGroup.add(feather);
+            }
+
+            wingGroup.position.set(side * 0.38, 0.48, -0.04);
+            animal.add(wingGroup);
           });
 
-          // Wings
+          // Faceted talons
           [-1, 1].forEach((side) => {
-            const wing = createLowPolyMesh(lowPolySphere(0.18), primaryColor);
-            wing.scale.set(0.4, 0.9, 0.7);
-            wing.position.set(side * 0.35, 0.45, -0.05);
-            animal.add(wing);
-          });
-
-          // Feet
-          [-1, 1].forEach((side) => {
-            const foot = createLowPolyMesh(lowPolySphere(0.05), accentColor);
-            foot.scale.set(1.2, 0.5, 1.5);
-            foot.position.set(side * 0.1, 0.04, 0.05);
+            const foot = createLowPolyMesh(
+              new THREE.TetrahedronGeometry(0.055),
+              accentColor
+            );
+            foot.scale.set(1.2, 0.55, 1.45);
+            foot.position.set(side * 0.11, 0.045, 0.06);
             animal.add(foot);
           });
 
@@ -4281,80 +4742,134 @@ limits. Below is the code it gave:>
             getBuilderColors("elephant", colorOverride, options);
           animal.userData.variant = variantKey;
 
-          // Massive body
-          const body = createLowPolyMesh(lowPolySphere(0.52), primaryColor);
-          body.scale.set(1.2, 0.9, 1.0);
-          body.position.y = 0.58;
+          // Massive faceted body
+          const body = createLowPolyMesh(lowPolySphere(0.54), primaryColor);
+          body.scale.set(1.22, 0.92, 1.02);
+          body.position.y = 0.6;
           animal.add(body);
 
-          // Head
-          const head = createLowPolyMesh(lowPolySphere(0.38), primaryColor);
-          head.position.y = 1.08;
+          // Faceted head
+          const head = createLowPolyMesh(lowPolySphere(0.4), primaryColor);
+          head.scale.set(1.02, 1.0, 0.98);
+          head.position.y = 1.1;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Trunk
-          const trunk = createLowPolyMesh(
-            lowPolyCylinder(0.1, 0.07, 0.45),
-            primaryColor
+          // SEGMENTED trunk (faceted)
+          const trunkGroup = new THREE.Group();
+          for (let s = 0; s < 4; s++) {
+            const seg = createLowPolyMesh(
+              lowPolyCylinder(0.09 - s * 0.015, 0.08 - s * 0.015, 0.1),
+              primaryColor
+            );
+            seg.position.y = -s * 0.09;
+            trunkGroup.add(seg);
+          }
+          const trunkTip = createLowPolyMesh(
+            new THREE.TetrahedronGeometry(0.04),
+            secondaryColor
           );
-          trunk.rotation.x = 0.5;
-          trunk.position.set(0, 0.85, 0.42);
-          animal.add(trunk);
+          trunkTip.position.set(0, -0.38, 0.03);
+          trunkGroup.add(trunkTip);
 
-          // Large ears
+          trunkGroup.rotation.x = 0.42;
+          trunkGroup.position.set(0, 0.92, 0.44);
+          animal.add(trunkGroup);
+          animal.userData.animationData.trunk = trunkGroup;
+
+          // Large faceted ears with inner detail
           [-1, 1].forEach((side) => {
-            const ear = createLowPolyMesh(lowPolySphere(0.32), primaryColor);
-            ear.scale.set(0.15, 0.9, 0.75);
-            ear.position.set(side * 0.38, 0.98, -0.05);
-            animal.add(ear);
+            const earGroup = new THREE.Group();
+
+            const ear = createLowPolyMesh(lowPolySphere(0.35), primaryColor);
+            ear.scale.set(0.16, 0.95, 0.78);
+            earGroup.add(ear);
+
+            const innerEar = createLowPolyMesh(
+              lowPolySphere(0.25),
+              secondaryColor
+            );
+            innerEar.scale.set(0.14, 0.75, 0.58);
+            innerEar.position.z = 0.02;
+            earGroup.add(innerEar);
+
+            earGroup.position.set(side * 0.4, 1.0, -0.04);
+            earGroup.rotation.y = side * 0.12;
+            animal.add(earGroup);
           });
 
-          // Eyes
+          // Gem-like eyes
           [-1, 1].forEach((side) => {
             const eye = new THREE.Mesh(
-              lowPolySphere(0.05),
+              new THREE.OctahedronGeometry(0.05),
               new THREE.MeshBasicMaterial({ color: 0x4a3020 })
             );
-            eye.position.set(side * 0.18, 1.12, 0.32);
+            eye.position.set(side * 0.18, 1.14, 0.34);
             animal.add(eye);
           });
 
-          // Tusks
+          // Angular tusks
           [-1, 1].forEach((side) => {
             const tusk = createLowPolyMesh(
-              new THREE.ConeGeometry(0.03, 0.22, 4),
+              new THREE.ConeGeometry(0.035, 0.24, 4),
               0xfffff0
             );
-            tusk.rotation.z = side * 0.3;
-            tusk.rotation.x = -0.3;
-            tusk.position.set(side * 0.16, 0.82, 0.35);
+            tusk.rotation.z = side * 0.28;
+            tusk.rotation.x = -0.28;
+            tusk.position.set(side * 0.18, 0.85, 0.38);
             animal.add(tusk);
           });
 
-          // Chunky legs
+          // Chunky faceted legs with toenails
           const legPositions = [
-            { x: -0.32, z: 0.18 },
-            { x: 0.32, z: 0.18 },
-            { x: -0.28, z: -0.2 },
-            { x: 0.28, z: -0.2 },
+            { x: -0.34, z: 0.18 },
+            { x: 0.34, z: 0.18 },
+            { x: -0.3, z: -0.2 },
+            { x: 0.3, z: -0.2 },
           ];
           legPositions.forEach((pos) => {
             const leg = createLowPolyMesh(
-              lowPolyCylinder(0.13, 0.15, 0.42),
+              lowPolyCylinder(0.14, 0.16, 0.44),
               primaryColor
             );
-            leg.position.set(pos.x, 0.21, pos.z);
+            leg.position.set(pos.x, 0.22, pos.z);
             animal.add(leg);
+
+            const foot = createLowPolyMesh(lowPolySphere(0.11), secondaryColor);
+            foot.scale.set(1.2, 0.42, 1.22);
+            foot.position.set(pos.x, 0.045, pos.z);
+            animal.add(foot);
+
+            // Toenails
+            for (let t = 0; t < 3; t++) {
+              const nail = createLowPolyMesh(
+                new THREE.TetrahedronGeometry(0.022),
+                0xe8e8d8
+              );
+              nail.position.set(pos.x + (t - 1) * 0.035, 0.04, pos.z + 0.1);
+              animal.add(nail);
+            }
           });
 
-          // Tail
-          const tail = createLowPolyMesh(
-            lowPolyCylinder(0.02, 0.03, 0.28),
+          // Tail with tuft
+          const tailGroup = new THREE.Group();
+          const tailBody = createLowPolyMesh(
+            lowPolyCylinder(0.025, 0.035, 0.26),
             primaryColor
           );
-          tail.rotation.x = 0.8;
-          tail.position.set(0, 0.48, -0.52);
-          animal.add(tail);
+          tailGroup.add(tailBody);
+
+          const tailTuft = createLowPolyMesh(
+            new THREE.TetrahedronGeometry(0.04),
+            0x3a3a3a
+          );
+          tailTuft.scale.set(1.0, 1.5, 1.0);
+          tailTuft.position.y = -0.16;
+          tailGroup.add(tailTuft);
+
+          tailGroup.rotation.x = 0.72;
+          tailGroup.position.set(0, 0.5, -0.54);
+          animal.add(tailGroup);
 
           return animal;
         }
@@ -4694,84 +5209,138 @@ limits. Below is the code it gave:>
           animal.userData.variant = variantKey;
 
           // Soft sleek body
-          const body = createGhibliMesh(ghibliSphere(0.38), primaryColor);
-          body.scale.set(1.0, 0.85, 1.25);
-          body.position.y = 0.44;
+          const body = createGhibliMesh(ghibliSphere(0.4), primaryColor);
+          body.scale.set(1.02, 0.88, 1.28);
+          body.position.y = 0.46;
           animal.add(body);
 
-          // White chest
-          const chest = createGhibliMesh(ghibliSphere(0.26), secondaryColor);
-          chest.scale.set(0.8, 0.95, 0.55);
-          chest.position.set(0, 0.48, 0.2);
+          // White fluffy chest
+          const chest = createGhibliMesh(ghibliSphere(0.28), secondaryColor);
+          chest.scale.set(0.82, 1.0, 0.58);
+          chest.position.set(0, 0.5, 0.22);
           animal.add(chest);
 
-          // Soft head
-          const head = createGhibliMesh(ghibliSphere(0.3), primaryColor);
-          head.scale.set(1.08, 0.95, 1.0);
-          head.position.y = 0.92;
+          // Soft rounded head
+          const head = createGhibliMesh(ghibliSphere(0.32), primaryColor);
+          head.scale.set(1.1, 0.97, 1.02);
+          head.position.y = 0.95;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
           // Gentle snout
           const snout = createGhibliMesh(
-            new THREE.ConeGeometry(0.1, 0.22, 24),
+            new THREE.CapsuleGeometry(0.08, 0.12, 16, 20),
             secondaryColor
           );
           snout.rotation.x = -Math.PI / 2;
-          snout.position.set(0, 0.86, 0.32);
+          snout.position.set(0, 0.88, 0.35);
           animal.add(snout);
 
-          // Little nose
-          const nose = createGhibliMesh(ghibliSphere(0.04), accentColor);
-          nose.position.set(0, 0.86, 0.44);
+          // Little pink nose
+          const nose = createGhibliMesh(ghibliSphere(0.045), accentColor);
+          nose.position.set(0, 0.88, 0.48);
           animal.add(nose);
 
-          // Soft triangular ears
+          // Soft triangular ears with pink inner
           [-1, 1].forEach((side) => {
+            const earGroup = new THREE.Group();
+
             const ear = createGhibliMesh(
-              new THREE.ConeGeometry(0.1, 0.22, 16),
+              new THREE.ConeGeometry(0.11, 0.24, 20),
               primaryColor
             );
-            ear.position.set(side * 0.2, 1.18, -0.05);
-            ear.rotation.z = side * -0.18;
-            animal.add(ear);
+            earGroup.add(ear);
+
+            // Inner ear pink
+            const inner = createGhibliMesh(
+              new THREE.ConeGeometry(0.06, 0.16, 16),
+              0xffb6c1
+            );
+            inner.position.set(0, -0.02, 0.02);
+            earGroup.add(inner);
+
+            earGroup.position.set(side * 0.22, 1.22, -0.04);
+            earGroup.rotation.z = side * -0.2;
+            animal.add(earGroup);
           });
 
-          // Gentle eyes
+          // Dreamy gentle eyes with highlights
           [-1, 1].forEach((side) => {
-            const eyeWhite = createGhibliMesh(ghibliSphere(0.07), 0xffffff);
-            eyeWhite.scale.set(1.1, 0.9, 0.7);
-            eyeWhite.position.set(side * 0.15, 0.95, 0.26);
+            const eyeWhite = createGhibliMesh(ghibliSphere(0.08), 0xffffff);
+            eyeWhite.scale.set(1.15, 0.92, 0.72);
+            eyeWhite.position.set(side * 0.16, 0.98, 0.28);
             animal.add(eyeWhite);
 
             const iris = new THREE.Mesh(
-              ghibliSphere(0.04),
+              ghibliSphere(0.045),
               new THREE.MeshBasicMaterial({ color: 0xd4a574 })
             );
-            iris.position.set(side * 0.15, 0.95, 0.3);
+            iris.position.set(side * 0.16, 0.98, 0.34);
             animal.add(iris);
+
+            const pupil = new THREE.Mesh(
+              ghibliSphere(0.025),
+              new THREE.MeshBasicMaterial({ color: 0x2a2020 })
+            );
+            pupil.position.set(side * 0.16, 0.98, 0.36);
+            animal.add(pupil);
+
+            // Dreamy highlight
+            const highlight = new THREE.Mesh(
+              ghibliSphere(0.015),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            highlight.position.set(side * 0.145, 1.0, 0.37);
+            animal.add(highlight);
           });
 
-          // Fluffy tail
-          const tail = createGhibliMesh(
-            new THREE.CapsuleGeometry(0.1, 0.4, 16, 24),
+          // Cheek blush (Ghibli signature)
+          [-1, 1].forEach((side) => {
+            const blush = new THREE.Mesh(
+              ghibliSphere(0.06),
+              new THREE.MeshPhysicalMaterial({
+                color: 0xffb6c1,
+                transparent: true,
+                opacity: 0.35,
+                roughness: 0.8,
+              })
+            );
+            blush.scale.set(1.3, 0.8, 0.4);
+            blush.position.set(side * 0.25, 0.92, 0.28);
+            animal.add(blush);
+          });
+
+          // Fluffy dreamy tail
+          const tailGroup = new THREE.Group();
+          const tailBase = createGhibliMesh(
+            new THREE.CapsuleGeometry(0.12, 0.35, 20, 28),
             primaryColor
           );
-          tail.rotation.x = 0.7;
-          tail.position.set(0, 0.38, -0.52);
-          animal.add(tail);
+          tailGroup.add(tailBase);
 
-          const tailTip = createGhibliMesh(ghibliSphere(0.1), secondaryColor);
-          tailTip.position.set(0, 0.55, -0.78);
-          animal.add(tailTip);
+          const tailTip = createGhibliMesh(ghibliSphere(0.12), secondaryColor);
+          tailTip.position.y = 0.25;
+          tailGroup.add(tailTip);
 
-          // Soft legs
+          tailGroup.rotation.x = 0.65;
+          tailGroup.position.set(0, 0.4, -0.48);
+          animal.add(tailGroup);
+
+          // Soft little legs
           [-1, 1].forEach((side) => {
-            const leg = createGhibliMesh(
-              new THREE.CapsuleGeometry(0.05, 0.12, 12, 16),
+            const frontLeg = createGhibliMesh(
+              new THREE.CapsuleGeometry(0.055, 0.14, 14, 18),
               primaryColor
             );
-            leg.position.set(side * 0.16, 0.08, 0.15);
-            animal.add(leg);
+            frontLeg.position.set(side * 0.17, 0.09, 0.18);
+            animal.add(frontLeg);
+
+            const backLeg = createGhibliMesh(
+              new THREE.CapsuleGeometry(0.06, 0.15, 14, 18),
+              primaryColor
+            );
+            backLeg.position.set(side * 0.17, 0.1, -0.16);
+            animal.add(backLeg);
           });
 
           return animal;
@@ -4847,14 +5416,21 @@ limits. Below is the code it gave:>
           tail.position.set(0, 0.42, -0.42);
           animal.add(tail);
 
-          // Soft legs
+          // Soft legs (front and back)
           [-1, 1].forEach((side) => {
-            const leg = createGhibliMesh(
+            const frontLeg = createGhibliMesh(
               new THREE.CapsuleGeometry(0.04, 0.1, 12, 16),
               primaryColor
             );
-            leg.position.set(side * 0.14, 0.08, 0.12);
-            animal.add(leg);
+            frontLeg.position.set(side * 0.14, 0.08, 0.12);
+            animal.add(frontLeg);
+
+            const backLeg = createGhibliMesh(
+              new THREE.CapsuleGeometry(0.045, 0.12, 12, 16),
+              primaryColor
+            );
+            backLeg.position.set(side * 0.13, 0.09, -0.14);
+            animal.add(backLeg);
           });
 
           return animal;
@@ -4871,83 +5447,133 @@ limits. Below is the code it gave:>
             getBuilderColors("owl", colorOverride, options);
           animal.userData.variant = variantKey;
 
-          // Soft round body
-          const body = createGhibliMesh(ghibliSphere(0.4), primaryColor);
-          body.scale.set(1.0, 1.1, 0.9);
-          body.position.y = 0.46;
+          // Soft round fluffy body
+          const body = createGhibliMesh(ghibliSphere(0.42), primaryColor);
+          body.scale.set(1.02, 1.12, 0.92);
+          body.position.y = 0.48;
           animal.add(body);
 
-          // Soft chest
-          const chest = createGhibliMesh(ghibliSphere(0.3), secondaryColor);
-          chest.scale.set(0.88, 0.95, 0.5);
-          chest.position.set(0, 0.42, 0.2);
+          // Soft feathered chest
+          const chest = createGhibliMesh(ghibliSphere(0.32), secondaryColor);
+          chest.scale.set(0.9, 1.0, 0.52);
+          chest.position.set(0, 0.44, 0.22);
           animal.add(chest);
 
           // Large soft head
-          const head = createGhibliMesh(ghibliSphere(0.38), primaryColor);
-          head.position.y = 0.98;
+          const head = createGhibliMesh(ghibliSphere(0.4), primaryColor);
+          head.position.y = 1.0;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
           // Soft facial disc
-          const disc = createGhibliMesh(ghibliSphere(0.28), secondaryColor);
-          disc.scale.set(1, 1, 0.4);
-          disc.position.set(0, 0.96, 0.22);
+          const disc = createGhibliMesh(ghibliSphere(0.3), secondaryColor);
+          disc.scale.set(1.02, 1.0, 0.42);
+          disc.position.set(0, 0.98, 0.24);
           animal.add(disc);
 
-          // Large gentle eyes (signature Ghibli)
+          // Large dreamy eyes (signature Ghibli) with glow
           [-1, 1].forEach((side) => {
-            const eyeWhite = createGhibliMesh(ghibliSphere(0.1), 0xffffff);
-            eyeWhite.position.set(side * 0.14, 0.98, 0.32);
+            // Eye glow
+            const eyeGlow = new THREE.Mesh(
+              ghibliSphere(0.13),
+              new THREE.MeshPhysicalMaterial({
+                color: 0xffd080,
+                transparent: true,
+                opacity: 0.3,
+                emissive: 0xffa500,
+                emissiveIntensity: 0.1,
+              })
+            );
+            eyeGlow.position.set(side * 0.15, 1.0, 0.34);
+            animal.add(eyeGlow);
+
+            const eyeWhite = createGhibliMesh(ghibliSphere(0.11), 0xffffff);
+            eyeWhite.position.set(side * 0.15, 1.0, 0.35);
             animal.add(eyeWhite);
 
             const iris = new THREE.Mesh(
-              ghibliSphere(0.06),
+              ghibliSphere(0.065),
               new THREE.MeshBasicMaterial({ color: 0xffa500 })
             );
-            iris.position.set(side * 0.14, 0.98, 0.38);
+            iris.position.set(side * 0.15, 1.0, 0.42);
             animal.add(iris);
 
             const pupil = new THREE.Mesh(
-              ghibliSphere(0.03),
+              ghibliSphere(0.035),
               new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
-            pupil.position.set(side * 0.14, 0.98, 0.42);
+            pupil.position.set(side * 0.15, 1.0, 0.46);
             animal.add(pupil);
+
+            // Sparkle highlights
+            const highlight1 = new THREE.Mesh(
+              ghibliSphere(0.018),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            highlight1.position.set(side * 0.135, 1.03, 0.47);
+            animal.add(highlight1);
+
+            const highlight2 = new THREE.Mesh(
+              ghibliSphere(0.01),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            highlight2.position.set(side * 0.16, 0.98, 0.47);
+            animal.add(highlight2);
           });
 
           // Small soft beak
           const beak = createGhibliMesh(
-            new THREE.ConeGeometry(0.04, 0.09, 12),
+            new THREE.ConeGeometry(0.045, 0.1, 14),
             accentColor
           );
-          beak.rotation.x = -Math.PI / 2 - 0.4;
-          beak.position.set(0, 0.9, 0.35);
+          beak.rotation.x = -Math.PI / 2 - 0.42;
+          beak.position.set(0, 0.92, 0.38);
           animal.add(beak);
 
-          // Soft ear tufts
+          // Soft fluffy ear tufts
           [-1, 1].forEach((side) => {
-            const tuft = createGhibliMesh(
-              new THREE.ConeGeometry(0.06, 0.14, 12),
-              primaryColor
-            );
-            tuft.position.set(side * 0.26, 1.28, -0.05);
-            tuft.rotation.z = side * -0.25;
-            animal.add(tuft);
+            const tuftGroup = new THREE.Group();
+            for (let i = 0; i < 2; i++) {
+              const tuft = createGhibliMesh(
+                new THREE.ConeGeometry(0.05 - i * 0.012, 0.13 - i * 0.02, 14),
+                primaryColor
+              );
+              tuft.position.set(i * side * 0.015, i * 0.02, 0);
+              tuftGroup.add(tuft);
+            }
+            tuftGroup.position.set(side * 0.28, 1.32, -0.04);
+            tuftGroup.rotation.z = side * -0.26;
+            animal.add(tuftGroup);
           });
 
-          // Soft wings
+          // Soft layered wings
           [-1, 1].forEach((side) => {
-            const wing = createGhibliMesh(ghibliSphere(0.2), primaryColor);
-            wing.scale.set(0.4, 0.95, 0.75);
-            wing.position.set(side * 0.38, 0.46, -0.05);
-            animal.add(wing);
+            const wingGroup = new THREE.Group();
+
+            const wingBase = createGhibliMesh(ghibliSphere(0.22), primaryColor);
+            wingBase.scale.set(0.42, 1.0, 0.78);
+            wingGroup.add(wingBase);
+
+            // Soft feather tips
+            for (let f = 0; f < 3; f++) {
+              const feather = createGhibliMesh(
+                new THREE.CapsuleGeometry(0.025, 0.06, 10, 12),
+                primaryColor
+              );
+              feather.position.set(0, -0.14 - f * 0.055, 0.02);
+              feather.rotation.x = 0.35;
+              wingGroup.add(feather);
+            }
+
+            wingGroup.position.set(side * 0.4, 0.48, -0.04);
+            animal.add(wingGroup);
           });
 
-          // Little feet
+          // Little soft feet
           [-1, 1].forEach((side) => {
-            const foot = createGhibliMesh(ghibliSphere(0.05), accentColor);
-            foot.scale.set(1.2, 0.5, 1.4);
-            foot.position.set(side * 0.1, 0.04, 0.05);
+            const foot = createGhibliMesh(ghibliSphere(0.055), accentColor);
+            foot.scale.set(1.22, 0.52, 1.45);
+            foot.position.set(side * 0.11, 0.045, 0.06);
             animal.add(foot);
           });
 
@@ -5200,95 +5826,136 @@ limits. Below is the code it gave:>
           animal.userData.variant = variantKey;
 
           // Soft massive body
-          const body = createGhibliMesh(ghibliSphere(0.54), primaryColor);
-          body.scale.set(1.18, 0.9, 1.0);
-          body.position.y = 0.6;
+          const body = createGhibliMesh(ghibliSphere(0.56), primaryColor);
+          body.scale.set(1.2, 0.92, 1.02);
+          body.position.y = 0.62;
           animal.add(body);
 
-          // Soft head
-          const head = createGhibliMesh(ghibliSphere(0.4), primaryColor);
-          head.position.y = 1.1;
+          // Soft rounded head
+          const head = createGhibliMesh(ghibliSphere(0.42), primaryColor);
+          head.scale.set(1.02, 1.0, 0.98);
+          head.position.y = 1.12;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
-          // Soft trunk
-          const trunk = createGhibliMesh(
-            new THREE.CapsuleGeometry(0.08, 0.38, 16, 24),
-            primaryColor
-          );
-          trunk.rotation.x = 0.5;
-          trunk.position.set(0, 0.86, 0.42);
-          animal.add(trunk);
-
-          const trunkTip = createGhibliMesh(ghibliSphere(0.07), secondaryColor);
-          trunkTip.position.set(0, 0.62, 0.6);
-          animal.add(trunkTip);
-
-          // Large soft ears
-          [-1, 1].forEach((side) => {
-            const ear = createGhibliMesh(ghibliSphere(0.34), primaryColor);
-            ear.scale.set(0.15, 0.95, 0.8);
-            ear.position.set(side * 0.4, 1.0, -0.05);
-            animal.add(ear);
-
-            const innerEar = createGhibliMesh(
-              ghibliSphere(0.24),
-              secondaryColor
+          // Soft curling trunk
+          const trunkGroup = new THREE.Group();
+          for (let s = 0; s < 4; s++) {
+            const seg = createGhibliMesh(
+              new THREE.CapsuleGeometry(0.075 - s * 0.012, 0.08, 14, 18),
+              primaryColor
             );
-            innerEar.scale.set(0.15, 0.75, 0.6);
-            innerEar.position.set(side * 0.42, 1.0, 0);
-            animal.add(innerEar);
+            seg.position.y = -s * 0.09;
+            trunkGroup.add(seg);
+          }
+          const trunkTip = createGhibliMesh(
+            ghibliSphere(0.055),
+            secondaryColor
+          );
+          trunkTip.position.set(0, -0.38, 0.04);
+          trunkGroup.add(trunkTip);
+
+          trunkGroup.rotation.x = 0.38;
+          trunkGroup.position.set(0, 0.94, 0.44);
+          animal.add(trunkGroup);
+          animal.userData.animationData.trunk = trunkGroup;
+
+          // Large soft ears with pink inner
+          [-1, 1].forEach((side) => {
+            const earGroup = new THREE.Group();
+
+            const ear = createGhibliMesh(ghibliSphere(0.36), primaryColor);
+            ear.scale.set(0.16, 1.0, 0.82);
+            earGroup.add(ear);
+
+            const innerEar = createGhibliMesh(ghibliSphere(0.26), 0xffb6c1);
+            innerEar.scale.set(0.14, 0.78, 0.62);
+            innerEar.position.z = 0.02;
+            earGroup.add(innerEar);
+
+            earGroup.position.set(side * 0.42, 1.02, -0.04);
+            earGroup.rotation.y = side * 0.1;
+            animal.add(earGroup);
           });
 
-          // Gentle eyes
+          // Gentle dreamy eyes
           [-1, 1].forEach((side) => {
-            const eyeWhite = createGhibliMesh(ghibliSphere(0.06), 0xffffff);
-            eyeWhite.position.set(side * 0.19, 1.14, 0.34);
+            const eyeWhite = createGhibliMesh(ghibliSphere(0.07), 0xffffff);
+            eyeWhite.position.set(side * 0.2, 1.16, 0.36);
             animal.add(eyeWhite);
 
             const iris = new THREE.Mesh(
-              ghibliSphere(0.035),
+              ghibliSphere(0.04),
               new THREE.MeshBasicMaterial({ color: 0x4a3020 })
             );
-            iris.position.set(side * 0.19, 1.14, 0.38);
+            iris.position.set(side * 0.2, 1.16, 0.4);
             animal.add(iris);
+
+            const pupil = new THREE.Mesh(
+              ghibliSphere(0.022),
+              new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
+            );
+            pupil.position.set(side * 0.2, 1.16, 0.42);
+            animal.add(pupil);
+
+            // Dreamy highlight
+            const highlight = new THREE.Mesh(
+              ghibliSphere(0.012),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            highlight.position.set(side * 0.185, 1.18, 0.43);
+            animal.add(highlight);
           });
 
-          // Soft tusks
+          // Soft curved tusks
           [-1, 1].forEach((side) => {
             const tusk = createGhibliMesh(
-              new THREE.ConeGeometry(0.025, 0.2, 12),
+              new THREE.CapsuleGeometry(0.028, 0.16, 12, 16),
               0xfffff0
             );
-            tusk.rotation.z = side * 0.28;
-            tusk.rotation.x = -0.28;
-            tusk.position.set(side * 0.16, 0.84, 0.36);
+            tusk.rotation.z = side * 0.26;
+            tusk.rotation.x = -0.26;
+            tusk.position.set(side * 0.18, 0.88, 0.4);
             animal.add(tusk);
           });
 
-          // Soft chunky legs
+          // Soft chunky legs with round feet
           const legPositions = [
-            { x: -0.32, z: 0.18 },
-            { x: 0.32, z: 0.18 },
-            { x: -0.28, z: -0.2 },
-            { x: 0.28, z: -0.2 },
+            { x: -0.34, z: 0.18 },
+            { x: 0.34, z: 0.18 },
+            { x: -0.3, z: -0.2 },
+            { x: 0.3, z: -0.2 },
           ];
           legPositions.forEach((pos) => {
             const leg = createGhibliMesh(
-              new THREE.CapsuleGeometry(0.12, 0.22, 16, 20),
+              new THREE.CapsuleGeometry(0.13, 0.22, 18, 22),
               primaryColor
             );
             leg.position.set(pos.x, 0.14, pos.z);
             animal.add(leg);
+
+            const foot = createGhibliMesh(ghibliSphere(0.11), secondaryColor);
+            foot.scale.set(1.2, 0.42, 1.2);
+            foot.position.set(pos.x, 0.045, pos.z);
+            animal.add(foot);
           });
 
-          // Soft tail
-          const tail = createGhibliMesh(
-            new THREE.CapsuleGeometry(0.02, 0.2, 8, 12),
+          // Soft tail with tuft
+          const tailGroup = new THREE.Group();
+          const tailBody = createGhibliMesh(
+            new THREE.CapsuleGeometry(0.025, 0.18, 10, 14),
             primaryColor
           );
-          tail.rotation.x = 0.75;
-          tail.position.set(0, 0.5, -0.52);
-          animal.add(tail);
+          tailGroup.add(tailBody);
+
+          const tailTuft = createGhibliMesh(ghibliSphere(0.04), 0x4a4a4a);
+          tailTuft.scale.set(1.0, 1.5, 1.0);
+          tailTuft.position.y = -0.12;
+          tailGroup.add(tailTuft);
+
+          tailGroup.rotation.x = 0.72;
+          tailGroup.position.set(0, 0.52, -0.54);
+          animal.add(tailGroup);
 
           return animal;
         }
@@ -5643,74 +6310,99 @@ limits. Below is the code it gave:>
             getBuilderColors("fox", colorOverride, options);
           animal.userData.variant = variantKey;
 
-          // Tiny body
-          const body = createChibiMesh(chibiSphere(0.25), primaryColor);
-          body.scale.set(1.0, 0.85, 1.1);
-          body.position.y = 0.25;
+          // Tiny cute body
+          const body = createChibiMesh(chibiSphere(0.26), primaryColor);
+          body.scale.set(1.02, 0.88, 1.12);
+          body.position.y = 0.26;
           animal.add(body);
 
-          // Chest tuft
-          const chest = createChibiMesh(chibiSphere(0.18), secondaryColor);
-          chest.scale.set(0.8, 0.9, 0.5);
-          chest.position.set(0, 0.28, 0.12);
+          // Fluffy chest tuft
+          const chest = createChibiMesh(chibiSphere(0.19), secondaryColor);
+          chest.scale.set(0.82, 0.92, 0.52);
+          chest.position.set(0, 0.29, 0.13);
           animal.add(chest);
 
-          // HUGE head
-          const head = createChibiMesh(chibiSphere(0.5), primaryColor);
-          head.position.y = 0.78;
+          // HUGE adorable head
+          const head = createChibiMesh(chibiSphere(0.52), primaryColor);
+          head.position.y = 0.8;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
           // Snout
           const snout = createChibiMesh(
-            new THREE.ConeGeometry(0.12, 0.2, 16),
+            new THREE.ConeGeometry(0.13, 0.22, 18),
             secondaryColor
           );
           snout.rotation.x = -Math.PI / 2;
-          snout.position.set(0, 0.68, 0.45);
+          snout.position.set(0, 0.7, 0.48);
           animal.add(snout);
 
-          // Nose
-          const nose = createChibiMesh(chibiSphere(0.04), accentColor);
-          nose.position.set(0, 0.68, 0.55);
+          // Pink nose
+          const nose = createChibiMesh(chibiSphere(0.045), accentColor);
+          nose.position.set(0, 0.7, 0.58);
           animal.add(nose);
 
-          // Big triangle ears
+          // Big triangle ears with pink inner
           [-1, 1].forEach((side) => {
+            const earGroup = new THREE.Group();
+
             const ear = createChibiMesh(
-              new THREE.ConeGeometry(0.13, 0.28, 12),
+              new THREE.ConeGeometry(0.14, 0.3, 14),
               primaryColor
             );
-            ear.position.set(side * 0.32, 1.18, -0.08);
-            ear.rotation.z = side * -0.2;
-            animal.add(ear);
+            earGroup.add(ear);
+
+            // Pink inner ear
+            const inner = createChibiMesh(
+              new THREE.ConeGeometry(0.08, 0.2, 12),
+              0xffb6c1
+            );
+            inner.position.set(0, -0.02, 0.02);
+            earGroup.add(inner);
+
+            earGroup.position.set(side * 0.34, 1.22, -0.06);
+            earGroup.rotation.z = side * -0.22;
+            animal.add(earGroup);
           });
 
-          // Cheeks
+          // Blushy cheeks
           [-1, 1].forEach((side) => {
-            const cheek = createChibiMesh(chibiSphere(0.07), 0xffcccc);
-            cheek.scale.set(1.1, 0.7, 0.4);
-            cheek.position.set(side * 0.38, 0.65, 0.32);
+            const cheek = createChibiMesh(chibiSphere(0.075), 0xffcccc);
+            cheek.scale.set(1.15, 0.72, 0.42);
+            cheek.position.set(side * 0.4, 0.67, 0.34);
             animal.add(cheek);
           });
 
-          // Big eyes
-          [-1, 1].forEach((side) => createChibiEyes(animal, side, 0.82, 0.38));
+          // Big sparkly eyes
+          [-1, 1].forEach((side) => createChibiEyes(animal, side, 0.84, 0.4));
 
-          // Big fluffy tail
-          const tail = createChibiMesh(chibiSphere(0.22), primaryColor);
-          tail.scale.set(1.0, 0.9, 1.4);
-          tail.position.set(0, 0.28, -0.38);
-          animal.add(tail);
+          // Segmented fluffy tail
+          const tailGroup = new THREE.Group();
+          for (let s = 0; s < 3; s++) {
+            const tailSeg = createChibiMesh(
+              chibiSphere(0.16 - s * 0.03),
+              primaryColor
+            );
+            tailSeg.scale.set(1.0, 0.9, 1.2 + s * 0.2);
+            tailSeg.position.set(0, s * 0.05, -s * 0.14);
+            tailGroup.add(tailSeg);
+          }
+          const tailTip = createChibiMesh(chibiSphere(0.11), secondaryColor);
+          tailTip.position.set(0, 0.08, -0.45);
+          tailGroup.add(tailTip);
 
-          const tailTip = createChibiMesh(chibiSphere(0.1), secondaryColor);
-          tailTip.position.set(0, 0.3, -0.55);
-          animal.add(tailTip);
+          tailGroup.position.set(0, 0.28, -0.2);
+          animal.add(tailGroup);
 
-          // Tiny legs
+          // Tiny stubby legs
           [-1, 1].forEach((side) => {
-            const leg = createChibiMesh(chibiSphere(0.06), primaryColor);
-            leg.position.set(side * 0.1, 0.05, 0.05);
-            animal.add(leg);
+            const frontLeg = createChibiMesh(chibiSphere(0.065), primaryColor);
+            frontLeg.position.set(side * 0.11, 0.055, 0.06);
+            animal.add(frontLeg);
+
+            const backLeg = createChibiMesh(chibiSphere(0.065), primaryColor);
+            backLeg.position.set(side * 0.1, 0.055, -0.06);
+            animal.add(backLeg);
           });
 
           return animal;
@@ -5808,11 +6500,15 @@ limits. Below is the code it gave:>
           tail.position.set(0, 0.28, -0.25);
           animal.add(tail);
 
-          // Tiny legs
+          // Tiny legs (front and back)
           [-1, 1].forEach((side) => {
-            const leg = createChibiMesh(chibiSphere(0.055), primaryColor);
-            leg.position.set(side * 0.1, 0.045, 0.05);
-            animal.add(leg);
+            const frontLeg = createChibiMesh(chibiSphere(0.055), primaryColor);
+            frontLeg.position.set(side * 0.1, 0.045, 0.05);
+            animal.add(frontLeg);
+
+            const backLeg = createChibiMesh(chibiSphere(0.055), primaryColor);
+            backLeg.position.set(side * 0.09, 0.045, -0.06);
+            animal.add(backLeg);
           });
 
           return animal;
@@ -6550,77 +7246,130 @@ limits. Below is the code it gave:>
           animal.userData.variant = variantKey;
 
           // Blocky body
-          const body = createVoxelMesh(voxelBox(0.45, 0.4, 0.6), primaryColor);
-          body.position.y = 0.32;
+          const body = createVoxelMesh(
+            voxelBox(0.46, 0.42, 0.62),
+            primaryColor
+          );
+          body.position.y = 0.34;
           animal.add(body);
 
-          // White chest
+          // White blocky chest
           const chest = createVoxelMesh(
-            voxelBox(0.3, 0.28, 0.1),
+            voxelBox(0.32, 0.3, 0.12),
             secondaryColor
           );
-          chest.position.set(0, 0.35, 0.32);
+          chest.position.set(0, 0.36, 0.34);
           animal.add(chest);
 
           // Blocky head
-          const head = createVoxelMesh(voxelBox(0.5, 0.42, 0.45), primaryColor);
-          head.position.y = 0.75;
+          const head = createVoxelMesh(
+            voxelBox(0.52, 0.44, 0.47),
+            primaryColor
+          );
+          head.position.y = 0.78;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
           // Snout
           const snout = createVoxelMesh(
-            voxelBox(0.2, 0.15, 0.25),
+            voxelBox(0.22, 0.16, 0.28),
             secondaryColor
           );
-          snout.position.set(0, 0.68, 0.32);
+          snout.position.set(0, 0.7, 0.35);
           animal.add(snout);
 
-          // Nose
-          const nose = createVoxelMesh(voxelBox(0.08, 0.06, 0.06), accentColor);
-          nose.position.set(0, 0.7, 0.45);
+          // Nose (pixel block)
+          const nose = createVoxelMesh(voxelBox(0.1, 0.07, 0.07), accentColor);
+          nose.position.set(0, 0.72, 0.48);
           animal.add(nose);
 
-          // Pointy ears (tall boxes)
+          // Pointy ears with BLACK TIPS
           [-1, 1].forEach((side) => {
+            const earGroup = new THREE.Group();
+
             const ear = createVoxelMesh(
-              voxelBox(0.14, 0.25, 0.1),
+              voxelBox(0.15, 0.28, 0.11),
               primaryColor
             );
-            ear.position.set(side * 0.18, 1.08, -0.05);
-            animal.add(ear);
+            earGroup.add(ear);
+
+            // Black tip
+            const tip = createVoxelMesh(voxelBox(0.1, 0.1, 0.08), 0x1a1a1a);
+            tip.position.y = 0.15;
+            earGroup.add(tip);
+
+            earGroup.position.set(side * 0.2, 1.12, -0.04);
+            animal.add(earGroup);
           });
 
-          // Square eyes
+          // Pixel eyes with highlight
           [-1, 1].forEach((side) => {
+            const eyeBg = new THREE.Mesh(
+              voxelBox(0.1, 0.1, 0.05),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            eyeBg.position.set(side * 0.13, 0.8, 0.24);
+            animal.add(eyeBg);
+
             const eye = new THREE.Mesh(
-              voxelBox(0.08, 0.08, 0.05),
+              voxelBox(0.08, 0.08, 0.04),
               new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
-            eye.position.set(side * 0.12, 0.78, 0.23);
+            eye.position.set(side * 0.13, 0.8, 0.26);
             animal.add(eye);
+
+            // Pixel highlight
+            const highlight = new THREE.Mesh(
+              voxelBox(0.03, 0.03, 0.02),
+              new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            highlight.position.set(side * 0.11, 0.82, 0.27);
+            animal.add(highlight);
           });
 
-          // Blocky tail
-          const tail = createVoxelMesh(voxelBox(0.2, 0.2, 0.45), primaryColor);
-          tail.rotation.x = 0.4;
-          tail.position.set(0, 0.35, -0.52);
-          animal.add(tail);
+          // Pixel cheek blush
+          [-1, 1].forEach((side) => {
+            const blush = createVoxelMesh(voxelBox(0.08, 0.05, 0.03), 0xffcccc);
+            blush.position.set(side * 0.22, 0.72, 0.24);
+            animal.add(blush);
+          });
 
+          // Segmented blocky tail
+          const tailGroup = new THREE.Group();
+          for (let s = 0; s < 3; s++) {
+            const tailSeg = createVoxelMesh(
+              voxelBox(0.18 - s * 0.03, 0.18 - s * 0.03, 0.16),
+              primaryColor
+            );
+            tailSeg.position.z = -s * 0.15;
+            tailGroup.add(tailSeg);
+          }
           const tailTip = createVoxelMesh(
-            voxelBox(0.15, 0.15, 0.15),
+            voxelBox(0.14, 0.14, 0.14),
             secondaryColor
           );
-          tailTip.position.set(0, 0.45, -0.72);
-          animal.add(tailTip);
+          tailTip.position.z = -0.48;
+          tailGroup.add(tailTip);
+
+          tailGroup.rotation.x = 0.35;
+          tailGroup.position.set(0, 0.38, -0.4);
+          animal.add(tailGroup);
 
           // Blocky legs
           [-1, 1].forEach((side) => {
-            const leg = createVoxelMesh(
-              voxelBox(0.12, 0.2, 0.12),
+            const frontLeg = createVoxelMesh(
+              voxelBox(0.13, 0.22, 0.13),
               primaryColor
             );
-            leg.position.set(side * 0.14, 0.1, 0.12);
-            animal.add(leg);
+            frontLeg.position.set(side * 0.15, 0.11, 0.14);
+            animal.add(frontLeg);
+
+            const backLeg = createVoxelMesh(
+              voxelBox(0.13, 0.22, 0.13),
+              primaryColor
+            );
+            backLeg.position.set(side * 0.14, 0.11, -0.14);
+            animal.add(backLeg);
           });
 
           return animal;
@@ -6705,11 +7454,21 @@ limits. Below is the code it gave:>
           tail2.position.set(0, 0.38, -0.42);
           animal.add(tail2);
 
-          // Blocky legs
+          // Blocky legs (front and back)
           [-1, 1].forEach((side) => {
-            const leg = createVoxelMesh(voxelBox(0.1, 0.18, 0.1), primaryColor);
-            leg.position.set(side * 0.12, 0.09, 0.1);
-            animal.add(leg);
+            const frontLeg = createVoxelMesh(
+              voxelBox(0.1, 0.18, 0.1),
+              primaryColor
+            );
+            frontLeg.position.set(side * 0.12, 0.09, 0.1);
+            animal.add(frontLeg);
+
+            const backLeg = createVoxelMesh(
+              voxelBox(0.1, 0.18, 0.1),
+              primaryColor
+            );
+            backLeg.position.set(side * 0.11, 0.09, -0.12);
+            animal.add(backLeg);
           });
 
           return animal;
@@ -7725,6 +8484,7 @@ limits. Below is the code it gave:>
           head.scale.set(1.1, 0.98, 1.0);
           head.position.y = 0.95;
           animal.add(head);
+          animal.userData.animationData.head = head;
 
           // Large pointed ears with black tips
           [-1, 1].forEach((side) => {
