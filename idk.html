@@ -13792,6 +13792,10 @@ limits. Below is the code it gave:>
             this.squash = 1;
             this.stretch = 1;
             this.hopCount = 0; // For discrete hop styles
+            this.collisionRadius = 0.6; // Collision detection radius
+            this.isColliding = false; // Track collision state
+            this.collisionCooldown = 0; // Cooldown timer to prevent collision loops
+            this.collisionPartner = null; // Track who we collided with
             this.pickNewTarget();
           }
 
@@ -13953,39 +13957,47 @@ limits. Below is the code it gave:>
                       this.animal.traverse((child) => {
                         // Skip the head mesh itself and body
                         if (child === data.head || child === data.body) return;
-                        
+
                         if (child.isMesh && child.geometry) {
                           const geomType = child.geometry.type;
                           // Check if geometry is sphere-like (potential eye)
-                          const isSphereish = geomType && (
-                            geomType.includes("Sphere") ||
-                            geomType.includes("Icosahedron") ||
-                            geomType.includes("Octahedron")
-                          );
-                          
+                          const isSphereish =
+                            geomType &&
+                            (geomType.includes("Sphere") ||
+                              geomType.includes("Icosahedron") ||
+                              geomType.includes("Octahedron"));
+
                           if (isSphereish) {
                             // Size check: eyes are small (scale typically < 0.15)
-                            const avgScale = (child.scale.x + child.scale.y + child.scale.z) / 3;
+                            const avgScale =
+                              (child.scale.x + child.scale.y + child.scale.z) /
+                              3;
                             const isEyeSize = avgScale < 0.2;
-                            
+
                             // Position check: eyes are near top half of model
-                            const isNearTop = child.position.y > 0.5 || 
-                              (child.parent && child.parent.position && child.parent.position.y > 0.5);
-                            
+                            const isNearTop =
+                              child.position.y > 0.5 ||
+                              (child.parent &&
+                                child.parent.position &&
+                                child.parent.position.y > 0.5);
+
                             // Color check: eyes are often white or have bright materials
                             const material = child.material;
-                            const isLikelyEye = material && (
-                              material.color && material.color.getHex() === 0xffffff || // white
-                              material.color && material.color.getHex() === 0x000000 || // black (pupil)
-                              material.color && material.color.r > 0.8 // bright
-                            );
-                            
+                            const isLikelyEye =
+                              material &&
+                              ((material.color &&
+                                material.color.getHex() === 0xffffff) || // white
+                                (material.color &&
+                                  material.color.getHex() === 0x000000) || // black (pupil)
+                                (material.color && material.color.r > 0.8)); // bright
+
                             // Only apply to likely eyes
                             if (isEyeSize && (isNearTop || isLikelyEye)) {
                               if (!child.userData.originalScaleY) {
                                 child.userData.originalScaleY = child.scale.y;
                               }
-                              child.scale.y = child.userData.originalScaleY * eyeSquash;
+                              child.scale.y =
+                                child.userData.originalScaleY * eyeSquash;
                             }
                           }
                         }
@@ -14192,8 +14204,40 @@ limits. Below is the code it gave:>
                 // Animate body parts during walking
                 this.animateBodyParts(hopPhase, deltaTime);
 
+                // ===== COLLISION DETECTION =====
+                // Decrease cooldown
+                if (this.collisionCooldown > 0) {
+                  this.collisionCooldown -= deltaTime;
+                }
+
+                // Check for collisions with other animals in same room (only if not on cooldown)
+                if (this.collisionCooldown <= 0) {
+                  for (const otherAI of animalAIs) {
+                    if (otherAI === this) continue;
+                    if (otherAI.roomKey !== this.roomKey) continue;
+                    if (otherAI.collisionCooldown > 0) continue; // Other is also on cooldown
+
+                    const distance = this.animal.position.distanceTo(
+                      otherAI.animal.position
+                    );
+                    const minDistance =
+                      this.collisionRadius + otherAI.collisionRadius;
+
+                    if (distance < minDistance) {
+                      // Collision detected! Both animals get confused
+                      this.collisionPartner = otherAI;
+                      otherAI.collisionPartner = this;
+                      this.collisionCooldown = 2.0; // 2 second cooldown
+                      otherAI.collisionCooldown = 2.0;
+                      this.transitionTo("confused");
+                      otherAI.transitionTo("confused");
+                      break;
+                    }
+                  }
+                }
+
                 // Check if arrived
-                if (walkProgress >= 1) {
+                if (this.state === "walking" && walkProgress >= 1) {
                   this.transitionTo("arriving");
                 }
                 break;
@@ -14334,6 +14378,93 @@ limits. Below is the code it gave:>
 
                 if (t > this.stateDuration * 0.8) {
                   this.transitionTo("arriving");
+                }
+                break;
+
+              case "confused":
+                // ===== CONFUSED COLLISION REACTION =====
+                const confusedDuration = 0.8;
+                const confusedProgress = t / confusedDuration;
+
+                // Shake/wobble animation
+                const shakeIntensity = Math.max(0, 1 - confusedProgress) * 0.3;
+                this.animal.rotation.z = Math.sin(t * 25) * shakeIntensity;
+                this.animal.rotation.x =
+                  Math.sin(t * 20) * shakeIntensity * 0.5;
+
+                // Squash down in surprise
+                this.squash = 0.85 + Math.sin(t * 15) * 0.1;
+                this.stretch = 1.1 - Math.sin(t * 15) * 0.05;
+                this.applySquashStretch();
+
+                // Dizzy head shake
+                const confData = this.animal.userData.animationData;
+                if (confData && confData.head) {
+                  confData.head.rotation.y = Math.sin(t * 18) * 0.25;
+                  confData.head.rotation.z = Math.sin(t * 22) * 0.15;
+                }
+
+                // Ears flattened in surprise
+                if (confData && confData.ears) {
+                  confData.ears.children.forEach((ear, i) => {
+                    if (ear.isMesh || ear.isGroup) {
+                      ear.rotation.z = (i === 0 ? -1 : 1) * 0.5; // Flattened
+                      ear.rotation.x = 0.3; // Pulled back
+                    }
+                  });
+                }
+
+                // Push apart from collision partner during confusion
+                if (this.collisionPartner && confusedProgress < 0.5) {
+                  const pushDir = new THREE.Vector3().subVectors(
+                    this.animal.position,
+                    this.collisionPartner.animal.position
+                  );
+                  if (pushDir.length() > 0.01) {
+                    pushDir.normalize();
+                    // Smoothly push apart
+                    this.animal.position.x += pushDir.x * deltaTime * 1.5;
+                    this.animal.position.z += pushDir.z * deltaTime * 1.5;
+                  }
+                }
+
+                // Small backward hop
+                if (confusedProgress < 0.3) {
+                  const hopBack =
+                    Math.sin((confusedProgress / 0.3) * Math.PI) * 0.15;
+                  this.animal.position.y = hopBack;
+                } else {
+                  this.animal.position.y *= 0.8; // Settle down
+                }
+
+                // After confusion, turn AWAY from partner and go
+                if (t > confusedDuration) {
+                  // Reset rotation
+                  this.animal.rotation.z = 0;
+                  this.animal.rotation.x = 0;
+
+                  // Turn to face AWAY from collision partner (or random if no partner)
+                  if (this.collisionPartner) {
+                    const awayDir = new THREE.Vector3().subVectors(
+                      this.animal.position,
+                      this.collisionPartner.animal.position
+                    );
+                    if (awayDir.length() > 0.01) {
+                      // Face away from partner with some randomness
+                      const awayAngle = Math.atan2(awayDir.x, awayDir.z);
+                      this.animal.rotation.y =
+                        awayAngle + (Math.random() - 0.5) * 0.5;
+                    }
+                    this.collisionPartner = null;
+                  } else {
+                    // Random turn if no partner
+                    this.animal.rotation.y +=
+                      (Math.random() - 0.5) * Math.PI * 1.5;
+                  }
+
+                  // Pick new target and start moving
+                  this.pickNewTarget();
+                  this.transitionTo("anticipation");
                 }
                 break;
             }
